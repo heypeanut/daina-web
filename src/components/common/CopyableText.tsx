@@ -26,7 +26,20 @@ export const CopyableText: React.FC<CopyableTextProps> = ({
       toast.success("已复制");
       setTimeout(() => setCopied(false), 1200);
     } catch {
-      toast.error("复制失败");
+      // 兜底方案：非安全上下文下使用
+      try {
+        const input = document.createElement("input");
+        input.value = text;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand("copy");
+        document.body.removeChild(input);
+        setCopied(true);
+        toast.success("已复制");
+        setTimeout(() => setCopied(false), 1200);
+      } catch {
+        toast.error("复制失败");
+      }
     }
   };
 

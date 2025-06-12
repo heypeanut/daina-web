@@ -5,10 +5,11 @@ interface PageProps {
   searchParams: { page?: string; keyword?: string; type?: string };
 }
 
-export default function Home({ searchParams }: PageProps) {
-  const page = Number(searchParams.page) > 0 ? Number(searchParams.page) : 1;
-  const keyword = searchParams.keyword || "";
-  const searchType = searchParams.type || "booth";
+export default async function Home({ searchParams }: PageProps) {
+  const params = await searchParams;
+  const page = Number(params.page) > 0 ? Number(params.page) : 1;
+  const keyword = params.keyword || "";
+  const searchType = params.type || "booth";
 
   // 动态标题
   const title = keyword ? `搜索结果 - ${keyword}` : "档口列表";
