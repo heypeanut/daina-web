@@ -43,6 +43,10 @@ export const CopyableText: React.FC<CopyableTextProps> = ({
     }
   };
 
+  if (text === "") {
+    return null;
+  }
+
   return (
     <span className={`inline-flex items-center gap-1 ${className}`}>
       <div className="flex items-center gap-1">

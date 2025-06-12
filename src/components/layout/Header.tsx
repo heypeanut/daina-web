@@ -2,6 +2,7 @@ import React from "react";
 import { ShoppingCart, QrCode } from "lucide-react";
 import { SearchBar } from "./SearchBar";
 import { Button } from "@/components/ui/button";
+import { MobileContactFab } from "./MobileContactFab";
 
 export const Header: React.FC = () => {
   return (
@@ -39,11 +40,7 @@ export const Header: React.FC = () => {
         </div>
       </header>
       {/* 移动端右下角浮窗联系拿货 */}
-      <div className="fixed bottom-12 right-4 z-50 sm:hidden card-glass !bg-[rgba(255,255,255,0.25)] backdrop-blur-md border border-white/30 shadow-lg">
-        <Button className="rounded-xl size-14  font-bold text-lg bg-transparent">
-          拿货
-        </Button>
-      </div>
+      <MobileContactFab />
     </>
   );
 };

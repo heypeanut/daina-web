@@ -12,6 +12,7 @@ import { Booth } from "@/types/booth";
 import { CopyableText } from "../common/CopyableText";
 import { toast } from "sonner";
 import { useIsMobile } from "../common/useIsMobile";
+import { copyToClipboard } from "@/utils/copyToClipboard";
 
 interface ShopSidebarProps {
   booth: Booth;
@@ -71,7 +72,7 @@ const ShopSidebar: React.FC<ShopSidebarProps> = ({ booth }) => {
         {(booth.wx || booth.wx_qrcode) && (
           <div className="flex items-center gap-1">
             <b>微信：</b>
-            {booth.wx}
+            <CopyableText text={booth.wx || ""} />
             {booth.wx_qrcode && (
               <Popover open={wxOpen} onOpenChange={setWxOpen}>
                 <PopoverTrigger asChild>
@@ -103,7 +104,7 @@ const ShopSidebar: React.FC<ShopSidebarProps> = ({ booth }) => {
         {(booth.qq || booth.qq_qrcode) && (
           <div className="flex items-center gap-1">
             <b>QQ：</b>
-            {booth.qq}
+            <CopyableText text={booth.qq || ""} />
             {booth.qq_qrcode && (
               <Popover open={qqOpen} onOpenChange={setQqOpen}>
                 <PopoverTrigger asChild>
@@ -138,23 +139,26 @@ const ShopSidebar: React.FC<ShopSidebarProps> = ({ booth }) => {
       <div className="mt-6 w-full flex justify-center">
         <Popover open={contactOpen} onOpenChange={setContactOpen}>
           <PopoverTrigger asChild>
-            <span
+            <div
               onMouseEnter={isMobile ? undefined : () => setContactOpen(true)}
               onMouseLeave={isMobile ? undefined : () => setContactOpen(false)}
             >
               <Button
                 onClick={async (e) => {
                   e.stopPropagation();
-                  console.log("复制示例");
-                  await navigator.clipboard.writeText("复制示例");
-                  toast.success("联系方式已复制");
+                  const ok = await copyToClipboard("13148865179");
+                  if (ok) {
+                    toast.success("联系方式已复制");
+                  } else {
+                    toast.error("复制失败");
+                  }
                 }}
                 className="px-8 py-2 rounded-xl bg-gradient-to-r from-[#0040f0] to-[#ff2e16] text-white font-bold text-lg shadow hover:opacity-90 transition-all"
                 style={{ boxShadow: "none" }}
               >
                 联系拿货
               </Button>
-            </span>
+            </div>
           </PopoverTrigger>
           <PopoverContent
             className="flex flex-col items-center w-40 p-4"
