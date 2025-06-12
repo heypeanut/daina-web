@@ -1,0 +1,49 @@
+import React from "react";
+import { ShoppingCart, QrCode } from "lucide-react";
+import { SearchBar } from "./SearchBar";
+import { Button } from "@/components/ui/button";
+
+export const Header: React.FC = () => {
+  return (
+    <>
+      <header className="sticky top-0 z-40 w-full card-glass backdrop-blur-md border-b border-white/30 shadow-sm transition-all">
+        <div className="max-w-[1400px] mx-auto flex flex-row items-center h-auto sm:h-24 px-4 sm:px-8 gap-2 sm:gap-0 py-2 sm:py-4">
+          {/* LOGO + 网站名（移动端只显示图标） */}
+          <div className="flex items-center gap-2 min-w-[40px] sm:min-w-[180px]">
+            <span className="inline-flex items-center justify-center h-10 w-10 sm:h-14 sm:w-14 rounded-xl bg-[#0040f0] text-white">
+              <ShoppingCart className="w-6 h-6 sm:w-8 sm:h-8" />
+            </span>
+            <span className="hidden sm:inline text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0040f0] select-none">
+              代拿网
+            </span>
+          </div>
+          {/* 搜索栏（客户端组件） */}
+          <div className="flex-1 flex justify-center">
+            <SearchBar />
+          </div>
+          {/* 联系拿货按钮+二维码（PC/iPad显示，移动端隐藏） */}
+          <div className="hidden sm:flex sm:ml-8 relative group w-full sm:w-auto justify-center">
+            <Button
+              className="w-full sm:w-auto px-6 sm:px-8 py-2 rounded-xl bg-gradient-to-r from-[#0040f0] to-[#ff2e16] text-white font-bold text-base sm:text-lg shadow hover:opacity-90 transition-all"
+              style={{ boxShadow: "none" }}
+            >
+              联系拿货
+            </Button>
+            <div className="absolute left-1/2 top-full z-50 -translate-x-1/2 mt-3 bg-white p-4 shadow-lg border flex flex-col items-center min-w-[160px] sm:min-w-[180px] opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition card-glass">
+              <QrCode className="w-16 h-16 sm:w-20 sm:h-20 text-gray-400 mb-2" />
+              <span className="text-gray-700 text-xs sm:text-sm">
+                扫码联系拿货
+              </span>
+            </div>
+          </div>
+        </div>
+      </header>
+      {/* 移动端右下角浮窗联系拿货 */}
+      <div className="fixed bottom-12 right-4 z-50 sm:hidden card-glass !bg-[rgba(255,255,255,0.25)] backdrop-blur-md border border-white/30 shadow-lg">
+        <Button className="rounded-xl size-14  font-bold text-lg bg-transparent">
+          拿货
+        </Button>
+      </div>
+    </>
+  );
+};
