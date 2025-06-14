@@ -14,14 +14,11 @@ export const BoothCard = ({ booth }: BoothCardProps) => {
   const isMobile = useIsMobile();
   return (
     <div
-      className="card-glass overflow-hidden relative cursor-pointer p-2 sm:p-3 flex flex-col transition-shadow duration-200 hover:shadow-xl group"
+      className="card-glass overflow-hidden relative cursor-pointer p-1.5 sm:p-2 md:p-3 flex flex-col transition-shadow duration-200 hover:shadow-xl group"
       onMouseEnter={() => !isMobile && setHover(true)}
       onMouseLeave={() => !isMobile && setHover(false)}
       onClick={() => window.open(`/shop/${booth.id}`, "_blank")}
     >
-      <div className="items-center mb-2 relative z-10 text-[#0040f0] font-bold text-lg">
-        {booth.title}
-      </div>
       {/* 弹出层覆盖title以下内容 */}
       <div className="relative flex-1">
         <ContactPopover booth={booth} show={hover} />
@@ -39,14 +36,19 @@ export const BoothCard = ({ booth }: BoothCardProps) => {
             }
             alt={booth.title}
             width={400}
-            height={128}
-            className="w-full shadow h-32 object-cover rounded-xl mb-2 transition-transform duration-200"
+            height={400}
+            className="w-full aspect-square shadow object-cover rounded-lg sm:rounded-xl mb-1.5 sm:mb-2 transition-transform duration-200"
             onError={() => setImgError(true)}
           />
-          <div className="text-[#ff2e16] text-sm font-semibold">
+          <div className="text-[#0040f0] font-bold text-sm sm:text-base md:text-lg truncate mb-1">
+            {booth.title}
+          </div>
+          <div className="text-[#ff2e16] text-xs sm:text-sm font-semibold truncate">
             主营: {booth.main_business?.join("、")}
           </div>
-          <div className="text-gray-600 text-sm">地址: {booth.address}</div>
+          <div className="text-gray-600 text-xs sm:text-sm truncate">
+            地址: {booth.address}
+          </div>
         </div>
       </div>
     </div>

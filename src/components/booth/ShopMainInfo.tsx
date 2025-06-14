@@ -1,5 +1,6 @@
 import React from "react";
 import { Booth } from "@/types/booth";
+import { useIsMobile } from "../common/useIsMobile";
 
 interface ShopMainInfoProps {
   booth: Booth;
@@ -20,6 +21,7 @@ function parseStats(text: string | undefined) {
 }
 
 const ShopMainInfo: React.FC<ShopMainInfoProps> = ({ booth }) => {
+  const isMobile = useIsMobile();
   const statsMap = parseStats(booth.text as string);
   const stats = [
     { label: "档口排行", value: statsMap["档口排行"] },
@@ -38,7 +40,7 @@ const ShopMainInfo: React.FC<ShopMainInfoProps> = ({ booth }) => {
       : "";
 
   return (
-    <section className="flex-1 px-0 sm:px-8 py-4">
+    <section className={`flex-1 px-0 sm:px-8 py-4 ${isMobile ? "pb-20" : ""}`}>
       {/* 档口简介 */}
       <div className="mb-6 ">
         <h2 className="text-xl font-bold mb-2 text-gray-900">档口简介</h2>
