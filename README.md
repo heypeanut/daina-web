@@ -1,36 +1,80 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# NaHuo Web
 
-## Getting Started
+代拿网PC端和移动端前台系统，基于Monorepo架构。
 
-First, run the development server:
+## 项目结构
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+/
+├── apps/
+│   ├── pc/               # PC端应用
+│   │   ├── src/
+│   │   ├── public/
+│   │   └── package.json
+│   │
+│   └── mobile/           # 移动端应用
+│       ├── src/
+│       ├── public/
+│       └── package.json
+│
+├── packages/
+│   ├── ui/               # 共享UI组件
+│   ├── api/              # API封装层
+│   ├── utils/            # 通用工具函数
+│   ├── types/            # 类型定义
+│   └── config/           # 共享配置
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 开发
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 安装依赖
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+# 安装所有依赖
+npm install
 
-## Learn More
+# 如果使用pnpm
+pnpm install
+```
 
-To learn more about Next.js, take a look at the following resources:
+### 开发命令
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+# 开发PC端
+npm run dev:pc
+# 访问 http://localhost:3005
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# 开发移动端
+npm run dev:mobile
+# 访问 http://localhost:3006
 
-## Deploy on Vercel
+# 同时开发PC端和移动端
+npm run dev
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 构建
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+# 构建所有应用
+npm run build
+
+# 单独构建PC端
+npx turbo run build --filter=pc
+
+# 单独构建移动端
+npx turbo run build --filter=mobile
+```
+
+## 部署
+
+### 部署PC端
+PC端应用将部署到域名 `https://yoursite.com`
+
+### 部署移动端
+移动端应用将部署到域名 `https://m.yoursite.com`
+
+## 设备检测与重定向
+
+在阿里云Serverless环境中，我们使用API网关+函数计算实现设备检测和重定向：
+- 移动设备访问PC域名时自动重定向到移动端域名
+- PC设备访问移动端域名时自动重定向到PC端域名

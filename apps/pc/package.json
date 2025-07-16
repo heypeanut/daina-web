@@ -1,18 +1,12 @@
 {
-  "name": "nahuo-web",
+  "name": "pc",
   "version": "0.1.0",
   "private": true,
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
   "scripts": {
-    "dev:pc": "turbo run dev --filter=pc",
-    "dev:mobile": "turbo run dev --filter=mobile",
-    "dev": "turbo run dev",
-    "build": "turbo run build",
-    "start": "turbo run start",
-    "lint": "turbo run lint"
+    "dev": "next dev --turbopack --port 3000",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.14",
@@ -28,19 +22,15 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "sonner": "^2.0.5",
-    "tailwind-merge": "^3.3.0"
+    "tailwind-merge": "^3.3.0",
+    "api": "workspace:*",
+    "ui": "workspace:*",
+    "utils": "workspace:*"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.3.3",
-    "tailwindcss": "^4",
-    "turbo": "^1.13.4",
-    "tw-animate-css": "^1.3.4",
-    "typescript": "^5"
+    "tailwindcss": "^4"
   }
-}
+} 
