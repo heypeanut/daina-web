@@ -25,7 +25,7 @@ export function SearchBar({
   };
 
   return (
-    <div className="px-3 py-2 bg-red-500">
+    <div className="sticky top-0 z-50 px-3 py-2 bg-red-500">
       <div className="flex items-center space-x-2">
         <Image src="/logo.png" alt="logo" width={32} height={32} className="rounded-full bg-white" />
         {/* 主搜索框 - 点击跳转 */}
