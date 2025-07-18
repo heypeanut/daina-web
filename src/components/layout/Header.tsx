@@ -11,15 +11,15 @@ export const Header: React.FC = () => {
         <div className="max-w-[1400px] mx-auto flex flex-row items-center h-auto sm:h-24 px-4 sm:px-8 gap-2 sm:gap-0 py-2 sm:py-4">
           {/* LOGO + 网站名（移动端只显示图标） */}
           <div className="flex items-center min-w-[40px] sm:min-w-[180px]">
-            <span className="inline-flex items-center justify-center size-28 sm:h-14 sm:w-14 rounded-xl">
+            {/* <span className="inline-flex items-center justify-center size-28 sm:h-14 sm:w-14 rounded-xl">
               <Image
                 className="max-w-none"
-                src="/logo.png"
+                src="./logo.png"
                 alt="代拿网"
                 width={80}
                 height={80}
               />
-            </span>
+            </span> */}
             <span className="hidden sm:inline text-2xl font-bold sm:text-3xl tracking-tight bg-gradient-to-r to-[#0040f0] from-[#ff2e16] bg-clip-text text-transparent select-none">
               代拿网
             </span>

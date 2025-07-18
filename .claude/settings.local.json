@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:m.jd.com)",
+      "WebFetch(domain:m.52hqb.com)",
+      "Bash(mkdir:*)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm dev:*)",
+      "Bash(pkill:*)",
+      "Bash(true)",
+      "Bash(rm:*)",
+      "Bash(cp:*)",
+      "Bash(pnpm add:*)"
+    ],
+    "deny": []
+  }
+}

@@ -2,13 +2,19 @@
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ['api', 'ui', 'utils', 'types'],
+  serverExternalPackages: [],
   experimental: {
-    serverComponentsExternalPackages: [],
     externalDir: true,
   },
-  devServer: {
-    port: 3006,
-  }
+  images: {
+    domains: ['img.goooy.cn', 'picsum.photos', 'nahuo-imges.oss-cn-shenzhen.aliyuncs.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
+  },
 }
 
 module.exports = nextConfig
