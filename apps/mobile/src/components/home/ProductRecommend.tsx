@@ -48,7 +48,7 @@ export function ProductRecommend({
       {/* 标题栏 */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
         <div className="flex items-center">
-          <TrendingUp size={18} className="text-red-500 mr-2" />
+          <TrendingUp size={18} className="text-orange-500 mr-2" />
           <h3 className="text-base font-semibold text-gray-900">{title}</h3>
         </div>
         {showMore && (
@@ -80,7 +80,7 @@ export function ProductRecommend({
                   className="object-cover"
                 />
                 {product.isHot && (
-                  <div className="absolute top-2 left-2 bg-red-500 text-white text-xs px-1 py-0.5 rounded">
+                  <div className="absolute top-2 left-2 bg-orange-500 text-white text-xs px-1 py-0.5 rounded">
                     热销
                   </div>
                 )}
@@ -99,7 +99,7 @@ export function ProductRecommend({
                 
                 {/* 价格和评分 */}
                 <div className="flex items-center justify-between">
-                  <span className="text-lg font-bold text-red-500">
+                  <span className="text-lg font-bold text-orange-500">
                     ¥{product.price.toFixed(2)}
                   </span>
                   {product.score && (
@@ -156,7 +156,7 @@ export function ProductRecommend({
                     {product.name}
                   </h4>
                   {product.isHot && (
-                    <span className="ml-2 px-1 py-0.5 bg-red-100 text-red-600 text-xs rounded">
+                    <span className="ml-2 px-1 py-0.5 bg-orange-100 text-orange-600 text-xs rounded">
                       热销
                     </span>
                   )}
@@ -165,7 +165,7 @@ export function ProductRecommend({
                   {product.description}
                 </p>
                 <div className="flex items-center justify-between mt-1">
-                  <span className="text-sm font-bold text-red-500">
+                  <span className="text-sm font-bold text-orange-500">
                     ¥{product.price.toFixed(2)}
                   </span>
                   {product.boothName && (

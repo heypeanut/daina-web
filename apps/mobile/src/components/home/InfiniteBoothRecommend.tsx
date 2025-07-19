@@ -101,7 +101,7 @@ export function InfiniteBoothRecommend({
             {/* Hot标识 */}
             {layout === 'hot' && booth.isHot && (
               <div className="absolute top-2 right-2 z-10">
-                <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                <span className="bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
                   HOT
                 </span>
               </div>
@@ -158,7 +158,7 @@ export function InfiniteBoothRecommend({
         <div ref={observerRef} className="py-4">
           {loading && (
             <div className="flex justify-center">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-500"></div>
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500"></div>
             </div>
           )}
         </div>

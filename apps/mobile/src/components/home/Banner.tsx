@@ -74,7 +74,10 @@ export function Banner({
   return (
     <div className="relative w-full aspect-video overflow-hidden p-2">
       {/* Embla轮播容器 */}
-      <div className="overflow-hidden h-full relative z-10" ref={emblaRef}>
+      <div
+        className="overflow-hidden h-full relative z-10 rounded-lg shadow-lg"
+        ref={emblaRef}
+      >
         <div className="flex h-full touch-pan-y">
           {banners.map((banner) => (
             <div
@@ -86,7 +89,7 @@ export function Banner({
                 src={banner.imageUrl}
                 alt={banner.title}
                 fill
-                className="object-cover rounded-lg shadow-lg"
+                className="object-cover"
                 priority={
                   selectedIndex === banners.findIndex((b) => b.id === banner.id)
                 }

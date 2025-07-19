@@ -115,7 +115,7 @@ export function StaticBooths({
             <div className="flex items-start">
               {/* 左侧促销信息 */}
               <div className="flex-shrink-0 w-24 mr-2 text-center">
-                <div className="bg-gradient-to-b from-red-500 to-red-600 text-white p-2.5 rounded-lg shadow-sm">
+                <div className="bg-gradient-to-b from-orange-500 to-red-500 text-white p-2.5 rounded-lg shadow-sm">
                   <div className="text-lg font-bold mb-1">最新档口</div>
                   <div className="text-sm">好物推荐</div>
                 </div>

@@ -48,7 +48,7 @@ export function BoothRecommend({
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
         <div className="flex items-center">
           {type === 'ranking' && <Crown size={18} className="text-yellow-500 mr-2" />}
-          {type === 'hot' && <TrendingUp size={18} className="text-red-500 mr-2" />}
+          {type === 'hot' && <TrendingUp size={18} className="text-orange-500 mr-2" />}
           <h3 className="text-base font-semibold text-gray-900">{title}</h3>
         </div>
         {showMore && (
@@ -124,7 +124,7 @@ export function BoothRecommend({
                     {booth.boothName}
                   </h4>
                   {booth.isHot && (
-                    <span className="ml-2 px-1 py-0.5 bg-red-100 text-red-600 text-xs rounded">
+                    <span className="ml-2 px-1 py-0.5 bg-orange-100 text-orange-600 text-xs rounded">
                       热门
                     </span>
                   )}

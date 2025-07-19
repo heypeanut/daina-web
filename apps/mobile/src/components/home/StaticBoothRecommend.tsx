@@ -39,7 +39,7 @@ export function StaticBoothRecommend({
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
         <div className="flex items-center">
           {type === 'ranking' && <Crown size={18} className="text-yellow-500 mr-2" />}
-          {type === 'hot' && <TrendingUp size={18} className="text-red-500 mr-2" />}
+          {type === 'hot' && <TrendingUp size={18} className="text-orange-500 mr-2" />}
           <h2 className="text-base font-semibold text-gray-900">{title}</h2>
         </div>
         {showMore && (
@@ -115,7 +115,7 @@ export function StaticBoothRecommend({
                     {booth.boothName}
                   </h3>
                   {booth.isHot && (
-                    <span className="ml-2 px-1 py-0.5 bg-red-100 text-red-600 text-xs rounded">
+                    <span className="ml-2 px-1 py-0.5 bg-orange-100 text-orange-600 text-xs rounded">
                       热门
                     </span>
                   )}

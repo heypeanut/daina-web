@@ -1,14 +1,14 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from 'react';
-import Image from 'next/image';
-import useEmblaCarousel from 'embla-carousel-react';
-import { useBoothRecommendations, useBehaviorTracking } from '@/hooks/useApi';
-import type { Booth } from '@/types/api';
+import React, { useCallback, useEffect, useState } from "react";
+import Image from "next/image";
+import useEmblaCarousel from "embla-carousel-react";
+import { useBoothRecommendations, useBehaviorTracking } from "@/hooks/useApi";
+import type { Booth } from "@/types/api";
 
 interface RankingBoothsProps {
   title: string;
-  type: 'booth_hot' | 'booth_new';
+  type: "booth_hot" | "booth_new";
   limit?: number;
 }
 
@@ -16,36 +16,40 @@ interface RankingBoothsProps {
 const CrownIcon = ({ rank }: { rank: number }) => {
   const getCrownStyle = (rank: number) => {
     switch (rank) {
-      case 1: return {
-        fill: '#FFD700', // 金色
-        gems: [
-          { cx: 12, cy: 11, r: 2.5, fill: '#FF4444' }, // 红宝石
-          { cx: 8, cy: 13, r: 1.5, fill: '#4444FF' }, // 蓝宝石
-          { cx: 16, cy: 13, r: 1.5, fill: '#44FF44' }, // 绿宝石
-        ]
-      };
-      case 2: return {
-        fill: '#C0C0C0', // 银色
-        gems: [
-          { cx: 12, cy: 11, r: 2, fill: '#4444FF' }, // 蓝宝石
-          { cx: 9, cy: 13, r: 1, fill: '#FFF' }, // 白色装饰
-          { cx: 15, cy: 13, r: 1, fill: '#FFF' }, // 白色装饰
-        ]
-      };
-      case 3: return {
-        fill: '#CD7F32', // 铜色
-        gems: [
-          { cx: 12, cy: 11, r: 1.5, fill: '#FF8844' }, // 橙色宝石
-          { cx: 10, cy: 13, r: 0.8, fill: '#FFF' }, // 白色装饰
-          { cx: 14, cy: 13, r: 0.8, fill: '#FFF' }, // 白色装饰
-        ]
-      };
-      default: return {
-        fill: '#9CA3AF', // 灰色
-        gems: [
-          { cx: 12, cy: 11, r: 1, fill: '#FFF' }, // 白色装饰
-        ]
-      };
+      case 1:
+        return {
+          fill: "#FFD700", // 金色
+          gems: [
+            { cx: 12, cy: 11, r: 2.5, fill: "#FF4444" }, // 红宝石
+            { cx: 8, cy: 13, r: 1.5, fill: "#4444FF" }, // 蓝宝石
+            { cx: 16, cy: 13, r: 1.5, fill: "#44FF44" }, // 绿宝石
+          ],
+        };
+      case 2:
+        return {
+          fill: "#C0C0C0", // 银色
+          gems: [
+            { cx: 12, cy: 11, r: 2, fill: "#4444FF" }, // 蓝宝石
+            { cx: 9, cy: 13, r: 1, fill: "#FFF" }, // 白色装饰
+            { cx: 15, cy: 13, r: 1, fill: "#FFF" }, // 白色装饰
+          ],
+        };
+      case 3:
+        return {
+          fill: "#CD7F32", // 铜色
+          gems: [
+            { cx: 12, cy: 11, r: 1.5, fill: "#FF8844" }, // 橙色宝石
+            { cx: 10, cy: 13, r: 0.8, fill: "#FFF" }, // 白色装饰
+            { cx: 14, cy: 13, r: 0.8, fill: "#FFF" }, // 白色装饰
+          ],
+        };
+      default:
+        return {
+          fill: "#9CA3AF", // 灰色
+          gems: [
+            { cx: 12, cy: 11, r: 1, fill: "#FFF" }, // 白色装饰
+          ],
+        };
     }
   };
 
@@ -67,7 +71,15 @@ const CrownIcon = ({ rank }: { rank: number }) => {
         strokeWidth="1.5"
       />
       {/* 皇冠底座 */}
-      <rect x="5" y="16" width="14" height="2" fill={style.fill} stroke="#FFF" strokeWidth="1"/>
+      <rect
+        x="5"
+        y="16"
+        width="14"
+        height="2"
+        fill={style.fill}
+        stroke="#FFF"
+        strokeWidth="1"
+      />
       {/* 宝石装饰 */}
       {style.gems.map((gem, index) => (
         <circle
@@ -84,11 +96,7 @@ const CrownIcon = ({ rank }: { rank: number }) => {
   );
 };
 
-export function RankingBooths({
-  title,
-  type,
-  limit = 25
-}: RankingBoothsProps) {
+export function RankingBooths({ title, type, limit = 25 }: RankingBoothsProps) {
   const { items, loading, error } = useBoothRecommendations(type, limit);
   const { recordBehavior } = useBehaviorTracking();
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -106,10 +114,10 @@ export function RankingBooths({
   // 轮播配置：轮播分组而不是单个项目
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: false,
-    align: 'start',
+    align: "start",
     skipSnaps: false,
     dragFree: false,
-    containScroll: 'trimSnaps',
+    containScroll: "trimSnaps",
     slidesToScroll: 1,
   });
 
@@ -129,28 +137,34 @@ export function RankingBooths({
 
     // 监听选中变化
     onSelect();
-    emblaApi.on('select', onSelect);
+    emblaApi.on("select", onSelect);
 
     return () => {
-      emblaApi.off('select', onSelect);
+      emblaApi.off("select", onSelect);
     };
   }, [emblaApi, onSelect]);
 
-  const handleBoothClick = useCallback((booth: Booth, groupIndex: number, itemIndex: number) => {
-    const overallIndex = groupIndex * 5 + itemIndex;
-    recordBehavior('click', 'booth', booth.id, {
-      source: 'homepage',
-      section: 'ranking',
-      position: overallIndex,
-      algorithm: 'ranking',
-    });
-  }, [recordBehavior]);
+  const handleBoothClick = useCallback(
+    (booth: Booth, groupIndex: number, itemIndex: number) => {
+      const overallIndex = groupIndex * 5 + itemIndex;
+      recordBehavior("click", "booth", booth.id, {
+        source: "homepage",
+        section: "ranking",
+        position: overallIndex,
+        algorithm: "ranking",
+      });
+    },
+    [recordBehavior]
+  );
 
-  const scrollTo = useCallback((index: number) => {
-    if (emblaApi) {
-      emblaApi.scrollTo(index);
-    }
-  }, [emblaApi]);
+  const scrollTo = useCallback(
+    (index: number) => {
+      if (emblaApi) {
+        emblaApi.scrollTo(index);
+      }
+    },
+    [emblaApi]
+  );
 
   if (error) {
     return (
@@ -181,7 +195,7 @@ export function RankingBooths({
   }
 
   return (
-    <div className="px-4 pt-6 pb-2">
+    <div className="px-4 pb-2">
       <div className="flex items-center justify-between mb-2">
         <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
         <span className="text-sm text-gray-500">更多排行</span>
@@ -189,7 +203,7 @@ export function RankingBooths({
 
       {loading ? (
         <div className="flex justify-center py-8">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-500"></div>
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500"></div>
         </div>
       ) : (
         <div className="bg-white rounded-lg py-4 shadow-sm">
@@ -206,18 +220,19 @@ export function RankingBooths({
                     {group.map((booth, itemIndex) => {
                       const overallIndex = groupIndex * 5 + itemIndex;
                       return (
-                        <div
-                          key={booth.id}
-                          className="flex-1"
-                        >
+                        <div key={booth.id} className="flex-1">
                           <div
-                            onClick={() => handleBoothClick(booth, groupIndex, itemIndex)}
+                            onClick={() =>
+                              handleBoothClick(booth, groupIndex, itemIndex)
+                            }
                             className="cursor-pointer transition-all active:scale-95"
                           >
                             {/* 档口头像容器 */}
                             <div className="relative mb-1">
                               {/* 皇冠图标 - 只显示前4名 */}
-                              {overallIndex < 4 && <CrownIcon rank={overallIndex + 1} />}
+                              {overallIndex < 4 && (
+                                <CrownIcon rank={overallIndex + 1} />
+                              )}
 
                               {/* 头像 */}
                               <div className="w-16 h-16 mx-auto rounded-full bg-gray-100 overflow-hidden border-4 border-white shadow-lg">
@@ -231,7 +246,9 @@ export function RankingBooths({
                                   />
                                 ) : (
                                   <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                                    <span className="text-gray-400 text-xs">无图</span>
+                                    <span className="text-gray-400 text-xs">
+                                      无图
+                                    </span>
                                   </div>
                                 )}
                               </div>
@@ -259,8 +276,8 @@ export function RankingBooths({
                   key={index}
                   className={`w-2 h-2 rounded-full transition-all duration-200 ${
                     index === selectedIndex
-                      ? 'bg-red-500 scale-125'
-                      : 'bg-gray-300'
+                      ? "bg-orange-500 scale-125"
+                      : "bg-gray-300"
                   }`}
                   onClick={() => scrollTo(index)}
                 />

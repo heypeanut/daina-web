@@ -82,7 +82,7 @@ export function InfiniteProductGrid({
       {/* 标题栏 */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
         <div className="flex items-center">
-          <TrendingUp size={18} className="text-red-500 mr-2" />
+          <TrendingUp size={18} className="text-orange-500 mr-2" />
           <h2 className="text-base font-semibold text-gray-900">{title}</h2>
         </div>
         <span className="text-sm text-gray-500">共{products.length}件商品</span>
@@ -108,7 +108,7 @@ export function InfiniteProductGrid({
                 loading="lazy"
               />
               {product.isHot && (
-                <div className="absolute top-2 left-2 bg-red-500 text-white text-xs px-1 py-0.5 rounded">
+                <div className="absolute top-2 left-2 bg-orange-500 text-white text-xs px-1 py-0.5 rounded">
                   热销
                 </div>
               )}
@@ -127,7 +127,7 @@ export function InfiniteProductGrid({
               
               {/* 价格和评分 */}
               <div className="flex items-center justify-between">
-                <span className="text-lg font-bold text-red-500">
+                <span className="text-lg font-bold text-orange-500">
                   ¥{product.price.toFixed(2)}
                 </span>
                 {product.score && (

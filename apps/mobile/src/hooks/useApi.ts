@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiClient, type ApiResponse, type PaginatedResponse } from '@/lib/api';
-import { mockBanners, mockBooths, mockProducts } from '@/lib/mockData';
 import type { 
   Banner, 
   Booth, 
@@ -137,14 +136,10 @@ export const useBanners = (limit: number = 5) => {
         setBanners(bannerData);
       } else {
         setError(response.message || '加载轮播图失败');
-        // 降级到模拟数据
-        setBanners(mockBanners.slice(0, limit));
       }
     } catch (err) {
-      console.warn('轮播图API调用失败，使用模拟数据:', err);
+      console.error('轮播图API调用失败:', err);
       setError(err instanceof Error ? err.message : '网络错误');
-      // 降级到模拟数据
-      setBanners(mockBanners.slice(0, limit));
     } finally {
       setLoading(false);
     }
@@ -220,35 +215,20 @@ export const useBoothRecommendations = (
           loading: false,
         }));
       } else {
-        // API返回错误，使用模拟数据
-        const startIndex = (state.currentPage - 1) * pageSize;
-        const endIndex = startIndex + pageSize;
-        const mockData = mockBooths.slice(startIndex, endIndex);
-        
         setState(prev => ({
           ...prev,
-          items: [...prev.items, ...mockData],
-          currentPage: prev.currentPage + 1,
-          hasMore: endIndex < mockBooths.length,
+          error: response.message || '加载档口推荐失败',
           loading: false,
-          error: `API错误，显示模拟数据: ${response.message}`,
+          hasMore: false,
         }));
       }
     } catch (err) {
-      console.warn('档口推荐API调用失败，使用模拟数据:', err);
-      
-      // 网络错误，使用模拟数据
-      const startIndex = (state.currentPage - 1) * pageSize;
-      const endIndex = startIndex + pageSize;
-      const mockData = mockBooths.slice(startIndex, endIndex);
-      
+      console.error('档口推荐API调用失败:', err);
       setState(prev => ({
         ...prev,
-        items: [...prev.items, ...mockData],
-        currentPage: prev.currentPage + 1,
-        hasMore: endIndex < mockBooths.length,
+        error: err instanceof Error ? err.message : '网络错误',
         loading: false,
-        error: `网络错误，显示模拟数据: ${err instanceof Error ? err.message : '未知错误'}`,
+        hasMore: false,
       }));
     }
   }, [type, pageSize, state.currentPage, state.loading, state.hasMore]);
@@ -333,35 +313,20 @@ export const useProductRecommendations = (
           loading: false,
         }));
       } else {
-        // API返回错误，使用模拟数据
-        const startIndex = (state.currentPage - 1) * pageSize;
-        const endIndex = startIndex + pageSize;
-        const mockData = mockProducts.slice(startIndex, endIndex);
-        
         setState(prev => ({
           ...prev,
-          items: [...prev.items, ...mockData],
-          currentPage: prev.currentPage + 1,
-          hasMore: endIndex < mockProducts.length,
+          error: response.message || '加载商品推荐失败',
           loading: false,
-          error: `API错误，显示模拟数据: ${response.message}`,
+          hasMore: false,
         }));
       }
     } catch (err) {
-      console.warn('商品推荐API调用失败，使用模拟数据:', err);
-      
-      // 网络错误，使用模拟数据
-      const startIndex = (state.currentPage - 1) * pageSize;
-      const endIndex = startIndex + pageSize;
-      const mockData = mockProducts.slice(startIndex, endIndex);
-      
+      console.error('商品推荐API调用失败:', err);
       setState(prev => ({
         ...prev,
-        items: [...prev.items, ...mockData],
-        currentPage: prev.currentPage + 1,
-        hasMore: endIndex < mockProducts.length,
+        error: err instanceof Error ? err.message : '网络错误',
         loading: false,
-        error: `网络错误，显示模拟数据: ${err instanceof Error ? err.message : '未知错误'}`,
+        hasMore: false,
       }));
     }
   }, [type, pageSize, state.currentPage, state.loading, state.hasMore]);

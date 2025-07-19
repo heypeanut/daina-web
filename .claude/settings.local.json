@@ -10,7 +10,10 @@
       "Bash(true)",
       "Bash(rm:*)",
       "Bash(cp:*)",
-      "Bash(pnpm add:*)"
+      "Bash(pnpm add:*)",
+      "Bash(pnpm remove:*)",
+      "Bash(npx:*)",
+      "Bash(npm install:*)"
     ],
     "deny": []
   }

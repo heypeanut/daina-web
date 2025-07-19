@@ -97,7 +97,7 @@ export function InfiniteProductRecommend({
                 {/* Hot标识 */}
                 {product.isHot && (
                   <div className="absolute top-2 right-2">
-                    <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                    <span className="bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
                       HOT
                     </span>
                   </div>
@@ -110,7 +110,7 @@ export function InfiniteProductRecommend({
                 </h3>
                 
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-lg font-bold text-red-600">
+                  <span className="text-lg font-bold text-orange-600">
                     ¥{product.price}
                   </span>
                   
@@ -161,7 +161,7 @@ export function InfiniteProductRecommend({
                     </p>
                     
                     <div className="flex items-center justify-between">
-                      <span className="text-lg font-bold text-red-600">
+                      <span className="text-lg font-bold text-orange-600">
                         ¥{product.price}
                       </span>
                       
@@ -189,7 +189,7 @@ export function InfiniteProductRecommend({
         <div ref={observerRef} className="py-4">
           {loading && (
             <div className="flex justify-center">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-500"></div>
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500"></div>
             </div>
           )}
         </div>

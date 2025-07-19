@@ -33,7 +33,12 @@ export function ClientHomepage() {
       {/* 顶部整体渐变背景区域 */}
       <div className="relative">
         {/* 大渐变背景 */}
-        <div className="absolute inset-0 bg-gradient-to-b from-red-500 via-red-500/80  to-transparent h-80" />
+        <div className="absolute inset-0 h-80">
+          {/* 水平渐变层 */}
+          <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-red-500" />
+          {/* 垂直透明渐变层 */}
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white" />
+        </div>
 
         {/* 搜索栏 - 固定在顶部 */}
         <ClientSearchBar />
@@ -46,12 +51,12 @@ export function ClientHomepage() {
           )}
 
           {/* 快捷功能入口 - 客户端组件 */}
-          <ClientQuickActions />
+          {/* <ClientQuickActions /> */}
         </div>
       </div>
 
       {/* 白色背景的内容区域 */}
-      <div className="bg-white">
+      <div className="bg-white pt-4">
         {/* 档口排行榜 - 横向滑动显示 */}
         <RankingBooths title="排行榜" type="booth_hot" limit={25} />
 
