@@ -203,6 +203,51 @@ interface InfiniteScrollProps<T> {
   errorComponent?: React.ReactNode;
 }
 
+// 图片搜索相关类型
+interface ImageSearchResult {
+  similarity: number;
+  booth?: {
+    id: string;
+    boothName: string;
+    address: string;
+    phone?: string;
+    productCount: number;
+    rating: number;
+  };
+  product?: {
+    id: string;
+    name: string;
+    price: number;
+    imageUrl: string;
+    boothName: string;
+  };
+  matchedImage: {
+    id: number;
+    url: string;
+    similarity: number;
+  };
+}
+
+interface ImageSearchResponse {
+  success: boolean;
+  results: ImageSearchResult[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+  };
+  searchTime: number;
+}
+
+interface ImageSearchParams {
+  image: File;
+  limit?: number;
+  minSimilarity?: number;
+  boothId?: string;
+  minPrice?: number;
+  maxPrice?: number;
+}
+
 // 导出所有类型
 export type {
   Banner,
@@ -221,4 +266,7 @@ export type {
   BannerSectionProps,
   SearchBarProps,
   InfiniteScrollProps,
+  ImageSearchResult,
+  ImageSearchResponse,
+  ImageSearchParams,
 };

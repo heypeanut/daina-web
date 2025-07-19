@@ -1,14 +1,14 @@
 "use client";
 
-import React, { useCallback } from 'react';
-import Image from 'next/image';
-import { useBoothRecommendations, useBehaviorTracking } from '@/hooks/useApi';
-import type { Booth } from '@/types/api';
+import React, { useCallback } from "react";
+import Image from "next/image";
+import { useBoothRecommendations, useBehaviorTracking } from "@/hooks/useApi";
+import type { Booth } from "@/types/api";
 
 interface StaticBoothsProps {
   title: string;
   subtitle?: string;
-  type: 'booth_hot' | 'booth_new';
+  type: "booth_hot" | "booth_new";
   limit?: number;
 }
 
@@ -16,7 +16,7 @@ export function StaticBooths({
   title,
   subtitle,
   type,
-  limit = 10
+  limit = 10,
 }: StaticBoothsProps) {
   const { items, loading, error } = useBoothRecommendations(type, limit);
   const { recordBehavior } = useBehaviorTracking();
@@ -24,14 +24,17 @@ export function StaticBooths({
   // 只取前limit个项目，不使用无限滚动
   const displayItems = items.slice(0, limit);
 
-  const handleBoothClick = useCallback((booth: Booth, index: number) => {
-    recordBehavior('click', 'booth', booth.id, {
-      source: 'homepage',
-      section: 'hot_booths',
-      position: index,
-      algorithm: 'hot',
-    });
-  }, [recordBehavior]);
+  const handleBoothClick = useCallback(
+    (booth: Booth, index: number) => {
+      recordBehavior("click", "booth", booth.id, {
+        source: "homepage",
+        section: "hot_booths",
+        position: index,
+        algorithm: "hot",
+      });
+    },
+    [recordBehavior]
+  );
 
   if (error) {
     return (
@@ -120,7 +123,10 @@ export function StaticBooths({
 
               {/* 右侧商品滚动列表 */}
               <div className="flex-1 overflow-x-auto scrollbar-hide">
-                <div className="flex space-x-3" style={{ width: 'max-content' }}>
+                <div
+                  className="flex space-x-2"
+                  style={{ width: "max-content" }}
+                >
                   {displayItems.map((booth, index) => (
                     <div
                       key={booth.id}

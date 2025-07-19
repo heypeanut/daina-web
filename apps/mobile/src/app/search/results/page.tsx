@@ -5,7 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { MobileLayout } from '@/components/layout/MobileLayout';
 import { ProductRecommend } from '@/components/home/ProductRecommend';
 import { BoothRecommend } from '@/components/home/BoothRecommend';
-import { Search, ArrowLeft, Filter, SlidersHorizontal } from 'lucide-react';
+import { Search, ArrowLeft, Filter, SlidersHorizontal, Image } from 'lucide-react';
+import type { ImageSearchResponse } from '@/types/api';
 
 export default function SearchResultsPage() {
   const router = useRouter();
@@ -13,6 +14,9 @@ export default function SearchResultsPage() {
   const [keyword, setKeyword] = useState('');
   const [activeTab, setActiveTab] = useState<'product' | 'booth'>('product');
   const [sortBy, setSortBy] = useState<'relevance' | 'price' | 'sales'>('relevance');
+  const [imageSearchResults, setImageSearchResults] = useState<ImageSearchResponse | null>(null);
+  const [searchImage, setSearchImage] = useState<string | null>(null);
+  const [isImageSearch, setIsImageSearch] = useState(false);
   
   // 模拟搜索结果数据
   const [searchResults] = useState({
@@ -91,9 +95,28 @@ export default function SearchResultsPage() {
       setKeyword(q);
     }
     
-    if (type === 'image') {
+    if (type === 'image-booth') {
       // 图片搜索结果
-      setKeyword('以图搜图结果');
+      setKeyword('以图搜档口');
+      setActiveTab('booth');
+      setIsImageSearch(true);
+      
+      // 从sessionStorage获取搜索结果
+      const results = sessionStorage.getItem('imageSearchResults');
+      const image = sessionStorage.getItem('searchImage');
+      
+      if (results) {
+        try {
+          const parsedResults = JSON.parse(results);
+          setImageSearchResults(parsedResults);
+        } catch (error) {
+          console.error('解析搜索结果失败:', error);
+        }
+      }
+      
+      if (image) {
+        setSearchImage(image);
+      }
     }
   }, [searchParams]);
 
@@ -120,6 +143,63 @@ export default function SearchResultsPage() {
     { value: 'price', label: '价格' },
     { value: 'sales', label: '销量' },
   ];
+
+  // 图片搜索结果卡片组件
+  const ImageSearchResultCard = ({ result, index }: { result: any; index: number }) => (
+    <div 
+      className="bg-white rounded-lg p-4 mb-4 cursor-pointer active:bg-gray-50"
+      onClick={() => {
+        if (result.booth) {
+          router.push(`/booth/${result.booth.id}`);
+        }
+      }}
+    >
+      <div className="flex items-start space-x-3">
+        <div className="flex-shrink-0">
+          <img
+            src={result.matchedImage.url}
+            alt="匹配图片"
+            className="w-16 h-16 object-cover rounded-lg"
+          />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center space-x-2 mb-1">
+            <h3 className="font-medium text-gray-900 truncate">
+              {result.booth?.boothName || '未知档口'}
+            </h3>
+            <span className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded">
+              {Math.round(result.similarity * 100)}%
+            </span>
+          </div>
+          <p className="text-sm text-gray-600 mb-2">
+            {result.booth?.address || '地址未知'}
+          </p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              {result.booth?.phone && (
+                <span className="text-xs text-gray-500">
+                  {result.booth.phone}
+                </span>
+              )}
+              {result.booth?.productCount && (
+                <span className="text-xs text-gray-500">
+                  {result.booth.productCount}种商品
+                </span>
+              )}
+            </div>
+            {result.booth?.rating && (
+              <div className="flex items-center space-x-1">
+                <span className="text-xs text-gray-500">评分</span>
+                <span className="text-xs font-medium text-orange-500">
+                  {result.booth.rating}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <MobileLayout showTabBar={false}>
@@ -148,38 +228,65 @@ export default function SearchResultsPage() {
 
         {/* 搜索结果统计 */}
         <div className="bg-white px-4 py-3 border-b border-gray-100">
-          <p className="text-sm text-gray-600">
-            找到 <span className="text-red-500 font-medium">
-              {activeTab === 'product' ? searchResults.products.length : searchResults.booths.length}
-            </span> 个结果
-          </p>
+          {isImageSearch && searchImage && (
+            <div className="flex items-center space-x-3 mb-3">
+              <div className="flex-shrink-0">
+                <img
+                  src={searchImage}
+                  alt="搜索图片"
+                  className="w-12 h-12 object-cover rounded-lg"
+                />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm text-gray-600">
+                  基于此图片搜索到 <span className="text-red-500 font-medium">
+                    {imageSearchResults?.results?.length || 0}
+                  </span> 个相似档口
+                </p>
+                {imageSearchResults?.searchTime && (
+                  <p className="text-xs text-gray-500">
+                    搜索用时: {imageSearchResults.searchTime}ms
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+          {!isImageSearch && (
+            <p className="text-sm text-gray-600">
+              找到 <span className="text-red-500 font-medium">
+                {activeTab === 'product' ? searchResults.products.length : searchResults.booths.length}
+              </span> 个结果
+            </p>
+          )}
         </div>
 
-        {/* Tab切换 */}
-        <div className="bg-white border-b border-gray-100 sticky top-16 z-40">
-          <div className="flex">
-            <button
-              onClick={() => setActiveTab('product')}
-              className={`flex-1 py-3 text-sm font-medium transition-colors ${
-                activeTab === 'product'
-                  ? 'text-red-500 border-b-2 border-red-500'
-                  : 'text-gray-600'
-              }`}
-            >
-              商品 ({searchResults.products.length})
-            </button>
-            <button
-              onClick={() => setActiveTab('booth')}
-              className={`flex-1 py-3 text-sm font-medium transition-colors ${
-                activeTab === 'booth'
-                  ? 'text-red-500 border-b-2 border-red-500'
-                  : 'text-gray-600'
-              }`}
-            >
-              档口 ({searchResults.booths.length})
-            </button>
+        {/* Tab切换 - 图片搜索时不显示 */}
+        {!isImageSearch && (
+          <div className="bg-white border-b border-gray-100 sticky top-16 z-40">
+            <div className="flex">
+              <button
+                onClick={() => setActiveTab('product')}
+                className={`flex-1 py-3 text-sm font-medium transition-colors ${
+                  activeTab === 'product'
+                    ? 'text-red-500 border-b-2 border-red-500'
+                    : 'text-gray-600'
+                }`}
+              >
+                商品 ({searchResults.products.length})
+              </button>
+              <button
+                onClick={() => setActiveTab('booth')}
+                className={`flex-1 py-3 text-sm font-medium transition-colors ${
+                  activeTab === 'booth'
+                    ? 'text-red-500 border-b-2 border-red-500'
+                    : 'text-gray-600'
+                }`}
+              >
+                档口 ({searchResults.booths.length})
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* 筛选栏 */}
         {activeTab === 'product' && (
@@ -210,7 +317,26 @@ export default function SearchResultsPage() {
 
         {/* 搜索结果 */}
         <div className="pb-4">
-          {activeTab === 'product' ? (
+          {isImageSearch && imageSearchResults ? (
+            <div className="px-4 mt-4">
+              {imageSearchResults.results.map((result, index) => (
+                <ImageSearchResultCard
+                  key={`${result.booth?.id || index}-${index}`}
+                  result={result}
+                  index={index}
+                />
+              ))}
+              {imageSearchResults.results.length === 0 && (
+                <div className="text-center py-8">
+                  <Image size={48} className="mx-auto text-gray-400 mb-4" />
+                  <p className="text-gray-500">未找到相似的档口</p>
+                  <p className="text-sm text-gray-400 mt-2">
+                    请尝试上传更清晰的图片或调整搜索条件
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : activeTab === 'product' ? (
             <ProductRecommend
               title=""
               products={searchResults.products}

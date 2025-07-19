@@ -8,7 +8,9 @@ import type {
   HomepageData, 
   PersonalizedRecommendation,
   MixedRecommendation,
-  InfiniteScrollState 
+  InfiniteScrollState,
+  ImageSearchResponse,
+  ImageSearchParams
 } from '@/types/api';
 
 // 获取用户ID的工具函数
@@ -519,4 +521,59 @@ export const useMixedRecommendations = (
   }, [targetType, pageSize]);
 
   return { ...state, loadMore, reset };
+};
+
+// 图片搜索Hook
+export const useImageSearch = () => {
+  const [searching, setSearching] = useState(false);
+  const [searchResult, setSearchResult] = useState<ImageSearchResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const searchBooths = useCallback(async (params: ImageSearchParams) => {
+    setSearching(true);
+    setError(null);
+
+    try {
+      const response = await apiClient.searchImageBooth(params);
+      setSearchResult(response);
+      return response;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '图片搜索失败';
+      setError(errorMessage);
+      return null;
+    } finally {
+      setSearching(false);
+    }
+  }, []);
+
+  const searchProducts = useCallback(async (params: ImageSearchParams) => {
+    setSearching(true);
+    setError(null);
+
+    try {
+      const response = await apiClient.searchImageProduct(params);
+      setSearchResult(response);
+      return response;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '图片搜索失败';
+      setError(errorMessage);
+      return null;
+    } finally {
+      setSearching(false);
+    }
+  }, []);
+
+  const clearResults = useCallback(() => {
+    setSearchResult(null);
+    setError(null);
+  }, []);
+
+  return {
+    searching,
+    searchResult,
+    error,
+    searchBooths,
+    searchProducts,
+    clearResults,
+  };
 };

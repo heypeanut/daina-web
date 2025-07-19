@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useCallback, useEffect } from 'react';
-import Image from 'next/image';
-import useEmblaCarousel from 'embla-carousel-react';
-import Autoplay from 'embla-carousel-autoplay';
-import type { Banner as BannerType } from '@/types/api';
+import React, { useCallback, useEffect } from "react";
+import Image from "next/image";
+import useEmblaCarousel from "embla-carousel-react";
+import Autoplay from "embla-carousel-autoplay";
+import type { Banner as BannerType } from "@/types/api";
 
 interface BannerProps {
   banners: BannerType[];
@@ -17,12 +17,12 @@ export function Banner({
   banners,
   autoPlay = true,
   interval = 4000,
-  onBannerClick
+  onBannerClick,
 }: BannerProps) {
   const [emblaRef, emblaApi] = useEmblaCarousel(
     {
       loop: true,
-      align: 'start',
+      align: "start",
       skipSnaps: false,
       dragFree: false,
     },
@@ -39,8 +39,10 @@ export function Banner({
   useEffect(() => {
     if (!emblaApi) return;
     onSelect();
-    emblaApi.on('select', onSelect);
-    return () => emblaApi.off('select', onSelect);
+    emblaApi.on("select", onSelect);
+    return () => {
+      emblaApi.off("select", onSelect);
+    };
   }, [emblaApi, onSelect]);
 
   const handleBannerClick = (banner: BannerType) => {
@@ -50,13 +52,16 @@ export function Banner({
     // 这里可以添加导航逻辑
     if (banner.linkUrl) {
       // 根据linkType处理不同的跳转
-      console.log('Navigate to:', banner.linkUrl);
+      console.log("Navigate to:", banner.linkUrl);
     }
   };
 
-  const scrollTo = useCallback((index: number) => {
-    if (emblaApi) emblaApi.scrollTo(index);
-  }, [emblaApi]);
+  const scrollTo = useCallback(
+    (index: number) => {
+      if (emblaApi) emblaApi.scrollTo(index);
+    },
+    [emblaApi]
+  );
 
   if (banners.length === 0) {
     return (
@@ -69,7 +74,7 @@ export function Banner({
   return (
     <div className="relative w-full aspect-video overflow-hidden p-2">
       {/* Embla轮播容器 */}
-      <div className="overflow-hidden h-full" ref={emblaRef}>
+      <div className="overflow-hidden h-full relative z-10" ref={emblaRef}>
         <div className="flex h-full touch-pan-y">
           {banners.map((banner) => (
             <div
@@ -81,10 +86,14 @@ export function Banner({
                 src={banner.imageUrl}
                 alt={banner.title}
                 fill
-                className="object-cover   rounded-lg shadow-sm"
-                priority={selectedIndex === banners.findIndex(b => b.id === banner.id)}
+                className="object-cover rounded-lg shadow-lg"
+                priority={
+                  selectedIndex === banners.findIndex((b) => b.id === banner.id)
+                }
                 sizes="100vw"
               />
+              {/* 图片上的渐变遮罩 */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent rounded-lg" />
             </div>
           ))}
         </div>
@@ -92,25 +101,18 @@ export function Banner({
 
       {/* 指示器 */}
       {banners.length > 1 && (
-        <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex space-x-2">
+        <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
           {banners.map((_, index) => (
             <button
               key={index}
               className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                index === selectedIndex
-                  ? 'bg-white scale-125'
-                  : 'bg-white/50'
+                index === selectedIndex ? "bg-white scale-125" : "bg-white/50"
               }`}
               onClick={() => scrollTo(index)}
             />
           ))}
         </div>
       )}
-        <div className="absolute top-3 right-3 bg-black/20 text-white text-xs px-2 py-1 rounded">
-      代拿网
     </div>
-    </div>
-
-
   );
 }

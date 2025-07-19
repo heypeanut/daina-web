@@ -1,19 +1,35 @@
 "use client";
 
-import React, { useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { MobileLayout } from '@/components/layout/MobileLayout';
-import { Camera, ArrowLeft, Upload, ImageIcon, X } from 'lucide-react';
+import React, { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { MobileLayout } from "@/components/layout/MobileLayout";
+import { Camera, ArrowLeft, Upload, ImageIcon, X } from "lucide-react";
+import { useImageSearch } from "@/hooks/useApi";
 
 export default function ImageSearchPage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const { searching, searchResult, error, searchBooths, clearResults } =
+    useImageSearch();
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // 检查文件大小和类型
+      if (file.size > 10 * 1024 * 1024) {
+        // 10MB
+        alert("图片文件不能超过10MB");
+        return;
+      }
+
+      if (!file.type.startsWith("image/")) {
+        alert("请选择图片文件");
+        return;
+      }
+
+      setSelectedFile(file);
       const reader = new FileReader();
       reader.onload = (e) => {
         setSelectedImage(e.target?.result as string);
@@ -27,29 +43,52 @@ export default function ImageSearchPage() {
   };
 
   const handleCameraClick = () => {
-    // 模拟相机拍照
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      // 实际项目中这里会调用相机API
-      alert('相机功能需要在真实设备上测试');
-    } else {
-      alert('该设备不支持相机功能');
-    }
+    // 创建一个隐藏的文件input专门用于相机
+    const cameraInput = document.createElement('input');
+    cameraInput.type = 'file';
+    cameraInput.accept = 'image/*';
+    cameraInput.capture = 'environment'; // 调用后置摄像头
+    cameraInput.style.display = 'none';
+    
+    cameraInput.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        // 使用相同的处理逻辑
+        handleFileSelect({ target: { files: [file] } } as any);
+      }
+      // 清理临时元素
+      document.body.removeChild(cameraInput);
+    };
+    
+    document.body.appendChild(cameraInput);
+    cameraInput.click();
   };
 
-  const handleSearch = () => {
-    if (selectedImage) {
-      setIsUploading(true);
-      // 模拟上传和搜索过程
-      setTimeout(() => {
-        setIsUploading(false);
-        // 跳转到搜索结果页
-        router.push('/search/results?type=image');
-      }, 2000);
+  const handleSearch = async () => {
+    if (selectedFile) {
+      try {
+        const result = await searchBooths({
+          image: selectedFile,
+          limit: 20,
+          minSimilarity: 0.3,
+        });
+
+        if (result && result.success) {
+          // 将搜索结果保存到sessionStorage，传递给结果页面
+          sessionStorage.setItem("imageSearchResults", JSON.stringify(result));
+          sessionStorage.setItem("searchImage", selectedImage || "");
+          router.push("/search/results?type=image-booth");
+        }
+      } catch (error) {
+        console.error("搜索失败:", error);
+      }
     }
   };
 
   const clearImage = () => {
     setSelectedImage(null);
+    setSelectedFile(null);
+    clearResults();
   };
 
   return (
@@ -74,17 +113,38 @@ export default function ImageSearchPage() {
           {/* 使用说明 */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
             <div className="flex items-start">
-              <ImageIcon size={20} className="text-blue-500 mt-0.5 mr-3 flex-shrink-0" />
+              <ImageIcon
+                size={20}
+                className="text-blue-500 mt-0.5 mr-3 flex-shrink-0"
+              />
               <div>
                 <h3 className="text-sm font-medium text-blue-900 mb-1">
-                  拍照搜索商品
+                  拍照搜索档口
                 </h3>
                 <p className="text-xs text-blue-700">
-                  上传商品图片，快速找到相似商品和档口信息
+                  上传商品图片，快速找到相似的档口信息
                 </p>
               </div>
             </div>
           </div>
+
+          {/* 错误提示 */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+              <div className="flex items-start">
+                <X
+                  size={20}
+                  className="text-red-500 mt-0.5 mr-3 flex-shrink-0"
+                />
+                <div>
+                  <h3 className="text-sm font-medium text-red-900 mb-1">
+                    搜索失败
+                  </h3>
+                  <p className="text-xs text-red-700">{error}</p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* 图片上传区域 */}
           {!selectedImage ? (
@@ -95,7 +155,9 @@ export default function ImageSearchPage() {
                 className="w-full bg-white border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center justify-center active:bg-gray-50 transition-colors"
               >
                 <Camera size={48} className="text-gray-400 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">拍照搜索</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  拍照搜索
+                </h3>
                 <p className="text-sm text-gray-500 text-center">
                   打开相机拍摄商品照片
                 </p>
@@ -107,7 +169,9 @@ export default function ImageSearchPage() {
                 className="w-full bg-white border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center justify-center active:bg-gray-50 transition-colors"
               >
                 <Upload size={48} className="text-gray-400 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">从相册选择</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  从相册选择
+                </h3>
                 <p className="text-sm text-gray-500 text-center">
                   选择手机相册中的商品图片
                 </p>
@@ -142,20 +206,20 @@ export default function ImageSearchPage() {
               {/* 搜索按钮 */}
               <button
                 onClick={handleSearch}
-                disabled={isUploading}
+                disabled={searching || !selectedFile}
                 className={`w-full py-4 rounded-lg font-medium text-white transition-colors ${
-                  isUploading 
-                    ? 'bg-gray-400 cursor-not-allowed' 
-                    : 'bg-red-500 active:bg-red-600'
+                  searching || !selectedFile
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-red-500 active:bg-red-600"
                 }`}
               >
-                {isUploading ? (
+                {searching ? (
                   <div className="flex items-center justify-center">
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
                     搜索中...
                   </div>
                 ) : (
-                  '开始搜索'
+                  "开始搜索档口"
                 )}
               </button>
 
