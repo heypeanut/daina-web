@@ -8,6 +8,11 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface SmsLoginRequest {
+  phone: string;
+  code: string;
+}
+
 export interface LoginResponse {
   token: string;
   user: {
@@ -23,9 +28,8 @@ export interface LoginResponse {
 
 export interface RegisterRequest {
   phone: string;
-  password: string;
-  verificationCode: string;
-  agreeToTerms: boolean;
+  smsCode: string;
+  nickname?: string;
 }
 
 export interface RegisterResponse {
@@ -58,7 +62,7 @@ interface ApiResponse<T> {
 }
 
 // 用户登录
-export async function login(credentials: LoginRequest): Promise<LoginResponse> {
+export async function login(credentials: LoginRequest): Promise<string> {
   const response = await fetch(`${BASE_URL}/login`, {
     method: "POST",
     headers: {
@@ -72,7 +76,9 @@ export async function login(credentials: LoginRequest): Promise<LoginResponse> {
     try {
       const errorData = await response.json();
       // 优先使用服务器返回的错误信息
-      throw new Error(errorData.message || errorData.error || `登录失败 (${response.status})`);
+      throw new Error(
+        errorData.message || errorData.error || `登录失败 (${response.status})`
+      );
     } catch (parseError) {
       // 如果无法解析JSON，使用HTTP状态码
       throw new Error(`登录失败 (${response.status})`);
@@ -89,6 +95,36 @@ export async function login(credentials: LoginRequest): Promise<LoginResponse> {
   return result.data;
 }
 
+// 短信验证码登录
+export async function smsLogin(credentials: SmsLoginRequest): Promise<string> {
+  const response = await fetch(`${BASE_URL}/login/sms`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(credentials),
+  });
+
+  if (!response.ok) {
+    try {
+      const errorData = await response.json();
+      throw new Error(
+        errorData.message || errorData.error || `短信登录失败 (${response.status})`
+      );
+    } catch (parseError) {
+      throw new Error(`短信登录失败 (${response.status})`);
+    }
+  }
+
+  const result: ApiResponse<LoginResponse> = await response.json();
+
+  if (result.code !== 200) {
+    throw new Error(result.message || "短信登录失败");
+  }
+
+  return result.data;
+}
+
 // 获取用户信息
 export async function getUserInfo(): Promise<UserInfo> {
   const token = localStorage.getItem("auth_token");
@@ -97,7 +133,7 @@ export async function getUserInfo(): Promise<UserInfo> {
     throw new Error("未登录");
   }
 
-  const response = await fetch(`${BASE_URL}/api/user/mobile/info`, {
+  const response = await fetch(`${BASE_URL}/user/mobile/info`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -124,9 +160,9 @@ export async function getUserInfo(): Promise<UserInfo> {
   return result.data;
 }
 
-// 发送验证码
-export async function sendVerificationCode(phone: string): Promise<void> {
-  const response = await fetch(`${BASE_URL}/api/auth/send-code`, {
+// 发送短信验证码
+export async function sendSms(phone: string): Promise<void> {
+  const response = await fetch(`${BASE_URL}/send-sms`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -148,9 +184,16 @@ export async function sendVerificationCode(phone: string): Promise<void> {
   }
 }
 
-// 用户注册
-export async function register(userData: RegisterRequest): Promise<RegisterResponse> {
-  const response = await fetch(`${BASE_URL}/api/auth/register`, {
+// 发送验证码（保持兼容性）
+export async function sendVerificationCode(phone: string): Promise<void> {
+  return sendSms(phone);
+}
+
+// 用户注册（手机号简易注册）
+export async function register(
+  userData: RegisterRequest
+): Promise<RegisterResponse> {
+  const response = await fetch(`${BASE_URL}/register/phone`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -180,7 +223,7 @@ export async function logout(): Promise<void> {
 
   if (token) {
     try {
-      await fetch(`${BASE_URL}/api/logout`, {
+      await fetch(`${BASE_URL}/logout`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

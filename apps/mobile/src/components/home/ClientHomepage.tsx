@@ -2,7 +2,7 @@
 
 import React from "react";
 import { ClientSearchBar } from "./ClientSearchBar";
-import { ClientQuickActions } from "./ClientQuickActions";
+// import { ClientQuickActions } from "./ClientQuickActions";
 import { HybridBanner } from "./HybridBanner";
 import { RankingBooths } from "./RankingBooths";
 import { StaticBooths } from "./StaticBooths";
@@ -33,7 +33,7 @@ export function ClientHomepage() {
       {/* 顶部整体渐变背景区域 */}
       <div className="relative">
         {/* 大渐变背景 */}
-        <div className="absolute inset-0 h-80">
+        <div className="absolute inset-0">
           {/* 水平渐变层 */}
           <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-red-500" />
           {/* 垂直透明渐变层 */}

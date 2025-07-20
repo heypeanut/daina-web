@@ -2,24 +2,16 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Eye,
-  EyeOff,
-  ArrowLeft,
-  Phone,
-  Lock,
-  MessageSquare,
-} from "lucide-react";
+import { ArrowLeft, Phone, MessageSquare } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 
 export default function RegisterPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
     phone: "",
-    password: "",
     verificationCode: "",
+    nickname: "",
   });
-  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [sendingCode, setSendingCode] = useState(false);
   const [countdown, setCountdown] = useState(0);
@@ -46,8 +38,8 @@ export default function RegisterPage() {
     setSendingCode(true);
 
     try {
-      const { sendVerificationCode } = await import("@/lib/api/auth");
-      await sendVerificationCode(formData.phone);
+      const { sendSms } = await import("@/lib/api/auth");
+      await sendSms(formData.phone);
 
       // 开始倒计时
       setCountdown(60);
@@ -72,18 +64,13 @@ export default function RegisterPage() {
   };
 
   const handleRegister = async () => {
-    if (!formData.phone || !formData.password || !formData.verificationCode) {
-      alert("请完整填写所有信息");
+    if (!formData.phone || !formData.verificationCode) {
+      alert("请填写手机号和验证码");
       return;
     }
 
     if (!/^1[3-9]\d{9}$/.test(formData.phone)) {
       alert("请输入正确的手机号");
-      return;
-    }
-
-    if (formData.password.length < 6) {
-      alert("密码长度不能少于6位");
       return;
     }
 
@@ -99,9 +86,8 @@ export default function RegisterPage() {
 
       const response = await register({
         phone: formData.phone,
-        password: formData.password,
-        verificationCode: formData.verificationCode,
-        agreeToTerms: true,
+        smsCode: formData.verificationCode,
+        nickname: formData.nickname || undefined,
       });
 
       // 存储认证信息
@@ -125,7 +111,7 @@ export default function RegisterPage() {
   };
 
   const handleBack = () => {
-    router.push('/profile');
+    router.push("/profile");
   };
 
   return (
@@ -162,7 +148,7 @@ export default function RegisterPage() {
         {/* 手机号输入 */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            手机号
+            手机号 *
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -182,7 +168,7 @@ export default function RegisterPage() {
         {/* 验证码输入 */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            验证码
+            验证码 *
           </label>
           <div className="flex space-x-3">
             <div className="relative flex-1">
@@ -215,34 +201,18 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        {/* 密码输入 */}
+        {/* 昵称输入 */}
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            密码
+            昵称（可选）
           </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Lock className="h-5 w-5 text-gray-400" />
-            </div>
-            <input
-              type={showPassword ? "text" : "password"}
-              value={formData.password}
-              onChange={(e) => handleInputChange("password", e.target.value)}
-              className="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
-              placeholder="请输入密码（至少6位）"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center"
-            >
-              {showPassword ? (
-                <EyeOff className="h-5 w-5 text-gray-400" />
-              ) : (
-                <Eye className="h-5 w-5 text-gray-400" />
-              )}
-            </button>
-          </div>
+          <input
+            type="text"
+            value={formData.nickname}
+            onChange={(e) => handleInputChange("nickname", e.target.value)}
+            className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
+            placeholder="请输入昵称"
+          />
         </div>
 
         {/* 用户协议和隐私政策 */}
@@ -250,7 +220,9 @@ export default function RegisterPage() {
           <label className="flex items-center space-x-2 cursor-pointer">
             <Checkbox
               checked={agreeToTerms}
-              onCheckedChange={setAgreeToTerms}
+              onCheckedChange={(checked) =>
+                setAgreeToTerms(checked === "indeterminate" ? false : checked)
+              }
             />
             <span className="text-sm text-gray-700">
               我已阅读并同意

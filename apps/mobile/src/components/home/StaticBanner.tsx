@@ -1,6 +1,6 @@
-import React from 'react';
-import Image from 'next/image';
-import type { Banner as BannerType } from '@/types/api';
+import React from "react";
+import Image from "next/image";
+import type { Banner as BannerType } from "@/types/api";
 
 interface StaticBannerProps {
   banners: BannerType[];
@@ -35,19 +35,19 @@ export function StaticBanner({ banners }: StaticBannerProps) {
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "ImageGallery",
-              "name": "代拿网轮播图",
-              "description": "代拿网移动端首页轮播图展示",
-              "image": banners.map(banner => ({
+              name: "代拿网轮播图",
+              description: "代拿网移动端首页轮播图展示",
+              image: banners.map((banner) => ({
                 "@type": "ImageObject",
-                "url": banner.imageUrl,
-                "name": banner.title,
-                "contentUrl": banner.linkUrl
-              }))
-            })
+                url: banner.imageUrl,
+                name: banner.title,
+                contentUrl: banner.linkUrl,
+              })),
+            }),
           }}
         />
       </div>
-      
+
       {/* 代拿网品牌标识 */}
       <div className="absolute top-3 right-3 bg-black/20 text-white text-xs px-2 py-1 rounded">
         代拿网

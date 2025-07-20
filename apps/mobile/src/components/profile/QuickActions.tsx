@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Heart, Store, Clock } from "lucide-react";
 import { isLoggedIn, redirectToLogin } from "@/lib/auth";
 
@@ -13,6 +14,7 @@ interface QuickAction {
 }
 
 export const QuickActions: React.FC = () => {
+  const router = useRouter();
   const [loggedIn, setLoggedIn] = useState(false);
 
   useEffect(() => {
@@ -67,7 +69,7 @@ export const QuickActions: React.FC = () => {
     }
     
     // 已登录或不需要登录，直接跳转
-    console.log("导航到:", action.route);
+    router.push(action.route);
   };
 
   return (

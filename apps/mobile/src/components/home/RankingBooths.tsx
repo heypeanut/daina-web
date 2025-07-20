@@ -96,7 +96,11 @@ const CrownIcon = ({ rank }: { rank: number }) => {
   );
 };
 
-export function RankingBooths({ title, type, limit = 25 }: RankingBoothsProps) {
+export function RankingBooths({
+  title = "排行榜",
+  type,
+  limit = 25,
+}: RankingBoothsProps) {
   const { items, loading, error } = useBoothRecommendations(type, limit);
   const { recordBehavior } = useBehaviorTracking();
   const [selectedIndex, setSelectedIndex] = useState(0);

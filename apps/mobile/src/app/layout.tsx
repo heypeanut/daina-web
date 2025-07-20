@@ -1,4 +1,5 @@
 import './globals.css';
+import { QueryProvider } from '@/lib/react-query/provider';
 
 export const metadata = {
   title: "代拿网 - 移动版",
@@ -13,7 +14,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="zh-CN">
-      <body className="bg-gray-50">{children}</body>
+      <body className="bg-gray-50">
+        <QueryProvider>
+          {children}
+        </QueryProvider>
+      </body>
     </html>
   );
 }
