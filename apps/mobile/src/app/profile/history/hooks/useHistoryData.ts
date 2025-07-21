@@ -1,5 +1,9 @@
 import { useState, useCallback, useMemo } from "react";
-import { useFootprints, useRemoveFootprint, useClearFootprints } from "@/hooks/api/favorites/useFootprints";
+import {
+  useFootprints,
+  useRemoveFootprint,
+  useClearFootprints,
+} from "@/hooks/api/favorites/useFootprints";
 import { isLoggedIn, redirectToLogin } from "@/lib/auth";
 import { FilterType, PAGE_SIZE } from "../constants/filters";
 import { type Footprint } from "@/lib/api/favorites";
@@ -44,7 +48,7 @@ export function useHistoryData(): UseHistoryDataReturn {
     onSuccess: () => {
       setRemoving(null);
     },
-    onError: (error) => {
+    onError: () => {
       setRemoving(null);
       throw new Error("删除记录失败，请重试");
     },
@@ -56,14 +60,18 @@ export function useHistoryData(): UseHistoryDataReturn {
       setClearing(false);
       setPage(1);
     },
-    onError: (error) => {
+    onError: () => {
       setClearing(false);
       throw new Error("清空记录失败，请重试");
     },
   });
 
   // 计算分页数据
-  const { footprints = [], totalCount = 0, hasMore = false } = useMemo(() => {
+  const {
+    footprints = [],
+    totalCount = 0,
+    hasMore = false,
+  } = useMemo(() => {
     if (!footprintsQuery.data) {
       return { footprints: [], totalCount: 0, hasMore: false };
     }
@@ -77,10 +85,13 @@ export function useHistoryData(): UseHistoryDataReturn {
   }, [footprintsQuery.data, page]);
 
   // 处理删除足迹
-  const handleRemoveFootprint = useCallback(async (footprintId: string) => {
-    setRemoving(footprintId);
-    await removeFootprintMutation.mutateAsync(footprintId);
-  }, [removeFootprintMutation]);
+  const handleRemoveFootprint = useCallback(
+    async (footprintId: string) => {
+      setRemoving(footprintId);
+      await removeFootprintMutation.mutateAsync(footprintId);
+    },
+    [removeFootprintMutation]
+  );
 
   // 处理清空足迹
   const handleClearFootprints = useCallback(async () => {
@@ -92,7 +103,7 @@ export function useHistoryData(): UseHistoryDataReturn {
   // 处理加载更多
   const handleLoadMore = useCallback(() => {
     if (!footprintsQuery.isFetching && hasMore) {
-      setPage(prev => prev + 1);
+      setPage((prev) => prev + 1);
     }
   }, [footprintsQuery.isFetching, hasMore]);
 

@@ -17,7 +17,8 @@ console.log("API Base URL:", BASE_URL);
 
 interface ApiResponse<T = unknown> {
   code: number;
-  message: string;
+  msg?: string;        // 后端实际使用的字段
+  message?: string;    // 保持兼容性
   data: T;
   timestamp?: string;
   fromCache?: boolean;
@@ -75,16 +76,19 @@ class ApiClient {
 
       console.log("API Response status:", response.status, response.statusText);
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("API Error Response:", errorText);
-        throw new Error(
-          `HTTP error! status: ${response.status}, message: ${errorText}`
-        );
-      }
-
       const data = await response.json();
       console.log("API Response data:", data);
+
+      // 统一处理业务逻辑错误码
+      if (data.code && data.code !== 200) {
+        throw new Error(data.msg || data.message || "操作失败");
+      }
+
+      // 处理HTTP错误
+      if (!response.ok) {
+        throw new Error(data.msg || data.message || `请求失败 (${response.status})`);
+      }
+
       return data;
     } catch (error) {
       console.error("API request failed:", {

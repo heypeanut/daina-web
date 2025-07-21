@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Phone, MessageSquare } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "sonner";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -26,12 +27,12 @@ export default function RegisterPage() {
 
   const handleSendCode = async () => {
     if (!formData.phone) {
-      alert("请输入手机号");
+      toast.error("请输入手机号");
       return;
     }
 
     if (!/^1[3-9]\d{9}$/.test(formData.phone)) {
-      alert("请输入正确的手机号");
+      toast.error("请输入正确的手机号");
       return;
     }
 
@@ -53,11 +54,11 @@ export default function RegisterPage() {
         });
       }, 1000);
 
-      alert("验证码发送成功");
+      toast.success("验证码发送成功");
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "发送验证码失败";
-      alert(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setSendingCode(false);
     }
@@ -65,17 +66,17 @@ export default function RegisterPage() {
 
   const handleRegister = async () => {
     if (!formData.phone || !formData.verificationCode) {
-      alert("请填写手机号和验证码");
+      toast.error("请填写手机号和验证码");
       return;
     }
 
     if (!/^1[3-9]\d{9}$/.test(formData.phone)) {
-      alert("请输入正确的手机号");
+      toast.error("请输入正确的手机号");
       return;
     }
 
     if (!agreeToTerms) {
-      alert("请同意用户协议和隐私政策");
+      toast.error("请同意用户协议和隐私政策");
       return;
     }
 
@@ -97,14 +98,14 @@ export default function RegisterPage() {
       // 触发登录状态变化事件
       window.dispatchEvent(new Event("loginStatusChange"));
 
-      alert("注册成功");
+      toast.success("注册成功");
 
       // 跳转到用户中心
       router.push("/profile");
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "注册失败，请重试";
-      alert(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

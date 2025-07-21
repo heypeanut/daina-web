@@ -15,6 +15,7 @@ import {
   type FavoriteProduct 
 } from "@/hooks/api/favorites/useFavoriteProducts";
 import { isLoggedIn, redirectToLogin } from "@/lib/auth";
+import { toast } from "sonner";
 
 export default function FavoriteProductsPage() {
   const router = useRouter();
@@ -36,7 +37,7 @@ export default function FavoriteProductsPage() {
   // 删除收藏的mutation
   const removeFromFavoritesMutation = useRemoveProductFromFavorites({
     onError: (error) => {
-      alert("取消收藏失败，请重试");
+      toast.error("取消收藏失败，请重试");
     },
   });
 

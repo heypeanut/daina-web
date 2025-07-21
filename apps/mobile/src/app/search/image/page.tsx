@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { Camera, ArrowLeft, Upload, ImageIcon, X } from "lucide-react";
 import { useImageSearch } from "@/hooks/useApi";
+import { toast } from "sonner";
 
 export default function ImageSearchPage() {
   const router = useRouter();
@@ -20,12 +21,12 @@ export default function ImageSearchPage() {
       // 检查文件大小和类型
       if (file.size > 10 * 1024 * 1024) {
         // 10MB
-        alert("图片文件不能超过10MB");
+        toast.error("图片文件不能超过10MB");
         return;
       }
 
       if (!file.type.startsWith("image/")) {
-        alert("请选择图片文件");
+        toast.error("请选择图片文件");
         return;
       }
 

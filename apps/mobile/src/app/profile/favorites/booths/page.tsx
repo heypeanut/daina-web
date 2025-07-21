@@ -18,6 +18,7 @@ import {
   type FavoriteBooth 
 } from "@/hooks/api/favorites/useFavoriteBooths";
 import { isLoggedIn, redirectToLogin } from "@/lib/auth";
+import { toast } from "sonner";
 
 export default function FavoriteBoothsPage() {
   const router = useRouter();
@@ -39,7 +40,7 @@ export default function FavoriteBoothsPage() {
   // 取消关注的mutation
   const unfollowMutation = useUnfollowBooth({
     onError: (error) => {
-      alert("取消关注失败，请重试");
+      toast.error("取消关注失败，请重试");
     },
   });
 

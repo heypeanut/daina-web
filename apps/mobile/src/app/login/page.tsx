@@ -2,11 +2,19 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, ArrowLeft, Phone, Lock, MessageSquare } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  ArrowLeft,
+  Phone,
+  Lock,
+  MessageSquare,
+} from "lucide-react";
+import { toast } from "sonner";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [loginType, setLoginType] = useState<'password' | 'sms'>('password');
+  const [loginType, setLoginType] = useState<"password" | "sms">("password");
   const [formData, setFormData] = useState({
     phone: "",
     password: "",
@@ -26,12 +34,12 @@ export default function LoginPage() {
 
   const handleSendCode = async () => {
     if (!formData.phone) {
-      alert("请输入手机号");
+      toast.error("请输入手机号");
       return;
     }
 
     if (!/^1[3-9]\d{9}$/.test(formData.phone)) {
-      alert("请输入正确的手机号");
+      toast.error("请输入正确的手机号");
       return;
     }
 
@@ -53,25 +61,26 @@ export default function LoginPage() {
         });
       }, 1000);
 
-      alert("验证码发送成功");
+      toast.success("验证码发送成功");
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "发送验证码失败";
-      alert(errorMessage);
+      console.log("errorMessage", errorMessage);
+      toast.error(errorMessage);
     } finally {
       setSendingCode(false);
     }
   };
 
   const handleLogin = async () => {
-    if (loginType === 'password') {
+    if (loginType === "password") {
       if (!formData.phone || !formData.password) {
-        alert("请填写手机号和密码");
+        toast.error("请填写手机号和密码");
         return;
       }
     } else {
       if (!formData.phone || !formData.smsCode) {
-        alert("请填写手机号和验证码");
+        toast.error("请填写手机号和验证码");
         return;
       }
     }
@@ -80,8 +89,8 @@ export default function LoginPage() {
 
     try {
       let response;
-      
-      if (loginType === 'password') {
+
+      if (loginType === "password") {
         const { login } = await import("@/lib/api/auth");
         response = await login({
           phone: formData.phone,
@@ -97,16 +106,16 @@ export default function LoginPage() {
 
       // 存储认证信息
       localStorage.setItem("auth_token", response);
-      
+
       // 获取用户信息
       try {
-        const { fetchUserInfo } = await import('@/lib/auth');
+        const { fetchUserInfo } = await import("@/lib/auth");
         await fetchUserInfo();
-        
+
         // 触发登录状态变化事件（在用户信息获取成功后）
         window.dispatchEvent(new Event("loginStatusChange"));
       } catch (error) {
-        console.warn('获取用户信息失败:', error);
+        console.warn("获取用户信息失败:", error);
         // 即使获取用户信息失败，也触发登录状态变化
         window.dispatchEvent(new Event("loginStatusChange"));
       }
@@ -119,7 +128,7 @@ export default function LoginPage() {
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "登录失败，请重试";
-      alert(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -167,22 +176,22 @@ export default function LoginPage() {
           <div className="flex bg-gray-100 rounded-lg p-1">
             <button
               type="button"
-              onClick={() => setLoginType('password')}
+              onClick={() => setLoginType("password")}
               className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
-                loginType === 'password'
-                  ? 'bg-white text-orange-600 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                loginType === "password"
+                  ? "bg-white text-orange-600 shadow-sm"
+                  : "text-gray-600 hover:text-gray-900"
               }`}
             >
               密码登录
             </button>
             <button
               type="button"
-              onClick={() => setLoginType('sms')}
+              onClick={() => setLoginType("sms")}
               className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
-                loginType === 'sms'
-                  ? 'bg-white text-orange-600 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                loginType === "sms"
+                  ? "bg-white text-orange-600 shadow-sm"
+                  : "text-gray-600 hover:text-gray-900"
               }`}
             >
               短信登录
@@ -211,7 +220,7 @@ export default function LoginPage() {
         </div>
 
         {/* 密码输入 */}
-        {loginType === 'password' && (
+        {loginType === "password" && (
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               密码
@@ -243,7 +252,7 @@ export default function LoginPage() {
         )}
 
         {/* 验证码输入 */}
-        {loginType === 'sms' && (
+        {loginType === "sms" && (
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               验证码
@@ -284,7 +293,11 @@ export default function LoginPage() {
           disabled={loading}
           className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-3 px-4 rounded-lg font-medium hover:from-orange-600 hover:to-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
         >
-          {loading ? "登录中..." : loginType === 'password' ? "登录" : "短信登录"}
+          {loading
+            ? "登录中..."
+            : loginType === "password"
+            ? "登录"
+            : "短信登录"}
         </button>
 
         {/* 其他选项 */}

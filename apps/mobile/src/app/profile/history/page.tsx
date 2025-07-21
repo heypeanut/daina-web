@@ -9,6 +9,7 @@ import { LoadingSkeleton } from "./components/LoadingSkeleton";
 import { EmptyState } from "./components/EmptyState";
 import { FilterTabs } from "./components/FilterTabs";
 import { HistoryItem } from "./components/HistoryItem";
+import { toast } from "sonner";
 
 export default function HistoryPage() {
   const router = useRouter();
@@ -47,7 +48,7 @@ export default function HistoryPage() {
       await handleClearFootprints();
     } catch (error) {
       console.error("清空失败:", error);
-      alert(error instanceof Error ? error.message : "清空失败，请重试");
+      toast.error(error instanceof Error ? error.message : "清空失败，请重试");
     }
   }, [handleClearFootprints]);
 
@@ -56,7 +57,7 @@ export default function HistoryPage() {
       await handleRemoveFootprint(footprintId);
     } catch (error) {
       console.error("删除失败:", error);
-      alert(error instanceof Error ? error.message : "删除失败，请重试");
+      toast.error(error instanceof Error ? error.message : "删除失败，请重试");
     }
   }, [handleRemoveFootprint]);
 

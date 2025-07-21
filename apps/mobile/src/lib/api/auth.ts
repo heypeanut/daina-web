@@ -57,7 +57,8 @@ export interface UserInfo {
 
 interface ApiResponse<T> {
   code: number;
-  message: string;
+  msg?: string;        // 后端实际使用的字段
+  message?: string;    // 保持兼容性
   data: T;
 }
 
@@ -77,7 +78,7 @@ export async function login(credentials: LoginRequest): Promise<string> {
       const errorData = await response.json();
       // 优先使用服务器返回的错误信息
       throw new Error(
-        errorData.message || errorData.error || `登录失败 (${response.status})`
+        errorData.msg || errorData.message || errorData.error || `登录失败 (${response.status})`
       );
     } catch (parseError) {
       // 如果无法解析JSON，使用HTTP状态码
@@ -89,7 +90,7 @@ export async function login(credentials: LoginRequest): Promise<string> {
 
   if (result.code !== 200) {
     // 使用后端返回的具体错误信息
-    throw new Error(result.message || "登录失败");
+    throw new Error(result.msg || result.message || "登录失败");
   }
 
   return result.data;
@@ -109,7 +110,7 @@ export async function smsLogin(credentials: SmsLoginRequest): Promise<string> {
     try {
       const errorData = await response.json();
       throw new Error(
-        errorData.message || errorData.error || `短信登录失败 (${response.status})`
+        errorData.msg || errorData.message || errorData.error || `短信登录失败 (${response.status})`
       );
     } catch (parseError) {
       throw new Error(`短信登录失败 (${response.status})`);
@@ -119,7 +120,7 @@ export async function smsLogin(credentials: SmsLoginRequest): Promise<string> {
   const result: ApiResponse<LoginResponse> = await response.json();
 
   if (result.code !== 200) {
-    throw new Error(result.message || "短信登录失败");
+    throw new Error(result.msg || result.message || "短信登录失败");
   }
 
   return result.data;
@@ -154,7 +155,7 @@ export async function getUserInfo(): Promise<UserInfo> {
   const result: ApiResponse<UserInfo> = await response.json();
 
   if (result.code !== 200) {
-    throw new Error(result.message || "获取用户信息失败");
+    throw new Error(result.msg || result.message || "获取用户信息失败");
   }
 
   return result.data;
@@ -173,14 +174,14 @@ export async function sendSms(phone: string): Promise<void> {
   if (!response.ok) {
     const errorData = await response
       .json()
-      .catch(() => ({ message: "发送验证码失败" }));
-    throw new Error(errorData.message || "发送验证码失败");
+      .catch(() => ({ msg: "发送验证码失败" }));
+    throw new Error(errorData.msg || errorData.message || "发送验证码失败");
   }
 
   const result: ApiResponse<void> = await response.json();
 
   if (result.code !== 200) {
-    throw new Error(result.message || "发送验证码失败");
+    throw new Error(result.msg || result.message || "发送验证码失败");
   }
 }
 
@@ -204,14 +205,14 @@ export async function register(
   if (!response.ok) {
     const errorData = await response
       .json()
-      .catch(() => ({ message: "注册失败" }));
-    throw new Error(errorData.message || "注册失败");
+      .catch(() => ({ msg: "注册失败" }));
+    throw new Error(errorData.msg || errorData.message || "注册失败");
   }
 
   const result: ApiResponse<RegisterResponse> = await response.json();
 
   if (result.code !== 200) {
-    throw new Error(result.message || "注册失败");
+    throw new Error(result.msg || result.message || "注册失败");
   }
 
   return result.data;
