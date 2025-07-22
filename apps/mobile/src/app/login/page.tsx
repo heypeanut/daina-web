@@ -106,19 +106,18 @@ export default function LoginPage() {
 
       // 存储认证信息
       localStorage.setItem("auth_token", response);
+      // localStorage.setItem("user_info", JSON.stringify(response.user));
 
-      // 获取用户信息
-      try {
-        const { fetchUserInfo } = await import("@/lib/auth");
-        await fetchUserInfo();
+      // 触发登录状态变化事件
+      window.dispatchEvent(new Event("loginStatusChange"));
 
-        // 触发登录状态变化事件（在用户信息获取成功后）
-        window.dispatchEvent(new Event("loginStatusChange"));
-      } catch (error) {
-        console.warn("获取用户信息失败:", error);
-        // 即使获取用户信息失败，也触发登录状态变化
-        window.dispatchEvent(new Event("loginStatusChange"));
-      }
+      // 暂时注释掉立即获取用户信息，避免401错误
+      // try {
+      //   const { fetchUserInfo } = await import("@/lib/auth");
+      //   await fetchUserInfo();
+      // } catch (error) {
+      //   console.warn("获取用户信息失败:", error);
+      // }
 
       // 跳转回上一页或用户中心
       const returnUrl = new URLSearchParams(window.location.search).get(

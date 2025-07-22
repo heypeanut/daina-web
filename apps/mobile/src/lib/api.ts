@@ -118,11 +118,11 @@ class ApiClient {
     userId?: number
   ): Promise<ApiResponse<HomepageData>> {
     const query = userId ? `?userId=${userId}` : "";
-    return this.request<HomepageData>(`/public/homepage/data${query}`);
+    return this.request<HomepageData>(`/api/tenant/homepage/data${query}`);
   }
 
   public async getBanners(limit: number = 5): Promise<ApiResponse<Banner[]>> {
-    return this.request<Banner[]>(`/public/homepage/banners?limit=${limit}`);
+    return this.request<Banner[]>(`/api/tenant/homepage/banners?limit=${limit}`);
   }
 
   public async getBoothRecommendations(params: {
@@ -143,7 +143,7 @@ class ApiClient {
     if (params.userId) searchParams.append("userId", params.userId.toString());
 
     return this.request(
-      `/public/homepage/booth-recommendations?${searchParams}`
+      `/api/tenant/homepage/booth-recommendations?${searchParams}`
     );
   }
 
@@ -165,7 +165,7 @@ class ApiClient {
     if (params.userId) searchParams.append("userId", params.userId.toString());
 
     return this.request(
-      `/public/homepage/product-recommendations?${searchParams}`
+      `/api/tenant/homepage/product-recommendations?${searchParams}`
     );
   }
 
@@ -188,7 +188,7 @@ class ApiClient {
     if (params.days) searchParams.append("days", params.days.toString());
 
     return this.authenticatedRequest(
-      `/api/recommendations/personalized/booths?${searchParams}`
+      `/api/tenant/homepage/personalized-booths?${searchParams}`
     );
   }
 
@@ -210,7 +210,7 @@ class ApiClient {
     if (params.days) searchParams.append("days", params.days.toString());
 
     return this.authenticatedRequest(
-      `/api/recommendations/personalized/products?${searchParams}`
+      `/api/tenant/homepage/personalized-products?${searchParams}`
     );
   }
 
@@ -230,7 +230,7 @@ class ApiClient {
     if (params.limit) searchParams.append("limit", params.limit.toString());
 
     return this.authenticatedRequest(
-      `/api/recommendations/mixed?${searchParams}`
+      `/api/tenant/homepage/mixed-recommendations?${searchParams}`
     );
   }
 
@@ -298,7 +298,7 @@ class ApiClient {
       }
     }
 
-    const response = await fetch(`${this.baseURL}/search/image/booth`, {
+    const response = await fetch(`${this.baseURL}/api/tenant/search/image/booth`, {
       method: "POST",
       headers,
       body: formData,
@@ -335,7 +335,7 @@ class ApiClient {
       }
     }
 
-    const response = await fetch(`${this.baseURL}/search/image/product`, {
+    const response = await fetch(`${this.baseURL}/api/tenant/search/image/product`, {
       method: "POST",
       headers,
       body: formData,

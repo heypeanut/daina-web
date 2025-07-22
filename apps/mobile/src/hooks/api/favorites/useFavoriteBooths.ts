@@ -5,7 +5,7 @@ import {
   unfollowBooth,
   isBoothFollowed,
   type FavoriteBooth,
-} from '@/lib/api/favorites';
+} from '@/lib/api/user-behavior';
 
 // Query Keys
 export const FAVORITE_BOOTHS_QUERY_KEYS = {

@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useMemo } from 'react';
-import { useInfiniteBooths } from '@/hooks/api/booth/useBooths';
-import { SortType } from '../../../../../src/types/booth';
-import { GetBoothsParams, MarketFilters } from '../types/market';
+import { useState, useMemo } from "react";
+import { useInfiniteBooths } from "@/hooks/api/booth/useBooths";
+import { SortType } from "../../../../../src/types/booth";
+import { GetBoothsParams, MarketFilters } from "../types/market";
 
 interface UseMarketDataOptions {
   initialCategory?: string;
@@ -13,35 +13,39 @@ interface UseMarketDataOptions {
 
 export function useMarketData(options: UseMarketDataOptions = {}) {
   const {
-    initialCategory = 'all',
-    initialSortType = 'default',
+    initialCategory = "all",
+    initialSortType = "default",
     initialFilters = {
       categories: [],
       priceRange: [0, Infinity],
       areas: [],
       rating: 0,
-      isVerifiedOnly: false
-    }
+      isVerifiedOnly: false,
+    },
   } = options;
 
   // 状态管理
-  const [searchKeyword, setSearchKeyword] = useState('');
+  const [searchKeyword, setSearchKeyword] = useState("");
   const [activeCategory, setActiveCategory] = useState(initialCategory);
   const [sortType, setSortType] = useState<SortType>(initialSortType);
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [filters, setFilters] = useState<MarketFilters>(initialFilters);
 
   // 构建查询参数
-  const queryParams = useMemo((): Omit<GetBoothsParams, 'page'> => ({
-    size: 20,
-    keyword: searchKeyword.trim() || undefined,
-    category: activeCategory !== 'all' ? activeCategory : undefined,
-    sort: sortType,
-    order: sortOrder,
-    priceMin: filters.priceRange[0] > 0 ? filters.priceRange[0] : undefined,
-    priceMax: filters.priceRange[1] !== Infinity ? filters.priceRange[1] : undefined,
-    areas: filters.areas.length > 0 ? filters.areas : undefined,
-  }), [searchKeyword, activeCategory, sortType, sortOrder, filters]);
+  const queryParams = useMemo(
+    (): Omit<GetBoothsParams, "page"> => ({
+      size: 20,
+      keyword: searchKeyword.trim() || undefined,
+      category: activeCategory !== "all" ? activeCategory : undefined,
+      sort: sortType,
+      order: sortOrder,
+      priceMin: filters.priceRange[0] > 0 ? filters.priceRange[0] : undefined,
+      priceMax:
+        filters.priceRange[1] !== Infinity ? filters.priceRange[1] : undefined,
+      areas: filters.areas.length > 0 ? filters.areas : undefined,
+    }),
+    [searchKeyword, activeCategory, sortType, sortOrder, filters]
+  );
 
   // 使用无限滚动查询
   const {
@@ -52,13 +56,13 @@ export function useMarketData(options: UseMarketDataOptions = {}) {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-    refetch
+    refetch,
   } = useInfiniteBooths(queryParams);
 
   // 扁平化数据
   const booths = useMemo(() => {
     if (!data?.pages) return [];
-    return data.pages.flatMap(page => page.items);
+    return data.pages.flatMap((page) => page.rows);
   }, [data]);
 
   // 总数统计
@@ -70,7 +74,7 @@ export function useMarketData(options: UseMarketDataOptions = {}) {
   };
 
   const handleClearSearch = () => {
-    setSearchKeyword('');
+    setSearchKeyword("");
   };
 
   // 分类相关方法
@@ -79,7 +83,7 @@ export function useMarketData(options: UseMarketDataOptions = {}) {
   };
 
   // 排序相关方法
-  const handleSortChange = (type: SortType, order: 'asc' | 'desc') => {
+  const handleSortChange = (type: SortType, order: "asc" | "desc") => {
     setSortType(type);
     setSortOrder(order);
   };
@@ -95,10 +99,10 @@ export function useMarketData(options: UseMarketDataOptions = {}) {
 
   // 重置所有状态
   const handleReset = () => {
-    setSearchKeyword('');
+    setSearchKeyword("");
     setActiveCategory(initialCategory);
     setSortType(initialSortType);
-    setSortOrder('desc');
+    setSortOrder("desc");
     setFilters(initialFilters);
   };
 
@@ -143,6 +147,6 @@ export function useMarketData(options: UseMarketDataOptions = {}) {
     handleLoadMore,
 
     // 查询参数（用于调试）
-    queryParams
+    queryParams,
   };
 }

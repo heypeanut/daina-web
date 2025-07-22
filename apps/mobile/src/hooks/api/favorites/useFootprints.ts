@@ -4,7 +4,7 @@ import {
   clearFootprints,
   removeFootprint,
   type Footprint,
-} from '@/lib/api/favorites';
+} from '@/lib/api/user-behavior';
 
 // Query Keys
 export const FOOTPRINTS_QUERY_KEYS = {

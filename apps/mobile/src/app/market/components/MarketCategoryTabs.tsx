@@ -56,10 +56,10 @@ export function MarketCategoryTabs({
   }
 
   return (
-    <div className={`bg-white ${className}`}>
+    <div className={`bg-white/80 backdrop-blur-sm shadow-sm ${className}`}>
       <div 
         ref={scrollRef}
-        className="flex gap-2 px-4 py-3 overflow-x-auto scrollbar-hide"
+        className="flex gap-3 px-5 py-4 overflow-x-auto scrollbar-hide"
       >
         {displayCategories.map((category) => {
           const isActive = activeCategory === category.id;
@@ -69,16 +69,16 @@ export function MarketCategoryTabs({
               key={category.id}
               data-category={category.id}
               onClick={() => onCategoryChange(category.id)}
-              className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+              className={`flex-shrink-0 px-5 py-2.5 rounded-2xl text-sm font-semibold transition-all duration-200 ${
                 isActive
-                  ? 'bg-orange-500 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg scale-105'
+                  : 'bg-gray-50 text-gray-700 hover:bg-gray-100 hover:scale-105 border border-gray-200'
               }`}
             >
               <span>{category.name}</span>
               {category.count !== undefined && (
-                <span className="ml-1 text-xs opacity-75">
-                  ({category.count})
+                <span className="ml-2 text-xs opacity-75 bg-white/20 px-1.5 py-0.5 rounded-full">
+                  {category.count}
                 </span>
               )}
             </button>

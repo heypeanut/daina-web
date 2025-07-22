@@ -1,186 +1,216 @@
-import { 
-  Booth, 
-  BoothDetail, 
-  BoothCategory, 
-  BoothProduct 
-} from '../../../../../src/types/booth';
-import { 
-  GetBoothsParams, 
-  GetBoothsResponse,
-  MarketFilters 
-} from '@/app/market/types/market';
-import { GetBoothDetailResponse } from '@/app/booth/[id]/types/detail';
+// 新版档口API - 使用tenant端接口
+import { tenantApi, PaginatedResponse } from './config';
 
-// Base API configuration
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
-
-// API response wrapper
-interface APIResponse<T = any> {
-  success: boolean;
-  data: T;
-  message?: string;
-  error?: string;
+// 接口类型定义
+export interface Booth {
+  id: string;
+  name: string;
+  avatar?: string;
+  coverImage?: string;
+  description?: string;
+  location?: string;
+  category?: string;
+  rating?: number;
+  followers?: number;
+  productsCount?: number;
+  verified?: boolean;
+  tags?: string[];
+  contact?: {
+    phone?: string;
+    wechat?: string;
+    qq?: string;
+  };
+  businessHours?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
-// 档口列表相关 API
+export interface BoothDetail extends Booth {
+  main_business: string[];
+  phone: string;
+  wx: string;
+  address: string;
+  market: string;
+  isOnline: boolean;
+  businessHours: {
+    weekdays: string;
+    weekends: string;
+  };
+  certification: {
+    isVerified: boolean;
+    verificationType: string;
+  };
+  statistics: {
+    viewCount: number;
+    favoriteCount: number;
+    contactCount: number;
+    rating: number;
+    reviewCount: number;
+  };
+  products: BoothProduct[];
+  relatedBooths: BoothDetail[];
+}
+
+export interface BoothProduct {
+  id: string;
+  name: string;
+  price: number;
+  originalPrice?: number;
+  image: string;
+  images?: string[];
+  description?: string;
+  category?: string;
+  sales?: number;
+  rating?: number;
+  stock?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BoothCategory {
+  id: string;
+  name: string;
+  count: number;
+}
+
+export interface GetBoothsParams {
+  page: number;
+  size: number;
+  categoryId?: string;
+  keyword?: string;
+  sortBy?: 'latest' | 'popular' | 'rating';
+  location?: string;
+}
+
+export interface GetBoothsResponse extends PaginatedResponse<Booth> {
+  page: number;
+  size: number;
+  hasNext: boolean;
+}
+
+// ==================== 档口列表相关API ====================
+
+/**
+ * 获取档口列表
+ */
 export async function getBooths(params: GetBoothsParams): Promise<GetBoothsResponse> {
-  // TODO: 实际 API 调用
-  console.log('Fetching booths with params:', params);
-  
-  // Mock response
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        items: [],
-        total: 0,
-        page: params.page,
-        size: params.size,
-        hasNext: false
-      });
-    }, 1000);
-  });
+  const response = await tenantApi.get('/booth/list', { params });
+  return response.data;
 }
 
+/**
+ * 获取档口分类
+ */
 export async function getBoothCategories(): Promise<BoothCategory[]> {
-  // TODO: 实际 API 调用
-  console.log('Fetching booth categories');
-  
-  // Mock response
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve([
-        { id: 'all', name: '全部', count: 1234 },
-        { id: 'electronics', name: '电子产品', count: 456 },
-        { id: 'accessories', name: '手机配件', count: 789 },
-        { id: 'computers', name: '电脑数码', count: 321 },
-      ]);
-    }, 500);
-  });
+  const response = await tenantApi.get('/booth/categories');
+  return response.data;
 }
 
-export async function searchBooths(keyword: string): Promise<Booth[]> {
-  // TODO: 实际 API 调用
-  console.log('Searching booths with keyword:', keyword);
-  
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve([]);
-    }, 800);
-  });
+/**
+ * 搜索档口
+ */
+export async function searchBooths(
+  keyword: string,
+  page: number = 1,
+  size: number = 20
+): Promise<GetBoothsResponse> {
+  return getBooths({ page, size, keyword });
 }
 
+/**
+ * 获取热门档口
+ */
 export async function getHotBooths(limit: number = 10): Promise<Booth[]> {
-  // TODO: 实际 API 调用
-  console.log('Fetching hot booths, limit:', limit);
-  
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve([]);
-    }, 600);
+  const response = await getBooths({ 
+    page: 1, 
+    size: limit, 
+    sortBy: 'popular' 
   });
+  return response.rows;
 }
 
-// 档口详情相关 API
-export async function getBoothDetail(id: string): Promise<GetBoothDetailResponse> {
-  // TODO: 实际 API 调用
-  console.log('Fetching booth detail for id:', id);
-  
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      if (!id || id === 'error') {
-        reject(new Error('档口不存在'));
-        return;
-      }
-      
-      resolve({
-        id,
-        title: `档口 ${id}`,
-        avatar: '/cover.png',
-        main_business: ['电子产品', '手机配件'],
-        phone: '13800138000',
-        wx: 'booth_wx_' + id,
-        address: '华强北电子市场A座101',
-        market: '华强北商业区',
-        description: '这是一个示例档口的详细描述...',
-        isOnline: true,
-        businessHours: {
-          weekdays: '9:00-18:00',
-          weekends: '10:00-17:00'
-        },
-        certification: {
-          isVerified: true,
-          verificationType: 'business'
-        },
-        statistics: {
-          viewCount: 1234,
-          favoriteCount: 89,
-          contactCount: 45,
-          rating: 4.5,
-          reviewCount: 67
-        },
-        products: [],
-        relatedBooths: []
-      });
-    }, 1000);
-  });
+// ==================== 档口详情相关API ====================
+
+/**
+ * 获取档口详情
+ */
+export async function getBoothDetail(id: string): Promise<BoothDetail> {
+  const response = await tenantApi.get(`/booth/${id}`);
+  return response.data;
 }
 
+/**
+ * 获取档口商品列表
+ */
 export async function getBoothProducts(
-  boothId: string, 
-  page: number = 1, 
+  boothId: string,
+  page: number = 1,
   size: number = 12
-): Promise<BoothProduct[]> {
-  // TODO: 实际 API 调用
-  console.log('Fetching booth products for:', boothId, page, size);
-  
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve([]);
-    }, 800);
+): Promise<PaginatedResponse<BoothProduct>> {
+  const response = await tenantApi.get(`/booth/${boothId}/products`, {
+    params: { page, size }
   });
+  return response.data;
 }
 
+/**
+ * 获取相关档口
+ */
 export async function getRelatedBooths(
-  boothId: string, 
+  boothId: string,
   limit: number = 6
 ): Promise<BoothDetail[]> {
-  // TODO: 实际 API 调用
-  console.log('Fetching related booths for:', boothId, limit);
-  
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve([]);
-    }, 600);
+  const response = await tenantApi.get(`/booth/${boothId}/related`, {
+    params: { limit }
   });
+  return response.data;
 }
 
-// 行为记录相关 API
+// ==================== 行为记录相关API ====================
+
+/**
+ * 记录档口浏览
+ */
 export async function trackBoothView(boothId: string): Promise<void> {
-  // TODO: 实际埋点 API 调用
-  console.log('Tracking booth view:', boothId);
-  
-  return new Promise((resolve) => {
-    setTimeout(resolve, 100);
-  });
+  try {
+    await tenantApi.post('/user/history', {
+      type: 'booth',
+      targetId: boothId
+    });
+  } catch (error) {
+    console.warn('Failed to track booth view:', error);
+  }
 }
 
+/**
+ * 记录档口联系行为
+ */
 export async function trackBoothContact(
-  boothId: string, 
+  boothId: string,
   contactType: 'phone' | 'wechat' | 'qq'
 ): Promise<void> {
-  // TODO: 实际埋点 API 调用
-  console.log('Tracking booth contact:', boothId, contactType);
-  
-  return new Promise((resolve) => {
-    setTimeout(resolve, 100);
-  });
+  try {
+    await tenantApi.post('/analytics/contact', {
+      boothId,
+      contactType,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.warn('Failed to track booth contact:', error);
+  }
 }
 
+/**
+ * 记录档口分享行为
+ */
 export async function trackBoothShare(boothId: string): Promise<void> {
-  // TODO: 实际埋点 API 调用
-  console.log('Tracking booth share:', boothId);
-  
-  return new Promise((resolve) => {
-    setTimeout(resolve, 100);
-  });
+  try {
+    await tenantApi.post('/analytics/share', {
+      boothId,
+      shareType: 'booth',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.warn('Failed to track booth share:', error);
+  }
 }

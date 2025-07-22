@@ -5,7 +5,7 @@ import {
   removeProductFromFavorites,
   isProductFavorited,
   type FavoriteProduct,
-} from '@/lib/api/favorites';
+} from '@/lib/api/user-behavior';
 
 // Query Keys
 export const FAVORITE_PRODUCTS_QUERY_KEYS = {

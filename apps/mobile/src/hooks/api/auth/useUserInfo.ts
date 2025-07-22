@@ -11,6 +11,11 @@ interface UseUserInfoOptions extends QueryOptions<UserInfo> {
 export function useUserInfo(options?: UseUserInfoOptions) {
   const token = typeof window !== 'undefined' ? localStorage.getItem("auth_token") : null;
   const isLoggedIn = Boolean(token);
+  
+  // 如果localStorage中已有用户信息，优先返回缓存的数据
+  const cachedUserInfo = typeof window !== 'undefined' 
+    ? localStorage.getItem("user_info") 
+    : null;
 
   return useQuery({
     queryKey: AUTH_QUERY_KEYS.user,
@@ -21,9 +26,17 @@ export function useUserInfo(options?: UseUserInfoOptions) {
     enabled: isLoggedIn && (options?.enabled !== false),
     staleTime: CACHE_TIMES.USER_INFO,
     gcTime: CACHE_TIMES.USER_INFO,
+    // 如果有缓存的用户信息，先返回缓存数据
+    initialData: cachedUserInfo ? (() => {
+      try {
+        return JSON.parse(cachedUserInfo);
+      } catch {
+        return undefined;
+      }
+    })() : undefined,
     retry: (failureCount, error) => {
-      // 如果是401错误（未认证），不重试
-      if (error instanceof Error && error.message.includes('401')) {
+      // 如果是认证错误，不重试
+      if (error instanceof Error && (error.message.includes('401') || error.message.includes('登录已过期'))) {
         return false;
       }
       return failureCount < 2;

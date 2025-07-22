@@ -41,7 +41,7 @@ export function BoothGrid({
   );
 
   const containerClassName = layout === 'grid' 
-    ? `grid grid-cols-2 gap-4 px-4 ${className}` 
+    ? `grid grid-cols-2 gap-5 px-4 ${className}` 
     : `space-y-0 ${className}`;
 
   return (

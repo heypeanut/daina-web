@@ -1,10 +1,10 @@
-import { useQuery } from '@tanstack/react-query';
-import { getBoothCategories } from '@/lib/api/booth';
+import { useQuery } from "@tanstack/react-query";
+import { getBoothCategories } from "@/lib/api/booth";
 
 // Query Keys
 export const BOOTH_CATEGORIES_QUERY_KEYS = {
-  all: ['booth-categories'] as const,
-  lists: () => [...BOOTH_CATEGORIES_QUERY_KEYS.all, 'list'] as const,
+  all: ["booth-categories"] as const,
+  lists: () => [...BOOTH_CATEGORIES_QUERY_KEYS.all, "list"] as const,
 };
 
 // Cache times

@@ -1,12 +1,12 @@
 import { useMutation } from "@tanstack/react-query";
-import { smsLogin, type SmsLoginRequest } from "@/lib/api/auth";
+import { smsLogin, type SmsLoginRequest, type LoginResponse } from "@/lib/api/auth";
 import { invalidateQueries } from "@/lib/react-query/client";
 import { AUTH_QUERY_KEYS } from "@/lib/react-query/types";
 import type { MutationOptions } from "@/lib/react-query/types";
 
 interface UseSmsLoginOptions
-  extends MutationOptions<string, Error, SmsLoginRequest> {
-  onSuccess?: (data: string) => void;
+  extends MutationOptions<LoginResponse, Error, SmsLoginRequest> {
+  onSuccess?: (data: LoginResponse) => void;
   onError?: (error: Error) => void;
 }
 
@@ -18,7 +18,8 @@ export function useSmsLogin(options?: UseSmsLoginOptions) {
     },
     onSuccess: (data) => {
       // 存储认证信息
-      localStorage.setItem("auth_token", data);
+      localStorage.setItem("auth_token", data.token);
+      localStorage.setItem("user_info", JSON.stringify(data.user));
 
       // 使用户信息查询失效，强制重新获取
       invalidateQueries(AUTH_QUERY_KEYS.user);
