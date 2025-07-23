@@ -2,12 +2,12 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { 
-  getBoothDetail, 
-  getBoothProducts, 
-  trackBoothView, 
-  trackBoothContact, 
-  trackBoothShare 
+import {
+  getBoothDetail,
+  getBoothProducts,
+  trackBoothView,
+  trackBoothContact,
+  trackBoothShare
 } from '@/lib/api/booth';
 import { useFollowBooth, useUnfollowBooth, useBoothFollowStatus } from '@/hooks/api/favorites/useFavoriteBooths';
 import { ContactType } from '../types/detail';
@@ -20,11 +20,11 @@ interface UseBoothDetailOptions {
 }
 
 export function useBoothDetail(options: UseBoothDetailOptions) {
-  const { 
-    boothId, 
+  const {
+    boothId,
     autoTrackView = true,
     onContactSuccess,
-    onShareSuccess 
+    onShareSuccess
   } = options;
 
   // 本地状态
@@ -156,8 +156,8 @@ export function useBoothDetail(options: UseBoothDetailOptions) {
     // 分享逻辑
     if (navigator.share && booth) {
       navigator.share({
-        title: booth.title,
-        text: `查看档口: ${booth.title}`,
+        title: booth.boothName,
+        text: `查看档口: ${booth.boothName}`,
         url: window.location.href,
       }).catch((error) => {
         console.error('分享失败:', error);
@@ -194,17 +194,17 @@ export function useBoothDetail(options: UseBoothDetailOptions) {
     booth,
     products,
     isFavorited,
-    
+
     // 状态
     isLoading: isBoothLoading || isFavoriteLoading,
     isProductsLoading,
     isError: isBoothError,
     error: boothError,
     activeTab,
-    
+
     // 操作状态
     isFavoriteToggling: followMutation.isPending || unfollowMutation.isPending,
-    
+
     // 方法
     handleFavoriteToggle,
     handleContactClick,

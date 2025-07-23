@@ -1,50 +1,30 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useInfiniteBooths } from "@/hooks/api/booth/useBooths";
-import { SortType } from "../../../../../src/types/booth";
-import { GetBoothsParams, MarketFilters } from "../types/market";
+import { GetBoothsParams } from "../types/market";
 
-interface UseMarketDataOptions {
-  initialCategory?: string;
-  initialSortType?: SortType;
-  initialFilters?: MarketFilters;
-}
-
-export function useMarketData(options: UseMarketDataOptions = {}) {
-  const {
-    initialCategory = "all",
-    initialSortType = "default",
-    initialFilters = {
-      categories: [],
-      priceRange: [0, Infinity],
-      areas: [],
-      rating: 0,
-      isVerifiedOnly: false,
-    },
-  } = options;
+export function useMarketData() {
 
   // 状态管理
   const [searchKeyword, setSearchKeyword] = useState("");
-  const [activeCategory, setActiveCategory] = useState(initialCategory);
-  const [sortType, setSortType] = useState<SortType>(initialSortType);
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  const [filters, setFilters] = useState<MarketFilters>(initialFilters);
 
   // 构建查询参数
   const queryParams = useMemo(
-    (): Omit<GetBoothsParams, "page"> => ({
-      size: 20,
-      keyword: searchKeyword.trim() || undefined,
-      category: activeCategory !== "all" ? activeCategory : undefined,
-      sort: sortType,
-      order: sortOrder,
-      priceMin: filters.priceRange[0] > 0 ? filters.priceRange[0] : undefined,
-      priceMax:
-        filters.priceRange[1] !== Infinity ? filters.priceRange[1] : undefined,
-      areas: filters.areas.length > 0 ? filters.areas : undefined,
-    }),
-    [searchKeyword, activeCategory, sortType, sortOrder, filters]
+    (): Omit<GetBoothsParams, "pageNum"> => {
+      const trimmedKeyword = searchKeyword.trim();
+      const params: Omit<GetBoothsParams, "pageNum"> = {
+        size: 20,
+      };
+      
+      // 只有当关键词不为空时才添加 keyword 参数
+      if (trimmedKeyword) {
+        params.keyword = trimmedKeyword;
+      }
+      
+      return params;
+    },
+    [searchKeyword]
   );
 
   // 使用无限滚动查询
@@ -68,55 +48,31 @@ export function useMarketData(options: UseMarketDataOptions = {}) {
   // 总数统计
   const totalCount = data?.pages?.[0]?.total ?? 0;
 
-  // 搜索相关方法
-  const handleSearch = (keyword: string) => {
+  // 搜索相关方法 - 使用 useCallback 优化
+  const handleSearch = useCallback((keyword: string) => {
     setSearchKeyword(keyword);
-  };
+  }, []);
 
-  const handleClearSearch = () => {
+  const handleClearSearch = useCallback(() => {
     setSearchKeyword("");
-  };
-
-  // 分类相关方法
-  const handleCategoryChange = (categoryId: string) => {
-    setActiveCategory(categoryId);
-  };
-
-  // 排序相关方法
-  const handleSortChange = (type: SortType, order: "asc" | "desc") => {
-    setSortType(type);
-    setSortOrder(order);
-  };
-
-  // 筛选相关方法
-  const handleFiltersChange = (newFilters: MarketFilters) => {
-    setFilters(newFilters);
-  };
-
-  const handleResetFilters = () => {
-    setFilters(initialFilters);
-  };
+  }, []);
 
   // 重置所有状态
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     setSearchKeyword("");
-    setActiveCategory(initialCategory);
-    setSortType(initialSortType);
-    setSortOrder("desc");
-    setFilters(initialFilters);
-  };
+  }, []);
 
   // 刷新数据
-  const handleRefresh = () => {
+  const handleRefresh = useCallback(() => {
     refetch();
-  };
+  }, [refetch]);
 
   // 加载更多
-  const handleLoadMore = () => {
+  const handleLoadMore = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
-  };
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return {
     // 数据
@@ -130,18 +86,10 @@ export function useMarketData(options: UseMarketDataOptions = {}) {
 
     // 状态
     searchKeyword,
-    activeCategory,
-    sortType,
-    sortOrder,
-    filters,
 
     // 方法
     handleSearch,
     handleClearSearch,
-    handleCategoryChange,
-    handleSortChange,
-    handleFiltersChange,
-    handleResetFilters,
     handleReset,
     handleRefresh,
     handleLoadMore,

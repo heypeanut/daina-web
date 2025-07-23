@@ -26,16 +26,12 @@ export interface Booth {
 }
 
 export interface BoothDetail extends Booth {
-  main_business: string[];
+  mainBusiness: string;
   phone: string;
   wx: string;
   address: string;
   market: string;
   isOnline: boolean;
-  businessHours: {
-    weekdays: string;
-    weekends: string;
-  };
   certification: {
     isVerified: boolean;
     verificationType: string;
@@ -74,7 +70,7 @@ export interface BoothCategory {
 }
 
 export interface GetBoothsParams {
-  page: number;
+  pageNum: number;
   size: number;
   categoryId?: string;
   keyword?: string;
@@ -94,7 +90,7 @@ export interface GetBoothsResponse extends PaginatedResponse<Booth> {
  * 获取档口列表
  */
 export async function getBooths(params: GetBoothsParams): Promise<GetBoothsResponse> {
-  const response = await tenantApi.get('/booth/list', { params });
+  const response = await tenantApi.get('/booth', { params });
   return response.data;
 }
 
@@ -111,20 +107,20 @@ export async function getBoothCategories(): Promise<BoothCategory[]> {
  */
 export async function searchBooths(
   keyword: string,
-  page: number = 1,
+  pageNum: number = 1,
   size: number = 20
 ): Promise<GetBoothsResponse> {
-  return getBooths({ page, size, keyword });
+  return getBooths({ pageNum, size, keyword });
 }
 
 /**
  * 获取热门档口
  */
 export async function getHotBooths(limit: number = 10): Promise<Booth[]> {
-  const response = await getBooths({ 
-    page: 1, 
-    size: limit, 
-    sortBy: 'popular' 
+  const response = await getBooths({
+    pageNum: 1,
+    size: limit,
+    sortBy: 'popular'
   });
   return response.rows;
 }
@@ -144,24 +140,11 @@ export async function getBoothDetail(id: string): Promise<BoothDetail> {
  */
 export async function getBoothProducts(
   boothId: string,
-  page: number = 1,
+  pageNum: number = 1,
   size: number = 12
 ): Promise<PaginatedResponse<BoothProduct>> {
   const response = await tenantApi.get(`/booth/${boothId}/products`, {
-    params: { page, size }
-  });
-  return response.data;
-}
-
-/**
- * 获取相关档口
- */
-export async function getRelatedBooths(
-  boothId: string,
-  limit: number = 6
-): Promise<BoothDetail[]> {
-  const response = await tenantApi.get(`/booth/${boothId}/related`, {
-    params: { limit }
+    params: { pageNum, size }
   });
   return response.data;
 }

@@ -13,8 +13,8 @@ export function QueryProvider({ children }: QueryProviderProps) {
   return (
     <QueryClientProvider client={queryClient}>
       {children}
-      {/* 仅在开发环境中显示DevTools */}
-      {process.env.NODE_ENV === 'development' && (
+      {/* DevTools临时禁用以解决性能问题 */}
+      {false && process.env.NODE_ENV === 'development' && (
         <ReactQueryDevtools
           initialIsOpen={false}
           position="bottom-right"

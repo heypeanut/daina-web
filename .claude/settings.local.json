@@ -19,7 +19,9 @@
       "Bash(curl:*)",
       "Bash(mv:*)",
       "Bash(npm run typecheck:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "mcp__21st-dev-magic__21st_magic_component_builder",
+      "Bash(npm run dev:*)"
     ],
     "deny": []
   }

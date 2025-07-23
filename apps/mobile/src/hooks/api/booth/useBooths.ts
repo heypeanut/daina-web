@@ -12,7 +12,7 @@ export const BOOTHS_QUERY_KEYS = {
   all: ['booths'] as const,
   lists: () => [...BOOTHS_QUERY_KEYS.all, 'list'] as const,
   list: (params: Partial<GetBoothsParams>) => [...BOOTHS_QUERY_KEYS.lists(), params] as const,
-  infinite: (params: Omit<GetBoothsParams, 'page'>) => [...BOOTHS_QUERY_KEYS.all, 'infinite', params] as const,
+  infinite: (params: Omit<GetBoothsParams, 'pageNum'>) => [...BOOTHS_QUERY_KEYS.all, 'infinite', params] as const,
   search: () => [...BOOTHS_QUERY_KEYS.all, 'search'] as const,
   searchQuery: (keyword: string) => [...BOOTHS_QUERY_KEYS.search(), keyword] as const,
   hot: () => [...BOOTHS_QUERY_KEYS.all, 'hot'] as const,
@@ -50,7 +50,7 @@ interface UseInfiniteBoothsOptions {
 }
 
 export function useInfiniteBooths(
-  params: Omit<GetBoothsParams, 'page'>,
+  params: Omit<GetBoothsParams, 'pageNum'>,
   options: UseInfiniteBoothsOptions = {}
 ) {
   const { enabled = true } = options;
@@ -58,10 +58,33 @@ export function useInfiniteBooths(
   return useInfiniteQuery({
     queryKey: BOOTHS_QUERY_KEYS.infinite(params),
     queryFn: async ({ pageParam = 1 }) => {
-      return await getBooths({ ...params, page: pageParam });
+      return await getBooths({ ...params, pageNum: pageParam });
     },
-    getNextPageParam: (lastPage) => {
-      return lastPage.hasNext ? lastPage.page + 1 : undefined;
+    getNextPageParam: (lastPage, allPages) => {
+      console.log('🔍 分页调试信息:', {
+        lastPage,
+        currentPageCount: allPages.length,
+        hasNext: lastPage.hasNext,
+        rowsCount: lastPage.rows?.length,
+        total: lastPage.total
+      });
+      
+      // 直接使用 API 返回的 hasNext 和页面数量
+      if (lastPage.hasNext === false) {
+        console.log('❌ API 返回 hasNext=false，停止分页');
+        return undefined;
+      }
+      
+      // 如果没有数据了，也停止分页
+      if (!lastPage.rows || lastPage.rows.length === 0) {
+        console.log('❌ 当前页没有数据，停止分页');
+        return undefined;
+      }
+      
+      // 下一页是当前已加载页数 + 1
+      const nextPage = allPages.length + 1;
+      console.log('✅ 准备加载第', nextPage, '页');
+      return nextPage;
     },
     initialPageParam: 1,
     staleTime: CACHE_TIMES.BOOTH_LIST,

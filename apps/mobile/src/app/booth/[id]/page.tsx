@@ -1,35 +1,35 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { UnifiedSearchBar } from "@/components/common/UnifiedSearchBar";
+import { BarChart, Minus, Phone, QrCode } from "lucide-react";
 
-// 页面组件
-import { BoothDetailHeader } from "./components/BoothDetailHeader";
-import { BoothBasicInfo } from "./components/BoothBasicInfo";
-import { BoothContactInfo } from "./components/BoothContactInfo";
-import { BoothProductShowcase } from "./components/BoothProductShowcase";
-import { BoothDescription } from "./components/BoothDescription";
-import { RelatedBooths } from "./components/RelatedBooths";
-import { BoothActionBar } from "./components/BoothActionBar";
+// New refactored components
+import { CompetitorStyleHeader } from "./components/CompetitorStyleHeader";
+import { CompetitorProductShowcase } from "./components/CompetitorProductShowcase";
+import { ContactSheet, AgentContactSheet } from "./components/EnhancedContactModal";
 
-// Hooks
+// Keep some existing components
+// import { BoothDescription } from "./components/BoothDescription";
+
+// Hooks and types
 import { useBoothDetail } from "./hooks/useBoothDetail";
-import { useRelatedBooths } from "./hooks/useRelatedBooths";
+import { BoothProduct } from "@/lib/api/booth";
+import { Button, Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "ui";
 
-// Types
-import { BoothProduct, BoothDetail } from "../../../../../../src/types/booth";
-
-export default function BoothDetailPage() {
+export default function RefactoredBoothDetailPage() {
   const params = useParams();
   const router = useRouter();
   const boothId = params.id as string;
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const [isAgentModalOpen, setIsAgentModalOpen] = useState(false);
+  const [searchKeyword, setSearchKeyword] = useState("");
 
-  // 档口详情数据和操作
+  // Booth detail data and operations
   const {
     booth,
     products,
@@ -39,7 +39,6 @@ export default function BoothDetailPage() {
     isError,
     error,
     handleFavoriteToggle,
-    handleContactClick,
     handleShareClick,
     handleRefresh,
   } = useBoothDetail({
@@ -53,32 +52,34 @@ export default function BoothDetailPage() {
     },
   });
 
-  // 相关推荐
-  const { data: relatedBooths = [], isLoading: isRelatedLoading } =
-    useRelatedBooths(boothId, { limit: 4 });
+  // Get products array from API response
+  const productsArray = Array.isArray(products) ? products :
+    (products?.rows && Array.isArray(products.rows) ? products.rows : []);
 
-  // 处理商品点击
+  // Filter products by search keyword
+  const filteredProducts = searchKeyword.trim()
+    ? productsArray.filter((product: BoothProduct) =>
+        product.name?.toLowerCase().includes(searchKeyword.toLowerCase()) ||
+        product.description?.toLowerCase().includes(searchKeyword.toLowerCase())
+      )
+    : productsArray;
+
+  // Handle product search
+  const handleProductSearch = (keyword: string) => {
+    setSearchKeyword(keyword);
+  };
+
+  // Handle clear search
+  const handleClearSearch = () => {
+    setSearchKeyword("");
+  };
+
+  // Handle product click
   const handleProductClick = (product: BoothProduct) => {
     router.push(`/product/${product.id}`);
   };
 
-  // 处理相关档口点击
-  const handleRelatedBoothClick = (relatedBooth: BoothDetail) => {
-    router.push(`/booth/${relatedBooth.id}`);
-  };
-
-  // 处理查看更多商品
-  const handleViewAllProducts = () => {
-    // TODO: 跳转到档口商品列表页或展开所有商品
-    console.log("查看全部商品");
-  };
-
-  // 处理查看更多推荐
-  const handleViewAllRelated = () => {
-    router.push(`/market?related=${boothId}`);
-  };
-
-  // 返回按钮处理
+  // Back button handler
   const handleBack = () => {
     if (window.history.length > 1) {
       router.back();
@@ -87,24 +88,11 @@ export default function BoothDetailPage() {
     }
   };
 
-  // 错误状态
+  // Error state
   if (isError) {
     return (
       <MobileLayout showTabBar={false}>
         <div className="min-h-screen bg-gray-50">
-          {/* 导航栏 */}
-          <div className="bg-white px-4 py-3 flex items-center justify-between border-b border-gray-100">
-            <button
-              onClick={handleBack}
-              className="w-8 h-8 flex items-center justify-center text-gray-600"
-            >
-              <ArrowLeft size={20} />
-            </button>
-            <h1 className="text-lg font-medium text-gray-900">档口详情</h1>
-            <div className="w-8 h-8" />
-          </div>
-
-          {/* 错误内容 */}
           <div className="flex items-center justify-center min-h-96">
             <div className="text-center px-4">
               <h2 className="text-lg font-semibold text-gray-900 mb-2">
@@ -116,7 +104,7 @@ export default function BoothDetailPage() {
               <div className="space-x-3">
                 <button
                   onClick={handleRefresh}
-                  className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
                 >
                   重试
                 </button>
@@ -134,23 +122,11 @@ export default function BoothDetailPage() {
     );
   }
 
-  // 加载状态
+  // Loading state
   if (isLoading) {
     return (
       <MobileLayout showTabBar={false}>
         <div className="min-h-screen bg-gray-50">
-          {/* 导航栏 */}
-          <div className="bg-white px-4 py-3 flex items-center justify-between border-b border-gray-100">
-            <button
-              onClick={handleBack}
-              className="w-8 h-8 flex items-center justify-center text-gray-600"
-            >
-              <ArrowLeft size={20} />
-            </button>
-            <h1 className="text-lg font-medium text-gray-900">档口详情</h1>
-            <div className="w-8 h-8" />
-          </div>
-
           <LoadingSpinner text="加载档口信息..." className="py-20" />
         </div>
       </MobileLayout>
@@ -164,85 +140,109 @@ export default function BoothDetailPage() {
   return (
     <ErrorBoundary>
       <MobileLayout showTabBar={false}>
-        <div className="min-h-screen bg-gradient-to-b from-orange-50/30 to-white">
+        <div className="min-h-screen bg-gray-50">
           <UnifiedSearchBar
-            variant="home"
+            variant="market"
+            showBack={true}
+            onBackClick={handleBack}
+            placeholder={`搜索 ${booth?.name || booth?.mainBusiness || '档口'} 的商品...`}
+            value={searchKeyword}
+            onChange={handleProductSearch}
+            onSearch={handleProductSearch}
+            onClear={handleClearSearch}
+            showShare={true}
+            onShareClick={handleShareClick}
             className="fixed top-0 left-0 right-0 z-50"
-            placeholder="搜索商品关键字或货号"
-            showLogo={true}
-            showCamera={true}
-            logoSize={32}
           />
+            <Drawer open={true}>
+            <DrawerTrigger asChild>
+              <Button variant="outline">Open Drawer</Button>
+            </DrawerTrigger>
+            <DrawerContent>
+              <div className="mx-auto w-full max-w-sm">
+                <DrawerHeader>
+                  <DrawerTitle>Move Goal</DrawerTitle>
+                  <DrawerDescription>Set your daily activity goal.</DrawerDescription>
+                </DrawerHeader>
+                <div className="p-4 pb-0">
+                  <div className="flex items-center justify-center space-x-2">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-8 w-8 shrink-0 rounded-full"
+                    >
+                      <Minus />
+                      <span className="sr-only">Decrease</span>
+                    </Button>
+                    <div className="flex-1 text-center">
+                      <div className="text-7xl font-bold tracking-tighter">
+                      </div>
+                      <div className="text-muted-foreground text-[0.70rem] uppercase">
+                        Calories/day
+                      </div>
+                    </div>
+                  </div>
+                  </div>
+                  <DrawerFooter>
+                    <Button>Submit</Button>
+                    <DrawerClose asChild>
+                      <Button variant="outline">Cancel</Button>
+                    </DrawerClose>
+                  </DrawerFooter>
+                </div>
+              </DrawerContent>
+            </Drawer>
 
-          {/* 为固定搜索栏留出空间 */}
           <div className="pt-16">
-            {/* 内容区域 */}
-            <div className="pb-20">
-              {/* 档口头部信息 */}
-              <BoothDetailHeader
+            <div className="pb-24 space-y-2">
+              <CompetitorStyleHeader
                 booth={booth}
                 isFavorited={isFavorited}
                 onFavoriteToggle={handleFavoriteToggle}
-                className="mb-2"
+                onShareClick={handleShareClick}
               />
 
-              {/* 基本信息 */}
-              <BoothBasicInfo booth={booth} className="mb-2" />
-
-              {/* 联系信息 */}
-              <BoothContactInfo
-                booth={booth}
-                onContactClick={handleContactClick}
-                className="mb-2"
-              />
-
-              {/* 档口介绍 */}
-              {(booth.description || booth.text) && (
-                <BoothDescription booth={booth} className="mb-2" />
-              )}
-
-              {/* 商品展示 */}
-              <BoothProductShowcase
-                products={products}
+              <CompetitorProductShowcase
+                products={filteredProducts}
                 onProductClick={handleProductClick}
                 loading={isProductsLoading}
-                maxDisplay={6}
-                showViewAll={true}
-                onViewAll={handleViewAllProducts}
-                className="mb-2"
               />
 
-              {/* 相关推荐 */}
-              <RelatedBooths
-                booths={relatedBooths}
-                onBoothClick={handleRelatedBoothClick}
-                onViewAll={handleViewAllRelated}
-                loading={isRelatedLoading}
-                className="mb-2"
-              />
-
-              {/* 底部间距 */}
               <div className="h-4" />
             </div>
-
-            {/* 底部操作栏 */}
-            <BoothActionBar
-              booth={booth}
-              isFavorited={isFavorited}
-              onFavoriteToggle={handleFavoriteToggle}
-              onContactClick={() => {
-                // 滚动到联系信息区域
-                const contactSection = document.querySelector(
-                  "[data-contact-section]"
-                );
-                if (contactSection) {
-                  contactSection.scrollIntoView({ behavior: "smooth" });
-                }
-              }}
-              onShareClick={handleShareClick}
-            />
           </div>
+
+          {/* <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50">
+            <div className="flex gap-3">
+              <button
+                onClick={() => setIsContactModalOpen(true)}
+                className="flex-1 bg-white border-2 border-red-500 text-red-500 py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-red-50 transition-colors"
+              >
+                <Phone size={20} />
+                联系商家
+              </button>
+
+              <button
+                onClick={() => setIsAgentModalOpen(true)}
+                className="flex-1 bg-gradient-to-r from-red-500 to-orange-500 text-white py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:from-red-600 hover:to-orange-600 transition-all shadow-sm"
+              >
+                <QrCode size={20} />
+                联系代拿
+              </button>
+            </div>
+          </div> */}
         </div>
+
+        <ContactSheet
+          booth={booth}
+          isOpen={isContactModalOpen}
+          onClose={() => setIsContactModalOpen(false)}
+        />
+
+        <AgentContactSheet
+          isOpen={isAgentModalOpen}
+          onClose={() => setIsAgentModalOpen(false)}
+        />
       </MobileLayout>
     </ErrorBoundary>
   );

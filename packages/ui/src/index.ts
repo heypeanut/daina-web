@@ -1,8 +1,6 @@
-// PC端组件
-export * from "./pc";
+// UI 组件
+export * from "./components";
 
-// 移动端组件
-export * from "./mobile";
 
-// 共享组件
-export * from "./shared";
+// 工具函数
+export * from "./lib/utils";
