@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
-import { LoadingSpinner } from "@/components/common/LoadingSpinner";
+import { BoothDetailSkeleton } from "./components/BoothDetailSkeleton";
 import { UnifiedSearchBar } from "@/components/common/UnifiedSearchBar";
 import { Phone, QrCode } from "lucide-react";
 
@@ -130,9 +130,7 @@ export default function RefactoredBoothDetailPage() {
   if (isLoading) {
     return (
       <MobileLayout showTabBar={false}>
-        <div className="min-h-screen bg-gray-50">
-          <LoadingSpinner text="加载档口信息..." className="py-20" />
-        </div>
+        <BoothDetailSkeleton />
       </MobileLayout>
     );
   }

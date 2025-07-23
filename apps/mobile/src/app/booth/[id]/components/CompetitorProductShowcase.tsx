@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { BoothProduct } from '@/lib/api/booth';
 import { Filter, Grid, List, ChevronDown, Star, Crown, Package } from 'lucide-react';
+import { ProductShowcaseSkeleton } from './BoothDetailSkeleton';
 
 interface CompetitorProductShowcaseProps {
   products: BoothProduct[];
@@ -178,15 +179,7 @@ export function CompetitorProductShowcase({
   };
 
   if (loading) {
-    return (
-      <div className={`bg-white ${className}`}>
-        <div className="px-4 py-4">
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
-          </div>
-        </div>
-      </div>
-    );
+    return <ProductShowcaseSkeleton viewMode={viewMode} />;
   }
 
   return (
