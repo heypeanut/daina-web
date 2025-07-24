@@ -2,8 +2,9 @@
 
 import React, { useState } from 'react';
 import { Phone, MessageCircle, MapPin, Copy, ChevronDown, ChevronUp } from 'lucide-react';
-import { BoothDetail } from '../../../../../../../src/types/booth';
+import { BoothDetail } from '@/lib/api/booth';
 import { ContactType } from '../types/detail';
+import { toast } from 'ui';
 
 interface BoothContactInfoProps {
   booth: BoothDetail;
@@ -21,47 +22,58 @@ export function BoothContactInfo({
   const handleCopy = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      // TODO: 显示复制成功提示
-      console.log('复制成功:', text);
+      toast.success(`已复制: ${text}`);
     } catch (err) {
       console.error('复制失败:', err);
+      toast.error('复制失败，请重试');
     }
   };
 
-  const contactItems = [
-    booth.phone && {
+  const contactItems = [];
+
+  if (booth.phone) {
+    contactItems.push({
       type: 'phone' as ContactType,
       icon: <Phone size={16} className="text-green-600" />,
       label: '电话联系',
       value: booth.phone,
       actionLabel: '拨打电话',
       canCopy: true
-    },
-    booth.wx && {
+    });
+  }
+
+  if (booth.wx) {
+    contactItems.push({
       type: 'wechat' as ContactType,
       icon: <MessageCircle size={16} className="text-green-500" />,
       label: '微信号',
       value: booth.wx,
       actionLabel: '复制微信号',
       canCopy: true
-    },
-    booth.qq && {
+    });
+  }
+
+  if (booth?.qq) {
+    contactItems.push({
       type: 'qq' as ContactType,
       icon: <MessageCircle size={16} className="text-blue-500" />,
       label: 'QQ号码',
       value: booth.qq,
       actionLabel: '复制QQ号',
       canCopy: true
-    },
-    booth.address && {
+    });
+  }
+
+  if (booth.address) {
+    contactItems.push({
       type: 'address' as ContactType,
       icon: <MapPin size={16} className="text-orange-500" />,
       label: '档口地址',
       value: booth.address,
       actionLabel: '查看地图',
       canCopy: false
-    }
-  ].filter((item): item is NonNullable<typeof item> => Boolean(item));
+    });
+  }
 
   if (contactItems.length === 0) {
     return null;
@@ -80,7 +92,7 @@ export function BoothContactInfo({
           <ChevronDown size={20} className="text-gray-400" />
         )}
       </button>
-      
+
       {isExpanded && (
         <div className="px-4 pb-4">
           <div className="space-y-4">
@@ -100,7 +112,7 @@ export function BoothContactInfo({
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center space-x-2 ml-3">
                   {item.canCopy && (
                     <button
@@ -110,7 +122,7 @@ export function BoothContactInfo({
                       <Copy size={14} />
                     </button>
                   )}
-                  
+
                   <button
                     onClick={() => onContactClick(item.type, item.value)}
                     className="px-3 py-1.5 bg-orange-500 text-white text-xs rounded-full hover:bg-orange-600 transition-colors"
@@ -121,7 +133,7 @@ export function BoothContactInfo({
               </div>
             ))}
           </div>
-          
+
           <div className="mt-4 p-3 bg-blue-50 rounded-lg">
             <p className="text-xs text-blue-700">
               💡 提示：联系时请说明从&ldquo;纳火&rdquo;平台看到的信息，可能获得更好服务

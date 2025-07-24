@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { MapPin, Building2, Calendar, Clock } from 'lucide-react';
-import { BoothDetail } from '../../../../../../../src/types/booth';
+import { BoothDetail } from '@/lib/api/booth';
 
 interface BoothBasicInfoProps {
   booth: BoothDetail;
@@ -40,8 +40,8 @@ export function BoothBasicInfo({
     infoItems.push({
       icon: <Clock size={16} className="text-gray-400" />,
       label: '营业时间',
-      value: booth.businessHours.isOpen24h 
-        ? '24小时营业' 
+      value: booth.businessHours.isOpen24h
+        ? '24小时营业'
         : booth.businessHours.weekdays
     });
   }
@@ -51,7 +51,7 @@ export function BoothBasicInfo({
       <div className="px-4 py-3 border-b border-gray-100">
         <h3 className="text-base font-semibold text-gray-900">基本信息</h3>
       </div>
-      
+
       <div className="px-4 py-3">
         <div className="space-y-4">
           {infoItems.map((item, index) => (

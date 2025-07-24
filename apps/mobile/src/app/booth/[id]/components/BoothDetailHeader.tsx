@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Heart, Star, Shield, Clock, Eye } from 'lucide-react';
-import { BoothDetail } from '../../../../../../../src/types/booth';
+import { BoothDetail } from '@/lib/api/booth';
 import { ImageLazyLoader } from '@/components/common/ImageLazyLoader';
 
 interface BoothDetailHeaderProps {
@@ -36,7 +36,7 @@ export function BoothDetailHeader({
               fallbackSrc="/cover.png"
             />
           </div>
-          
+
           {/* 在线状态指示 */}
           {booth.isOnline && (
             <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 border-4 border-white rounded-full flex items-center justify-center shadow-lg">
@@ -51,13 +51,13 @@ export function BoothDetailHeader({
               <h1 className="text-2xl font-bold text-gray-900 truncate mb-2">
                 {booth.title}
               </h1>
-              
+
               {/* 认证标识 */}
               {certification?.isVerified && (
                 <div className="inline-flex items-center px-3 py-1 bg-blue-50 rounded-full border border-blue-200">
-                  <Shield 
-                    size={16} 
-                    className="text-blue-500 mr-2" 
+                  <Shield
+                    size={16}
+                    className="text-blue-500 mr-2"
                   />
                   <span className="text-sm text-blue-700 font-semibold">
                     {certification.verificationType === 'premium' && '高级认证'}
@@ -73,9 +73,9 @@ export function BoothDetailHeader({
               onClick={onFavoriteToggle}
               className="ml-4 w-12 h-12 bg-white shadow-lg rounded-2xl flex items-center justify-center hover:shadow-xl hover:scale-105 transition-all duration-200 group"
             >
-              <Heart 
-                size={24} 
-                className={isFavorited ? 'text-red-500 fill-current' : 'text-gray-400 group-hover:text-red-400 group-hover:scale-110'} 
+              <Heart
+                size={24}
+                className={isFavorited ? 'text-red-500 fill-current' : 'text-gray-400 group-hover:text-red-400 group-hover:scale-110'}
               />
             </button>
           </div>
@@ -84,7 +84,7 @@ export function BoothDetailHeader({
           <div className="mb-4">
             <div className="flex flex-wrap gap-2">
               {booth.main_business?.map((business, index) => (
-                <span 
+                <span
                   key={index}
                   className="px-3 py-1.5 bg-orange-100 text-orange-700 text-sm rounded-lg font-semibold border border-orange-200"
                 >
@@ -112,12 +112,12 @@ export function BoothDetailHeader({
                   </span>
                 </div>
               )}
-              
+
               <div className="flex items-center text-gray-600">
                 <Eye size={16} className="mr-2 text-gray-400" />
                 <span className="font-medium">{statistics.viewCount}</span>
               </div>
-              
+
               <div className="flex items-center text-gray-600">
                 <Heart size={16} className="mr-2 text-gray-400" />
                 <span className="font-medium">{statistics.favoriteCount}</span>
@@ -141,7 +141,7 @@ export function BoothDetailHeader({
               <span className="text-sm font-medium text-gray-500">离线</span>
             </div>
           )}
-          
+
           {booth.businessHours && (
             <div className="text-sm text-gray-600 font-medium">
               <span>营业时间: {booth.businessHours.weekdays}</span>

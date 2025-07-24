@@ -115,9 +115,9 @@ export function StaticBooths({
             <div className="flex items-start">
               {/* 左侧促销信息 */}
               <div className="flex-shrink-0 w-24 mr-2 text-center">
-                <div className="bg-gradient-to-b from-orange-500 to-red-500 text-white p-2.5 rounded-lg shadow-sm">
-                  <div className="text-lg font-bold mb-1">最新档口</div>
-                  <div className="text-sm">好物推荐</div>
+                <div className="bg-gradient-to-b from-orange-500 to-red-500 text-white h-[5.2rem] flex flex-col justify-center rounded-lg shadow-sm">
+                  <div className="text-base font-bold mb-0.5">最新档口</div>
+                  <div className="text-xs">好物推荐</div>
                 </div>
               </div>
 
@@ -134,19 +134,20 @@ export function StaticBooths({
                       className="flex-shrink-0 cursor-pointer transition-all hover:scale-105 active:scale-95"
                     >
                       {/* 商品卡片 */}
-                      <div className="w-18 bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                      <div className="w-20 bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
                         {/* 商品图片 */}
-                        <div className="size-18 bg-gray-100 relative overflow-hidden">
+                        <div className="w-20 h-20 bg-gray-100 relative overflow-hidden">
                           <Image
                             src={booth.coverImage}
                             alt={booth.boothName}
-                            width={70}
-                            height={70}
-                            className="w-full h-full object-cover"
+                            fill
+                            sizes="80px"
+                            className="object-cover"
+                            unoptimized
                           />
                           {/* 档口名称叠加 */}
-                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent">
-                            <span className="block text-xs font-medium text-white px-1 py-1 text-center truncate">
+                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent">
+                            <span className="block text-xs font-medium text-white px-1 py-0.5 text-center truncate leading-tight">
                               {booth.boothName}
                             </span>
                           </div>

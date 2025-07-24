@@ -5,3 +5,4 @@ export * from "./ui/checkbox";
 export * from "./ui/drawer";
 export * from "./ui/input";
 export * from "./ui/sheet";
+export * from "./ui/sonner";

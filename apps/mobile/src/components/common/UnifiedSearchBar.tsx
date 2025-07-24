@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 
 export interface UnifiedSearchBarProps {
   // 基础配置
-  variant?: 'home' | 'market' | 'search' | 'booth';
+  variant?: 'home' | 'market' | 'search' | 'booth' | 'booth-detail';
   className?: string;
   
   // Logo配置
@@ -89,6 +89,11 @@ export function UnifiedSearchBar({
   // 使用外部或内部的焦点状态
   const isFocused = externalFocused !== undefined ? externalFocused : internalFocused;
   
+  // 搜索框样式 - 提前定义，避免在booth-detail variant中使用时出现初始化错误
+  const searchBoxClass = `flex items-center bg-white/95 backdrop-blur-sm rounded-full px-4 py-2.5 transition-all duration-300 shadow-sm ${
+    isFocused ? 'bg-white ring-1 ring-white/50 shadow-lg' : 'hover:bg-white'
+  }`;
+  
   const handleFocus = () => {
     setInternalFocused(true);
     externalOnFocus?.();
@@ -112,6 +117,9 @@ export function UnifiedSearchBar({
     } else if (variant === 'home') {
       // 首页默认跳转到搜索页面
       router.push('/search');
+    } else if (variant === 'market') {
+      // 市场页面跳转到档口搜索
+      router.push('/search?type=booth');
     }
   };
   
@@ -131,10 +139,50 @@ export function UnifiedSearchBar({
     }
   };
   
-  // 根据变体决定是否可编辑
-  const isInteractive = variant !== 'home';
+  // 根据变体决定是否可编辑 - 只有search variant才是真正可交互的
+  const isInteractive = variant === 'search';
   
-  // 档口页面特殊处理
+  // 档口详情页面特殊处理
+  if (variant === 'booth-detail') {
+    return (
+      <div className={`bg-gradient-to-r from-orange-500 to-red-500 safe-area-inset-top ${className}`}>
+        <div className="flex items-center space-x-3 px-4 py-3">
+          {/* 返回按钮 */}
+          {showBack && (
+            <button
+              onClick={onBackClick}
+              className="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center active:bg-white/30 transition-all shadow-sm hover:scale-105 active:scale-95"
+            >
+              <ArrowLeft size={20} className="text-white" />
+            </button>
+          )}
+          
+          {/* 搜索框 */}
+          <div
+            onClick={handleSearchAreaClick}
+            className={`flex-1 ${searchBoxClass} cursor-pointer active:bg-white/90`}
+          >
+            <Search size={16} className="text-gray-400 mr-3" />
+            <span className="flex-1 text-sm text-gray-500">
+              {placeholder}
+            </span>
+          </div>
+          
+          {/* 分享按钮 */}
+          {showShare && (
+            <button
+              onClick={onShareClick}
+              className="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center active:bg-white/30 transition-all shadow-sm hover:scale-105 active:scale-95"
+            >
+              <Share2 size={16} className="text-white" />
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+  
+  // 档口页面特殊处理（保留原有booth variant用于兼容）
   if (variant === 'booth') {
     return (
       <div className={`bg-white border-b border-gray-100 ${className}`}>
@@ -171,16 +219,18 @@ export function UnifiedSearchBar({
   // 统一的容器样式
   const containerClass = `bg-gradient-to-r from-orange-500 to-red-500 safe-area-inset-top ${className}`;
   
-  // 搜索框样式
-  const searchBoxClass = `flex items-center bg-white/95 backdrop-blur-sm rounded-full px-4 py-2.5 transition-all duration-300 shadow-sm ${
-    isFocused ? 'bg-white ring-1 ring-white/50 shadow-lg' : 'hover:bg-white'
-  }`;
-  
   return (
     <div className={containerClass}>
       <div className="flex items-center space-x-3 px-4 py-3">
-        {/* Logo */}
-        {showLogo && (
+        {/* Logo或返回按钮 */}
+        {showBack ? (
+          <button
+            onClick={onBackClick}
+            className="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center active:bg-white/30 transition-all shadow-sm hover:scale-105 active:scale-95"
+          >
+            <ArrowLeft size={20} className="text-white" />
+          </button>
+        ) : showLogo && (
           <Image 
             src={logoSrc} 
             alt="logo" 
@@ -192,7 +242,7 @@ export function UnifiedSearchBar({
         
         {/* 搜索框 */}
         {isInteractive ? (
-          // 可交互的搜索框（市场页、搜索页）
+          // 可交互的搜索框（搜索页）
           <form onSubmit={handleSubmit} className="flex-1">
             <div className={searchBoxClass}>
               <Search 
@@ -222,7 +272,7 @@ export function UnifiedSearchBar({
             </div>
           </form>
         ) : (
-          // 点击跳转的搜索框（首页）
+          // 点击跳转的搜索框（首页、市场页）
           <div
             onClick={handleSearchAreaClick}
             className={`flex-1 ${searchBoxClass} cursor-pointer active:bg-white/90`}

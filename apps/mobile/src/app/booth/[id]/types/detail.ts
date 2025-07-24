@@ -1,6 +1,7 @@
-import { BoothDetail, BoothProduct } from '../../../../../../../src/types/booth';
+import { BoothDetail, BoothProduct } from '@/lib/api/booth';
 
-export interface GetBoothDetailResponse extends BoothDetail {
+export interface GetBoothDetailResponse {
+  booth: BoothDetail;
   products?: BoothProduct[];
   relatedBooths?: BoothDetail[];
 }

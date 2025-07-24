@@ -4,9 +4,9 @@ import { tenantApi, PaginatedResponse } from './config';
 // 接口类型定义
 export interface Booth {
   id: string;
-  name: string;
+  boothName: string;
   avatar?: string;
-  coverImage?: string;
+  coverImg?: string;
   description?: string;
   location?: string;
   category?: string;
@@ -15,11 +15,12 @@ export interface Booth {
   productsCount?: number;
   verified?: boolean;
   tags?: string[];
-  contact?: {
-    phone?: string;
-    wechat?: string;
-    qq?: string;
-  };
+  phone?: string;
+  wx?: string;
+  qq?: string;
+  wxQrCode?: string;
+  qqQrCode?: string;
+  address?: string;
   businessHours?: string;
   createdAt: string;
   updatedAt: string;
@@ -90,7 +91,12 @@ export interface GetBoothsResponse extends PaginatedResponse<Booth> {
  * 获取档口列表
  */
 export async function getBooths(params: GetBoothsParams): Promise<GetBoothsResponse> {
-  const response = await tenantApi.get('/booth', { params });
+  const queryParams = {
+    ...params,
+    pageNum: params.pageNum.toString(),
+    size: params.size.toString()
+  };
+  const response = await tenantApi.get('/booth', { params: queryParams });
   return response.data;
 }
 
@@ -144,7 +150,10 @@ export async function getBoothProducts(
   size: number = 12
 ): Promise<PaginatedResponse<BoothProduct>> {
   const response = await tenantApi.get(`/booth/${boothId}/products`, {
-    params: { pageNum, size }
+    params: {
+      pageNum: pageNum.toString(),
+      size: size.toString()
+    }
   });
   return response.data;
 }

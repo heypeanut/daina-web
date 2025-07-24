@@ -25,7 +25,6 @@ export default function RefactoredBoothDetailPage() {
   const boothId = params.id as string;
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [isAgentModalOpen, setIsAgentModalOpen] = useState(false);
-  const [searchKeyword, setSearchKeyword] = useState("");
 
   // Booth detail data and operations
   const {
@@ -57,25 +56,11 @@ export default function RefactoredBoothDetailPage() {
     ? products.rows
     : [];
 
-  // Filter products by search keyword
-  const filteredProducts = searchKeyword.trim()
-    ? productsArray.filter(
-        (product: BoothProduct) =>
-          product.name?.toLowerCase().includes(searchKeyword.toLowerCase()) ||
-          product.description
-            ?.toLowerCase()
-            .includes(searchKeyword.toLowerCase())
-      )
-    : productsArray;
 
-  // Handle product search
-  const handleProductSearch = (keyword: string) => {
-    setSearchKeyword(keyword);
-  };
-
-  // Handle clear search
-  const handleClearSearch = () => {
-    setSearchKeyword("");
+  // Handle search click - jump to search page with booth context
+  const handleSearchClick = () => {
+    // 跳转到搜索页面，限制在当前档口内搜索商品，传递档口名称
+    router.push(`/search?type=product&boothId=${boothId}&boothName=${encodeURIComponent(booth?.boothName)}`);
   };
 
   // Handle product click
@@ -144,16 +129,13 @@ export default function RefactoredBoothDetailPage() {
       <MobileLayout showTabBar={false}>
         <div className="min-h-screen bg-gray-50">
           <UnifiedSearchBar
-            variant="market"
+            variant="booth-detail"
             showBack={true}
             onBackClick={handleBack}
             placeholder={`搜索 ${
-              booth?.name || booth?.mainBusiness || "档口"
+              booth?.boothName
             } 的商品...`}
-            value={searchKeyword}
-            onChange={handleProductSearch}
-            onSearch={handleProductSearch}
-            onClear={handleClearSearch}
+            onSearchClick={handleSearchClick}
             showShare={true}
             onShareClick={handleShareClick}
             className="fixed top-0 left-0 right-0 z-50"
@@ -169,7 +151,7 @@ export default function RefactoredBoothDetailPage() {
               />
 
               <CompetitorProductShowcase
-                products={filteredProducts}
+                products={productsArray}
                 onProductClick={handleProductClick}
                 loading={isProductsLoading}
               />

@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import { UnifiedSearchBar } from "@/components/common/UnifiedSearchBar";
-import { useMarketData } from "../hooks/useMarketData";
 
 interface MarketSearchBarProps {
   placeholder?: string;
@@ -13,17 +13,19 @@ export function MarketSearchBar({
   placeholder = "搜索档口名称、主营商品...",
   className = "",
 }: MarketSearchBarProps) {
-  const { searchKeyword, handleSearch, handleClearSearch } = useMarketData();
+  const router = useRouter();
+
+  const handleSearchClick = () => {
+    // 跳转到搜索页面，默认激活档口搜索标签
+    router.push('/search?type=booth');
+  };
 
   return (
     <UnifiedSearchBar
       variant="market"
       className={className}
       placeholder={placeholder}
-      value={searchKeyword}
-      onChange={handleSearch}
-      onSearch={handleSearch}
-      onClear={handleClearSearch}
+      onSearchClick={handleSearchClick}
       showLogo={true}
       showCamera={true}
       logoSize={32}

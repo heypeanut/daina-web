@@ -4,7 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { BoothDetail } from '@/lib/api/booth';
 import { Phone, MessageCircle, Copy } from 'lucide-react';
-import { Button, Drawer, DrawerContent, DrawerHeader, DrawerOverlay, DrawerTitle } from 'ui';
+import { Button, Drawer, DrawerContent, DrawerHeader, DrawerOverlay, DrawerTitle, toast } from 'ui';
 
 interface ContactDrawerProps {
   booth: BoothDetail;
@@ -21,7 +21,7 @@ interface AgentContactDrawerProps {
 export const ContactContent: React.FC<{ booth: BoothDetail }> = ({ booth }) => {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text).then(() => {
-      alert(`已复制: ${text}`);
+      toast.success(`已复制: ${text}`);
     });
   };
 
@@ -83,7 +83,7 @@ export const ContactContent: React.FC<{ booth: BoothDetail }> = ({ booth }) => {
 export const AgentContent: React.FC = () => {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text).then(() => {
-      alert(`已复制: ${text}`);
+      toast.success(`已复制: ${text}`);
     });
   };
 
@@ -100,7 +100,7 @@ export const AgentContent: React.FC = () => {
         />
       </div>
       <div className="flex items-center py-2 px-4 bg-gray-50 rounded-xl w-full">
-        <Phone className="size-5 text-red-500 mr-3" />
+        <Phone className="size-5 text-[var(--primary-red)] mr-3" />
         <div className="flex-1">
           <div className="text-sm text-gray-500">联系电话 / 微信</div>
           <div className="font-medium">13148865179</div>
