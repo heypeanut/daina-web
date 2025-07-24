@@ -278,6 +278,21 @@ class ApiClient {
     );
   }
 
+  // 获取档口排行榜
+  public async getBoothRanking(params: {
+    limit?: number;
+    userId?: number;
+  }): Promise<ApiResponse<Booth[]>> {
+    const searchParams = new URLSearchParams();
+
+    if (params.limit) searchParams.append("limit", params.limit.toString());
+    if (params.userId) searchParams.append("userId", params.userId.toString());
+
+    return this.request(
+      `/api/tenant/homepage/booth-ranking?${searchParams}`
+    );
+  }
+
   // 图片搜索接口
   public async searchImageBooth(
     params: ImageSearchParams

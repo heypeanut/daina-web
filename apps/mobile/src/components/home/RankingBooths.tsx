@@ -3,12 +3,11 @@
 import React, { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import useEmblaCarousel from "embla-carousel-react";
-import { useBoothRecommendations, useBehaviorTracking } from "@/hooks/useApi";
+import { useBoothRanking, useBehaviorTracking } from "@/hooks/useApi";
 import type { Booth } from "@/types/api";
 
 interface RankingBoothsProps {
   title: string;
-  type: "booth_hot" | "booth_new";
   limit?: number;
 }
 
@@ -98,10 +97,9 @@ const CrownIcon = ({ rank }: { rank: number }) => {
 
 export function RankingBooths({
   title = "排行榜",
-  type,
   limit = 25,
 }: RankingBoothsProps) {
-  const { items, loading, error } = useBoothRecommendations(type, limit);
+  const { items, loading, error } = useBoothRanking(limit);
   const { recordBehavior } = useBehaviorTracking();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [scrollSnaps, setScrollSnaps] = useState<number[]>([]);

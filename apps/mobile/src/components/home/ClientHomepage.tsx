@@ -58,7 +58,7 @@ export function ClientHomepage() {
       {/* 白色背景的内容区域 */}
       <div className="bg-white pt-4">
         {/* 档口排行榜 - 横向滑动显示 */}
-        <RankingBooths title="排行榜" type="booth_hot" limit={25} />
+        <RankingBooths title="排行榜" limit={25} />
 
         {/* 最新档口 - 静态显示，不滚动加载 */}
         <StaticBooths title="最新档口" type="booth_new" limit={10} />
