@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from 'react';
-import Image from 'next/image';
-import { ImageIcon } from 'lucide-react';
+import React, { useState } from "react";
+import Image from "next/image";
+import { ImageIcon } from "lucide-react";
 
 interface ImageLazyLoaderProps {
   src?: string;
@@ -21,11 +21,11 @@ export function ImageLazyLoader({
   alt,
   width = 400,
   height = 400,
-  className = '',
-  fallbackSrc = '/cover.png',
+  className = "",
+  fallbackSrc = "/cover.png",
   placeholder,
   onLoad,
-  onError
+  onError,
 }: ImageLazyLoaderProps) {
   const [imgSrc, setImgSrc] = useState(src || fallbackSrc);
   const [isLoading, setIsLoading] = useState(true);
@@ -48,7 +48,10 @@ export function ImageLazyLoader({
   };
 
   const defaultPlaceholder = (
-    <div className={`bg-gray-100 flex items-center justify-center ${className}`} style={{ width, height }}>
+    <div
+      className={`bg-gray-100 flex items-center justify-center ${className}`}
+      style={{ width, height }}
+    >
       <ImageIcon size={32} className="text-gray-400" />
     </div>
   );
@@ -66,7 +69,9 @@ export function ImageLazyLoader({
         alt={alt}
         width={width}
         height={height}
-        className={`${className} ${isLoading ? 'opacity-0 absolute inset-0' : 'opacity-100'} transition-opacity duration-300`}
+        className={`${className} ${
+          isLoading ? "opacity-0 absolute inset-0" : "opacity-100"
+        } transition-opacity duration-300`}
         onLoad={handleLoad}
         onError={handleError}
         priority={false}

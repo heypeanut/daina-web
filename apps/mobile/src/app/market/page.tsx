@@ -6,20 +6,16 @@ import { MobileLayout } from "@/components/layout/MobileLayout";
 import { Footer } from "@/components/layout/Footer";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 
-// 页面组件
 import { MarketSearchBar } from "./components/MarketSearchBar";
 import { BoothGrid } from "./components/BoothGrid";
 
-// Hooks
 import { useMarketData } from "./hooks/useMarketData";
 import { useTrackBoothView } from "@/hooks/api/booth/useBooths";
 
-// Types
-import { Booth } from "../../../../../src/types/booth";
+import { Booth } from "@/types/booth";
 
 export default function MarketPage() {
   const router = useRouter();
-
 
   // 主数据管理
   const {
@@ -32,7 +28,6 @@ export default function MarketPage() {
     handleLoadMore,
     handleRefresh,
   } = useMarketData();
-
 
   // 浏览埋点
   const trackViewMutation = useTrackBoothView();
@@ -63,7 +58,6 @@ export default function MarketPage() {
       return newSet;
     });
   };
-
 
   // 错误状态
   if (isError) {
@@ -111,10 +105,9 @@ export default function MarketPage() {
                 hasNextPage={hasNextPage}
                 isLoading={isLoading || isFetchingNextPage}
                 layout="grid"
-                className="py-4"
+                className="py-2"
               />
             </div>
-
           </div>
         </div>
 

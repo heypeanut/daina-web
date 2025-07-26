@@ -2,30 +2,26 @@
 
 import { useState, useMemo, useCallback } from "react";
 import { useInfiniteBooths } from "@/hooks/api/booth/useBooths";
-import { GetBoothsParams } from "../types/market";
+import { GetBoothsParams } from "@/lib/api/booth";
 
 export function useMarketData() {
-
   // 状态管理
   const [searchKeyword, setSearchKeyword] = useState("");
 
   // 构建查询参数
-  const queryParams = useMemo(
-    (): Omit<GetBoothsParams, "pageNum"> => {
-      const trimmedKeyword = searchKeyword.trim();
-      const params: Omit<GetBoothsParams, "pageNum"> = {
-        size: 20,
-      };
-      
-      // 只有当关键词不为空时才添加 keyword 参数
-      if (trimmedKeyword) {
-        params.keyword = trimmedKeyword;
-      }
-      
-      return params;
-    },
-    [searchKeyword]
-  );
+  const queryParams = useMemo((): Omit<GetBoothsParams, "pageNum"> => {
+    const trimmedKeyword = searchKeyword.trim();
+    const params: Omit<GetBoothsParams, "pageNum"> = {
+      size: 20,
+    };
+
+    // 只有当关键词不为空时才添加 keyword 参数
+    if (trimmedKeyword) {
+      params.keyword = trimmedKeyword;
+    }
+
+    return params;
+  }, [searchKeyword]);
 
   // 使用无限滚动查询
   const {

@@ -1,31 +1,8 @@
 // 新版档口API - 使用tenant端接口
-import { tenantApi, PaginatedResponse } from './config';
+import { Booth } from "@/types/booth";
+import { tenantApi, PaginatedResponse } from "./config";
 
 // 接口类型定义
-export interface Booth {
-  id: string;
-  boothName: string;
-  avatar?: string;
-  coverImg?: string;
-  description?: string;
-  location?: string;
-  category?: string;
-  rating?: number;
-  followers?: number;
-  productsCount?: number;
-  verified?: boolean;
-  tags?: string[];
-  phone?: string;
-  wx?: string;
-  qq?: string;
-  wxQrCode?: string;
-  qqQrCode?: string;
-  address?: string;
-  businessHours?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
 export interface BoothDetail extends Booth {
   mainBusiness: string;
   phone: string;
@@ -75,7 +52,7 @@ export interface GetBoothsParams {
   size: number;
   categoryId?: string;
   keyword?: string;
-  sortBy?: 'latest' | 'popular' | 'rating';
+  sortBy?: "latest" | "popular" | "rating";
   location?: string;
 }
 
@@ -90,13 +67,15 @@ export interface GetBoothsResponse extends PaginatedResponse<Booth> {
 /**
  * 获取档口列表
  */
-export async function getBooths(params: GetBoothsParams): Promise<GetBoothsResponse> {
+export async function getBooths(
+  params: GetBoothsParams
+): Promise<GetBoothsResponse> {
   const queryParams = {
     ...params,
     pageNum: params.pageNum.toString(),
-    size: params.size.toString()
+    size: params.size.toString(),
   };
-  const response = await tenantApi.get('/booth', { params: queryParams });
+  const response = await tenantApi.get("/booth", { params: queryParams });
   return response.data;
 }
 
@@ -104,7 +83,7 @@ export async function getBooths(params: GetBoothsParams): Promise<GetBoothsRespo
  * 获取档口分类
  */
 export async function getBoothCategories(): Promise<BoothCategory[]> {
-  const response = await tenantApi.get('/booth/categories');
+  const response = await tenantApi.get("/booth/categories");
   return response.data;
 }
 
@@ -126,7 +105,7 @@ export async function getHotBooths(limit: number = 10): Promise<Booth[]> {
   const response = await getBooths({
     pageNum: 1,
     size: limit,
-    sortBy: 'popular'
+    sortBy: "popular",
   });
   return response.rows;
 }
@@ -152,8 +131,8 @@ export async function getBoothProducts(
   const response = await tenantApi.get(`/booth/${boothId}/products`, {
     params: {
       pageNum: pageNum.toString(),
-      size: size.toString()
-    }
+      size: size.toString(),
+    },
   });
   return response.data;
 }
@@ -165,12 +144,12 @@ export async function getBoothProducts(
  */
 export async function trackBoothView(boothId: string): Promise<void> {
   try {
-    await tenantApi.post('/user/history', {
-      type: 'booth',
-      targetId: boothId
+    await tenantApi.post("/user/history", {
+      type: "booth",
+      targetId: boothId,
     });
   } catch (error) {
-    console.warn('Failed to track booth view:', error);
+    console.warn("Failed to track booth view:", error);
   }
 }
 
@@ -179,16 +158,16 @@ export async function trackBoothView(boothId: string): Promise<void> {
  */
 export async function trackBoothContact(
   boothId: string,
-  contactType: 'phone' | 'wechat' | 'qq'
+  contactType: "phone" | "wechat" | "qq"
 ): Promise<void> {
   try {
-    await tenantApi.post('/analytics/contact', {
+    await tenantApi.post("/analytics/contact", {
       boothId,
       contactType,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.warn('Failed to track booth contact:', error);
+    console.warn("Failed to track booth contact:", error);
   }
 }
 
@@ -197,12 +176,12 @@ export async function trackBoothContact(
  */
 export async function trackBoothShare(boothId: string): Promise<void> {
   try {
-    await tenantApi.post('/analytics/share', {
+    await tenantApi.post("/analytics/share", {
       boothId,
-      shareType: 'booth',
-      timestamp: new Date().toISOString()
+      shareType: "booth",
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.warn('Failed to track booth share:', error);
+    console.warn("Failed to track booth share:", error);
   }
 }

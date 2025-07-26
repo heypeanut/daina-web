@@ -1,11 +1,11 @@
 "use client";
 
-import React from 'react';
-import { Booth } from '../../../../../../src/types/booth';
-import { MobileBoothCard } from './MobileBoothCard';
-import { InfiniteScrollList } from '@/components/common/InfiniteScrollList';
-import { BoothGridSkeleton } from './BoothCardSkeleton';
-import { BoothEmptyState } from './BoothEmptyState';
+import React from "react";
+import { Booth } from "@/types/booth";
+import { MobileBoothCard } from "./MobileBoothCard";
+import { InfiniteScrollList } from "@/components/common/InfiniteScrollList";
+import { BoothGridSkeleton } from "./BoothCardSkeleton";
+import { BoothEmptyState } from "./BoothEmptyState";
 
 interface BoothGridProps {
   booths: Booth[];
@@ -15,35 +15,39 @@ interface BoothGridProps {
   onLoadMore: () => void;
   hasNextPage: boolean;
   isLoading: boolean;
-  layout?: 'grid' | 'list';
+  layout?: "grid" | "list";
   className?: string;
 }
 
 // BoothItem 组件 - 使用 React.memo 进行优化
-const BoothItem = React.memo(({ 
-  booth, 
-  onCardClick, 
-  onFavoriteClick, 
-  isFavorited, 
-  layout 
-}: {
-  booth: Booth;
-  onCardClick: (booth: Booth) => void;
-  onFavoriteClick: (booth: Booth) => void;
-  isFavorited: boolean;
-  layout: 'grid' | 'list';
-}) => (
-  <MobileBoothCard
-    booth={booth}
-    onCardClick={onCardClick}
-    onFavoriteClick={onFavoriteClick}
-    isFavorited={isFavorited}
-    layout={layout}
-    className={layout === 'grid' ? '' : 'border-b border-gray-100 last:border-b-0'}
-  />
-));
+const BoothItem = React.memo(
+  ({
+    booth,
+    onCardClick,
+    onFavoriteClick,
+    isFavorited,
+    layout,
+  }: {
+    booth: Booth;
+    onCardClick: (booth: Booth) => void;
+    onFavoriteClick: (booth: Booth) => void;
+    isFavorited: boolean;
+    layout: "grid" | "list";
+  }) => (
+    <MobileBoothCard
+      booth={booth}
+      onCardClick={onCardClick}
+      onFavoriteClick={onFavoriteClick}
+      isFavorited={isFavorited}
+      layout={layout}
+      className={
+        layout === "grid" ? "" : "border-b border-gray-100 last:border-b-0"
+      }
+    />
+  )
+);
 
-BoothItem.displayName = 'BoothItem';
+BoothItem.displayName = "BoothItem";
 
 export function BoothGrid({
   booths,
@@ -53,12 +57,12 @@ export function BoothGrid({
   onLoadMore,
   hasNextPage,
   isLoading,
-  layout = 'grid',
-  className = ''
+  layout = "grid",
+  className = "",
 }: BoothGridProps) {
   // 初始加载状态：正在加载且暂无数据
   const isInitialLoading = isLoading && booths.length === 0;
-  
+
   const renderBoothItem = (booth: Booth) => (
     <BoothItem
       key={booth.id}
@@ -70,9 +74,10 @@ export function BoothGrid({
     />
   );
 
-  const containerClassName = layout === 'grid'
-    ? `grid grid-cols-2 gap-5 px-4 ${className}`
-    : `space-y-0 ${className}`;
+  const containerClassName =
+    layout === "grid"
+      ? `columns-2 gap-2 px-2 ${className}`
+      : `space-y-0 ${className}`;
 
   // 如果初始加载，显示骨架屏
   if (isInitialLoading) {
