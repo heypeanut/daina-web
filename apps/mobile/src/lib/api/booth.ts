@@ -2,29 +2,6 @@
 import { Booth } from "@/types/booth";
 import { tenantApi, PaginatedResponse } from "./config";
 
-// 接口类型定义
-export interface BoothDetail extends Booth {
-  mainBusiness: string;
-  phone: string;
-  wx: string;
-  address: string;
-  market: string;
-  isOnline: boolean;
-  certification: {
-    isVerified: boolean;
-    verificationType: string;
-  };
-  statistics: {
-    viewCount: number;
-    favoriteCount: number;
-    contactCount: number;
-    rating: number;
-    reviewCount: number;
-  };
-  products: BoothProduct[];
-  relatedBooths: BoothDetail[];
-}
-
 export interface BoothProduct {
   id: string;
   name: string;
@@ -115,7 +92,7 @@ export async function getHotBooths(limit: number = 10): Promise<Booth[]> {
 /**
  * 获取档口详情
  */
-export async function getBoothDetail(id: string): Promise<BoothDetail> {
+export async function getBoothDetail(id: string): Promise<Booth> {
   const response = await tenantApi.get(`/booth/${id}`);
   return response.data;
 }

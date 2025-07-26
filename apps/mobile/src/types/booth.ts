@@ -1,6 +1,6 @@
 export interface Booth {
-  id: string;
-  boothName: string;
+  id?: string;
+  boothName?: string;
   avatar?: string;
   coverImg?: string;
   description?: string;
@@ -8,10 +8,11 @@ export interface Booth {
   category?: string;
   rating?: number;
   followers?: number;
+  view?: number;
   productsCount?: number;
-  verified?: boolean;
   rank?: number;
   market?: string;
+  marketLabel?: string;
   phone?: string;
   wx?: string;
   qq?: string;
@@ -20,6 +21,6 @@ export interface Booth {
   address?: string;
   mainBusiness?: string;
   businessHours?: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }

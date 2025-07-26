@@ -1,4 +1,4 @@
-import { Booth } from '../../../../../../src/types/booth';
+import { Booth } from '@/types/booth';
 
 export interface GetBoothsParams {
   pageNum: number;

@@ -2,11 +2,12 @@
 
 // API基础URL配置
 const API_BASE_URLS = {
-  TENANT: '/api/tenant', // 客户端
-  SYSTEM: '/api/system', // 管理后台（如需要）
+  TENANT: "/api/tenant", // 客户端
+  SYSTEM: "/api/system", // 管理后台（如需要）
 };
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
+const BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
 
 // 获取认证token
 function getAuthToken(): string | null {
@@ -27,10 +28,10 @@ class TenantApiClient {
     options: RequestInit = {}
   ): Promise<{ data: T }> {
     const url = `${this.baseURL}${endpoint}`;
-    
+
     // 准备请求头
     const headers: HeadersInit = {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...options.headers,
     };
 
@@ -53,17 +54,17 @@ class TenantApiClient {
           localStorage.removeItem("auth_token");
           localStorage.removeItem("user_info");
           // 跳转到登录页
-          window.location.href = '/login';
-          throw new Error('登录已过期，请重新登录');
+          window.location.href = "/login";
+          throw new Error("登录已过期，请重新登录");
         }
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
       const data = await response.json();
-      
+
       // 检查业务状态码
       if (data.code && data.code !== 200) {
-        throw new Error(data.message || data.msg || '请求失败');
+        throw new Error(data.message || data.msg || "请求失败");
       }
 
       return { data: data.data || data };
@@ -71,36 +72,51 @@ class TenantApiClient {
       if (error instanceof Error) {
         throw error;
       }
-      throw new Error('网络请求失败');
+      throw new Error("网络请求失败");
     }
   }
 
-  async get<T = any>(endpoint: string, options?: RequestInit & { params?: Record<string, string> }): Promise<{ data: T }> {
+  async get<T = any>(
+    endpoint: string,
+    options?: RequestInit & { params?: Record<string, string> }
+  ): Promise<{ data: T }> {
     let url = endpoint;
     if (options?.params) {
       const searchParams = new URLSearchParams(options.params);
       url += `?${searchParams.toString()}`;
     }
-    return this.request<T>(url, { ...options, method: 'GET' });
+    return this.request<T>(url, { ...options, method: "GET" });
   }
 
-  async post<T = any>(endpoint: string, data?: any, options?: RequestInit): Promise<{ data: T }> {
+  async post<T = any>(
+    endpoint: string,
+    data?: any,
+    options?: RequestInit
+  ): Promise<{ data: T }> {
     return this.request<T>(endpoint, {
       ...options,
-      method: 'POST',
+      method: "POST",
       body: data ? JSON.stringify(data) : undefined,
     });
   }
 
-  async put<T = any>(endpoint: string, data?: any, options?: RequestInit): Promise<{ data: T }> {
+  async put<T = any>(
+    endpoint: string,
+    data?: any,
+    options?: RequestInit
+  ): Promise<{ data: T }> {
     return this.request<T>(endpoint, {
       ...options,
-      method: 'PUT',
+      method: "PUT",
       body: data ? JSON.stringify(data) : undefined,
     });
   }
 
-  async delete<T = any>(endpoint: string, data?: any, options?: RequestInit & { params?: Record<string, string> }): Promise<{ data: T }> {
+  async delete<T = any>(
+    endpoint: string,
+    data?: any,
+    options?: RequestInit & { params?: Record<string, string> }
+  ): Promise<{ data: T }> {
     let url = endpoint;
     if (options?.params) {
       const searchParams = new URLSearchParams(options.params);
@@ -108,15 +124,19 @@ class TenantApiClient {
     }
     return this.request<T>(url, {
       ...options,
-      method: 'DELETE',
+      method: "DELETE",
       body: data ? JSON.stringify(data) : undefined,
     });
   }
 
   // FormData上传专用方法
-  async postFormData<T = any>(endpoint: string, formData: FormData, options?: RequestInit): Promise<{ data: T }> {
+  async postFormData<T = any>(
+    endpoint: string,
+    formData: FormData,
+    options?: RequestInit
+  ): Promise<{ data: T }> {
     const url = `${this.baseURL}${endpoint}`;
-    
+
     // 准备请求头，不设置Content-Type让浏览器自动设置FormData边界
     const headers: HeadersInit = {
       ...options?.headers,
@@ -131,7 +151,7 @@ class TenantApiClient {
     try {
       const response = await fetch(url, {
         ...options,
-        method: 'POST',
+        method: "POST",
         headers,
         body: formData,
       });
@@ -141,17 +161,17 @@ class TenantApiClient {
         if (response.status === 401) {
           localStorage.removeItem("auth_token");
           localStorage.removeItem("user_info");
-          window.location.href = '/login';
-          throw new Error('登录已过期，请重新登录');
+          window.location.href = "/login";
+          throw new Error("登录已过期，请重新登录");
         }
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
       const data = await response.json();
-      
+
       // 检查业务状态码
       if (data.code && data.code !== 200) {
-        throw new Error(data.message || data.msg || '请求失败');
+        throw new Error(data.message || data.msg || "请求失败");
       }
 
       return { data: data.data || data };
@@ -159,7 +179,7 @@ class TenantApiClient {
       if (error instanceof Error) {
         throw error;
       }
-      throw new Error('网络请求失败');
+      throw new Error("网络请求失败");
     }
   }
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
-import { useInfiniteBooths } from "@/hooks/api/booth/useBooths";
+import { useInfiniteBoothsWithTranslation } from "@/hooks/api/booth/useInfiniteBoothsWithTranslation";
 import { GetBoothsParams } from "@/lib/api/booth";
 
 export function useMarketData() {
@@ -33,8 +33,7 @@ export function useMarketData() {
     hasNextPage,
     isFetchingNextPage,
     refetch,
-  } = useInfiniteBooths(queryParams);
-
+  } = useInfiniteBoothsWithTranslation(queryParams);
   // 扁平化数据
   const booths = useMemo(() => {
     if (!data?.pages) return [];

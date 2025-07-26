@@ -91,7 +91,7 @@ export function MobileBoothCard({
         <div className="flex items-center text-xs text-gray-500">
           <MapPin size={12} className="mr-1.5 text-gray-400" />
           <span className="truncate font-medium">
-            {booth.market || "华强北"}
+            {booth.marketLabel || booth.market || "华强北"}
           </span>
         </div>
       </div>

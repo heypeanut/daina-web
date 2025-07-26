@@ -1,28 +1,31 @@
-import { useQuery, useInfiniteQuery, useMutation } from '@tanstack/react-query';
-import { 
-  getBooths, 
-  searchBooths, 
+import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
+import {
+  getBooths,
+  searchBooths,
   getHotBooths,
-  trackBoothView 
-} from '@/lib/api/booth';
-import { GetBoothsParams } from '@/app/market/types/market';
+  trackBoothView,
+} from "@/lib/api/booth";
+import { GetBoothsParams } from "@/app/market/types/market";
 
 // Query Keys
 export const BOOTHS_QUERY_KEYS = {
-  all: ['booths'] as const,
-  lists: () => [...BOOTHS_QUERY_KEYS.all, 'list'] as const,
-  list: (params: Partial<GetBoothsParams>) => [...BOOTHS_QUERY_KEYS.lists(), params] as const,
-  infinite: (params: Omit<GetBoothsParams, 'pageNum'>) => [...BOOTHS_QUERY_KEYS.all, 'infinite', params] as const,
-  search: () => [...BOOTHS_QUERY_KEYS.all, 'search'] as const,
-  searchQuery: (keyword: string) => [...BOOTHS_QUERY_KEYS.search(), keyword] as const,
-  hot: () => [...BOOTHS_QUERY_KEYS.all, 'hot'] as const,
+  all: ["booths"] as const,
+  lists: () => [...BOOTHS_QUERY_KEYS.all, "list"] as const,
+  list: (params: Partial<GetBoothsParams>) =>
+    [...BOOTHS_QUERY_KEYS.lists(), params] as const,
+  infinite: (params: Omit<GetBoothsParams, "pageNum">) =>
+    [...BOOTHS_QUERY_KEYS.all, "infinite", params] as const,
+  search: () => [...BOOTHS_QUERY_KEYS.all, "search"] as const,
+  searchQuery: (keyword: string) =>
+    [...BOOTHS_QUERY_KEYS.search(), keyword] as const,
+  hot: () => [...BOOTHS_QUERY_KEYS.all, "hot"] as const,
 };
 
 // Cache times
 const CACHE_TIMES = {
-  BOOTH_LIST: 2 * 60 * 1000,         // 2分钟
-  BOOTH_SEARCH: 5 * 60 * 1000,       // 5分钟
-  HOT_BOOTHS: 10 * 60 * 1000,        // 10分钟
+  BOOTH_LIST: 2 * 60 * 1000, // 2分钟
+  BOOTH_SEARCH: 5 * 60 * 1000, // 5分钟
+  HOT_BOOTHS: 10 * 60 * 1000, // 10分钟
 };
 
 // useBooths Hook - 基础档口列表
@@ -31,7 +34,7 @@ interface UseBoothsOptions {
 }
 
 export function useBooths(
-  params: GetBoothsParams, 
+  params: GetBoothsParams,
   options: UseBoothsOptions = {}
 ) {
   const { enabled = true } = options;
@@ -50,7 +53,7 @@ interface UseInfiniteBoothsOptions {
 }
 
 export function useInfiniteBooths(
-  params: Omit<GetBoothsParams, 'pageNum'>,
+  params: Omit<GetBoothsParams, "pageNum">,
   options: UseInfiniteBoothsOptions = {}
 ) {
   const { enabled = true } = options;
@@ -61,29 +64,18 @@ export function useInfiniteBooths(
       return await getBooths({ ...params, pageNum: pageParam });
     },
     getNextPageParam: (lastPage, allPages) => {
-      console.log('🔍 分页调试信息:', {
-        lastPage,
-        currentPageCount: allPages.length,
-        hasNext: lastPage.hasNext,
-        rowsCount: lastPage.rows?.length,
-        total: lastPage.total
-      });
-      
       // 直接使用 API 返回的 hasNext 和页面数量
       if (lastPage.hasNext === false) {
-        console.log('❌ API 返回 hasNext=false，停止分页');
         return undefined;
       }
-      
+
       // 如果没有数据了，也停止分页
       if (!lastPage.rows || lastPage.rows.length === 0) {
-        console.log('❌ 当前页没有数据，停止分页');
         return undefined;
       }
-      
+
       // 下一页是当前已加载页数 + 1
       const nextPage = allPages.length + 1;
-      console.log('✅ 准备加载第', nextPage, '页');
       return nextPage;
     },
     initialPageParam: 1,

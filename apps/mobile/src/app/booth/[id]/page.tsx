@@ -56,11 +56,14 @@ export default function RefactoredBoothDetailPage() {
     ? products.rows
     : [];
 
-
   // Handle search click - jump to search page with booth context
   const handleSearchClick = () => {
     // 跳转到搜索页面，限制在当前档口内搜索商品，传递档口名称
-    router.push(`/search?type=product&boothId=${boothId}&boothName=${encodeURIComponent(booth?.boothName)}`);
+    router.push(
+      `/search?type=product&boothId=${boothId}&boothName=${encodeURIComponent(
+        booth?.boothName || ""
+      )}`
+    );
   };
 
   // Handle product click
@@ -132,9 +135,7 @@ export default function RefactoredBoothDetailPage() {
             variant="booth-detail"
             showBack={true}
             onBackClick={handleBack}
-            placeholder={`搜索 ${
-              booth?.boothName
-            } 的商品...`}
+            placeholder={`搜索 ${booth?.boothName} 的商品...`}
             onSearchClick={handleSearchClick}
             showShare={true}
             onShareClick={handleShareClick}
