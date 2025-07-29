@@ -60,7 +60,7 @@ const CrownIcon = ({ rank }: { rank: number }) => {
       height="26"
       viewBox="0 0 24 20"
       fill="none"
-      className="absolute -top-3 -left-1.5 transform -rotate-38 drop-shadow-lg"
+      className="absolute -top-2.5 -left-2.5 transform -rotate-[42deg] drop-shadow-lg"
     >
       {/* 皇冠主体 */}
       <path
@@ -218,7 +218,15 @@ export function RankingBooths({
                   className="flex-[0_0_100%] min-w-0 px-2"
                 >
                   {/* 每组显示5个档口 */}
-                  <div className="flex justify-between">
+                  <div
+                    className={`flex ${
+                      group.length === 1
+                        ? "justify-center"
+                        : group.length <= 4
+                        ? "justify-evenly"
+                        : "justify-between"
+                    }`}
+                  >
                     {group.map((booth, itemIndex) => {
                       const overallIndex = groupIndex * 5 + itemIndex;
                       return (
@@ -230,29 +238,31 @@ export function RankingBooths({
                             className="cursor-pointer transition-all active:scale-95"
                           >
                             {/* 档口头像容器 */}
-                            <div className="relative mb-1">
-                              {/* 皇冠图标 - 只显示前4名 */}
-                              {overallIndex < 4 && (
-                                <CrownIcon rank={overallIndex + 1} />
-                              )}
-
-                              {/* 头像 */}
-                              <div className="w-16 h-16 mx-auto rounded-full bg-gray-100 overflow-hidden border-4 border-white shadow-lg">
-                                {booth.coverImage ? (
-                                  <Image
-                                    src={booth.coverImage}
-                                    alt={booth.boothName}
-                                    width={64}
-                                    height={64}
-                                    className="w-full h-full object-cover"
-                                  />
-                                ) : (
-                                  <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                                    <span className="text-gray-400 text-xs">
-                                      无图
-                                    </span>
-                                  </div>
+                            <div className="mb-1">
+                              {/* 相对定位容器，不裁剪皇冠 */}
+                              <div className="relative w-16 h-16 mx-auto">
+                                {/* 皇冠图标 - 只显示前4名 */}
+                                {overallIndex < 4 && (
+                                  <CrownIcon rank={overallIndex + 1} />
                                 )}
+                                {/* 头像 */}
+                                <div className="w-16 h-16 rounded-full bg-gray-100 overflow-hidden border-4 border-white shadow-lg">
+                                  {booth.coverImage ? (
+                                    <Image
+                                      src={booth.coverImage}
+                                      alt={booth.boothName}
+                                      width={64}
+                                      height={64}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                                      <span className="text-gray-400 text-xs">
+                                        无图
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
                               </div>
                             </div>
 
