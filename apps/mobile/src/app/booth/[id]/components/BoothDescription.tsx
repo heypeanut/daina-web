@@ -2,10 +2,10 @@
 
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { BoothDetail } from '@/lib/api/booth';
+import { Booth } from '@/types/booth';
 
 interface BoothDescriptionProps {
-  booth: BoothDetail;
+  booth: Booth;
   className?: string;
 }
 

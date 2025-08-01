@@ -7,15 +7,14 @@ export interface BoothProduct {
   name: string;
   price: number;
   originalPrice?: number;
-  image: string;
-  images?: string[];
+  coverImage: string;
   description?: string;
   category?: string;
-  sales?: number;
+  views?: number;
   rating?: number;
   stock?: number;
   createdAt: string;
-  updatedAt: string;
+  updatedAt?: string;
 }
 
 export interface BoothCategory {
@@ -37,6 +36,14 @@ export interface GetBoothsResponse extends PaginatedResponse<Booth> {
   page: number;
   size: number;
   hasNext: boolean;
+}
+
+export interface GetBoothProductsParams {
+  pageNum: number;
+  pageSize: number;
+  keyword?: string;
+  categoryId?: string;
+  sortBy?: "latest" | "popular" | "price" | "sales";
 }
 
 // ==================== 档口列表相关API ====================
@@ -90,7 +97,7 @@ export async function getHotBooths(limit: number = 10): Promise<Booth[]> {
 // ==================== 档口详情相关API ====================
 
 /**
- * 获取档口详情
+ * 获取档口详情 - 使用 /api/tenant/booth/{id} 接口
  */
 export async function getBoothDetail(id: string): Promise<Booth> {
   const response = await tenantApi.get(`/booth/${id}`);
@@ -98,18 +105,22 @@ export async function getBoothDetail(id: string): Promise<Booth> {
 }
 
 /**
- * 获取档口商品列表
+ * 获取档口商品列表 - 使用 /api/tenant/product/booth/{boothId} 接口（支持分页）
  */
 export async function getBoothProducts(
   boothId: string,
-  pageNum: number = 1,
-  size: number = 12
+  params: GetBoothProductsParams = { pageNum: 1, pageSize: 12 }
 ): Promise<PaginatedResponse<BoothProduct>> {
-  const response = await tenantApi.get(`/booth/${boothId}/products`, {
-    params: {
-      pageNum: pageNum.toString(),
-      size: size.toString(),
-    },
+  const queryParams = {
+    pageNum: params.pageNum.toString(),
+    pageSize: params.pageSize.toString(),
+    ...(params.keyword && { keyword: params.keyword }),
+    ...(params.categoryId && { categoryId: params.categoryId }),
+    ...(params.sortBy && { sortBy: params.sortBy }),
+  };
+
+  const response = await tenantApi.get(`/product/booth/${boothId}`, {
+    params: queryParams,
   });
   return response.data;
 }

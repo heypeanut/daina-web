@@ -16,7 +16,7 @@ interface Booth {
   id: string;
   boothName: string;
   description?: string;
-  coverImage: string;
+  coverImg: string;
   score: number;
   market: string;
   address: string;

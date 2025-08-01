@@ -8,6 +8,7 @@ import {
   trackBoothView,
   trackBoothContact,
   trackBoothShare,
+  GetBoothProductsParams,
 } from "@/lib/api/booth";
 import {
   useFollowBooth,
@@ -55,14 +56,20 @@ export function useBoothDetail(options: UseBoothDetailOptions) {
     enabled: !!boothId,
   });
 
-  // 档口商品查询
+  // 档口商品查询 - 使用新的分页参数格式
   const {
-    data: products = [],
+    data: products = { rows: [], total: 0 },
     isLoading: isProductsLoading,
     refetch: refetchProducts,
   } = useQuery({
     queryKey: ["booth-products", boothId],
-    queryFn: async () => await getBoothProducts(boothId),
+    queryFn: async () => {
+      const params: GetBoothProductsParams = {
+        pageNum: 1,
+        pageSize: 20, // 增加每页数量以获取更多商品
+      };
+      return await getBoothProducts(boothId, params);
+    },
     staleTime: 10 * 60 * 1000, // 10分钟
     enabled: !!boothId && !!booth,
   });

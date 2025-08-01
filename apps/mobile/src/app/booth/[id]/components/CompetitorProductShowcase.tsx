@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { BoothProduct } from "@/lib/api/booth";
-import { Grid, List, ChevronDown, Star, Crown, Package } from "lucide-react";
+import { Grid, List, ChevronDown, Package } from "lucide-react";
 import { ProductShowcaseSkeleton } from "./BoothDetailSkeleton";
 
 interface CompetitorProductShowcaseProps {
@@ -56,9 +56,18 @@ export function CompetitorProductShowcase({
     product: BoothProduct;
     isGridView: boolean;
   }) => {
-    const hasNewTag = Math.random() > 0.7; // Simulate new products
-    const hasDiscount = product.price && Math.random() > 0.8;
-    const originalPrice = hasDiscount ? product.price! * 1.2 : undefined;
+    // 判断是否为新品（7天内的商品）
+    const isNewProduct = () => {
+      const now = new Date();
+      const createdDate = new Date(product.createdAt);
+      const diffTime = now.getTime() - createdDate.getTime();
+      const diffDays = diffTime / (1000 * 3600 * 24);
+      return diffDays <= 7;
+    };
+
+    // 判断是否有特价（有原价且原价高于现价）
+    const hasDiscount = product.originalPrice && product.originalPrice > product.price;
+    const hasNewTag = isNewProduct();
 
     if (isGridView) {
       return (
@@ -69,7 +78,7 @@ export function CompetitorProductShowcase({
           {/* Product image */}
           <div className="relative aspect-square">
             <Image
-              src={product.image || "/placeholder-product.png"}
+              src={product.coverImage || "/placeholder-product.png"}
               alt={product.name}
               fill
               className="w-full h-full object-cover"
@@ -88,13 +97,6 @@ export function CompetitorProductShowcase({
                 </span>
               )}
             </div>
-
-            {/* Crown for featured products */}
-            {Math.random() > 0.8 && (
-              <div className="absolute top-2 right-2">
-                <Crown size={16} className="text-yellow-500" />
-              </div>
-            )}
           </div>
 
           {/* Product info */}
@@ -108,20 +110,16 @@ export function CompetitorProductShowcase({
               <span className="text-red-500 font-bold text-lg">
                 ¥{product.price?.toFixed(2) || "0.00"}
               </span>
-              {originalPrice && (
+              {product.originalPrice && (
                 <span className="text-gray-400 text-sm line-through">
-                  ¥{originalPrice.toFixed(2)}
+                  ¥{product.originalPrice.toFixed(2)}
                 </span>
               )}
             </div>
 
-            {/* Additional info */}
-            <div className="flex items-center justify-between text-xs text-gray-500">
-              <span>已售 {Math.floor(Math.random() * 999) + 1}</span>
-              <div className="flex items-center gap-1">
-                <Star size={10} className="fill-yellow-400 text-yellow-400" />
-                <span>{(4.0 + Math.random()).toFixed(1)}</span>
-              </div>
+            {/* Views info */}
+            <div className="text-xs text-gray-500">
+              <span>浏览 {product.views || 0}</span>
             </div>
           </div>
         </div>
@@ -138,7 +136,7 @@ export function CompetitorProductShowcase({
           {/* Product image */}
           <div className="relative w-20 h-20 flex-shrink-0">
             <Image
-              src={product.image || "/placeholder-product.png"}
+              src={product.coverImage || "/placeholder-product.png"}
               alt={product.name}
               fill
               className="w-full h-full object-cover rounded"
@@ -160,19 +158,15 @@ export function CompetitorProductShowcase({
               <span className="text-red-500 font-bold">
                 ¥{product.price?.toFixed(2) || "0.00"}
               </span>
-              {originalPrice && (
+              {product.originalPrice && (
                 <span className="text-gray-400 text-xs line-through">
-                  ¥{originalPrice.toFixed(2)}
+                  ¥{product.originalPrice.toFixed(2)}
                 </span>
               )}
             </div>
 
-            <div className="flex items-center justify-between text-xs text-gray-500">
-              <span>已售 {Math.floor(Math.random() * 999) + 1}</span>
-              <div className="flex items-center gap-1">
-                <Star size={10} className="fill-yellow-400 text-yellow-400" />
-                <span>{(4.0 + Math.random()).toFixed(1)}</span>
-              </div>
+            <div className="text-xs text-gray-500">
+              <span>浏览 {product.views || 0}</span>
             </div>
           </div>
         </div>

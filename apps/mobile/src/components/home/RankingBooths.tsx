@@ -247,9 +247,9 @@ export function RankingBooths({
                                 )}
                                 {/* 头像 */}
                                 <div className="w-16 h-16 rounded-full bg-gray-100 overflow-hidden border-4 border-white shadow-lg">
-                                  {booth.coverImage ? (
+                                  {booth.coverImg ? (
                                     <Image
-                                      src={booth.coverImage}
+                                      src={booth.coverImg}
                                       alt={booth.boothName}
                                       width={64}
                                       height={64}
