@@ -1,6 +1,5 @@
 import {
   Banner,
-  Booth,
   HomepageData,
   MixedRecommendation,
   PersonalizedRecommendation,
@@ -8,6 +7,7 @@ import {
   ImageSearchResponse,
   ImageSearchParams,
 } from "@/types/api";
+import { Booth } from "@/types/booth";
 
 // API 服务端地址，仅使用环境变量或默认值，不依赖 window
 const BASE_URL =
@@ -166,6 +166,24 @@ class ApiClient {
 
     return this.request(
       `/api/tenant/homepage/product-recommendations?${searchParams}`
+    );
+  }
+
+  public async getLatestBoothsWithNewProducts(params: {
+    pageNum?: number;
+    pageSize?: number;
+    userId?: number;
+  }): Promise<ApiResponse<PaginatedResponse<Booth> | Booth[]>> {
+    const searchParams = new URLSearchParams();
+
+    if (params.pageNum)
+      searchParams.append("pageNum", params.pageNum.toString());
+    if (params.pageSize)
+      searchParams.append("pageSize", params.pageSize.toString());
+    if (params.userId) searchParams.append("userId", params.userId.toString());
+
+    return this.request(
+      `/api/tenant/homepage/latest-booths-with-new-products?${searchParams}`
     );
   }
 

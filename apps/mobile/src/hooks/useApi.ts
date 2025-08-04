@@ -1,27 +1,27 @@
-import { useState, useEffect, useCallback } from 'react';
-import { apiClient, type PaginatedResponse } from '@/lib/api';
+import { useState, useEffect, useCallback } from "react";
+import { apiClient, type PaginatedResponse } from "@/lib/api";
 import type {
   Banner,
-  Booth,
   Product,
   HomepageData,
   PersonalizedRecommendation,
   MixedRecommendation,
   InfiniteScrollState,
   ImageSearchResponse,
-  ImageSearchParams
-} from '@/types/api';
+  ImageSearchParams,
+} from "@/types/api";
+import type { Booth } from "@/types/booth";
 
 // 获取用户ID的工具函数
 const getCurrentUserId = (): number | undefined => {
-  if (typeof window !== 'undefined') {
-    const userStr = localStorage.getItem('user');
+  if (typeof window !== "undefined") {
+    const userStr = localStorage.getItem("user");
     if (userStr) {
       try {
         const user = JSON.parse(userStr);
         return user.id;
       } catch (error) {
-        console.error('解析用户信息失败:', error);
+        console.error("解析用户信息失败:", error);
       }
     }
   }
@@ -30,8 +30,8 @@ const getCurrentUserId = (): number | undefined => {
 
 // 检查用户是否已登录
 const isLoggedIn = (): boolean => {
-  if (typeof window !== 'undefined') {
-    return !!localStorage.getItem('authToken');
+  if (typeof window !== "undefined") {
+    return !!localStorage.getItem("authToken");
   }
   return false;
 };
@@ -40,8 +40,8 @@ const isLoggedIn = (): boolean => {
 export const useBehaviorTracking = () => {
   const recordBehavior = useCallback(
     async (
-      behaviorType: 'view' | 'click' | 'favorite' | 'share',
-      targetType: 'booth' | 'product' | 'banner',
+      behaviorType: "view" | "click" | "favorite" | "share",
+      targetType: "booth" | "product" | "banner",
       targetId: string,
       metadata: Record<string, any> = {}
     ) => {
@@ -55,13 +55,13 @@ export const useBehaviorTracking = () => {
           targetType,
           targetId,
           metadata: {
-            platform: 'mobile',
+            platform: "mobile",
             timestamp: new Date().toISOString(),
             ...metadata,
           },
         });
       } catch (error) {
-        console.error('记录用户行为失败:', error);
+        console.error("记录用户行为失败:", error);
       }
     },
     []
@@ -87,10 +87,10 @@ export const useHomepageData = () => {
       if (response.code === 200) {
         setData(response.data);
       } else {
-        setError(response.message || '加载首页数据失败');
+        setError(response.message || "加载首页数据失败");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : '网络错误');
+      setError(err instanceof Error ? err.message : "网络错误");
     } finally {
       setLoading(false);
     }
@@ -117,7 +117,7 @@ export const useBanners = (limit: number = 5) => {
       const response = await apiClient.getBanners(limit);
 
       if (response.code === 200) {
-        console.log('轮播图API响应数据:', response.data);
+        console.log("轮播图API响应数据:", response.data);
 
         // 兼容不同的数据结构
         let bannerData: Banner[] = [];
@@ -129,17 +129,17 @@ export const useBanners = (limit: number = 5) => {
         } else if (response.data && Array.isArray(response.data.list)) {
           bannerData = response.data.list;
         } else {
-          console.warn('轮播图数据结构异常:', response.data);
+          console.warn("轮播图数据结构异常:", response.data);
           bannerData = [];
         }
 
         setBanners(bannerData);
       } else {
-        setError(response.message || '加载轮播图失败');
+        setError(response.message || "加载轮播图失败");
       }
     } catch (err) {
-      console.error('轮播图API调用失败:', err);
-      setError(err instanceof Error ? err.message : '网络错误');
+      console.error("轮播图API调用失败:", err);
+      setError(err instanceof Error ? err.message : "网络错误");
     } finally {
       setLoading(false);
     }
@@ -164,7 +164,7 @@ export const useBoothRanking = (limit: number = 25) => {
   });
 
   const fetchRanking = useCallback(async () => {
-    setState(prev => ({ ...prev, loading: true, error: undefined }));
+    setState((prev) => ({ ...prev, loading: true, error: undefined }));
 
     try {
       const userId = getCurrentUserId();
@@ -174,25 +174,25 @@ export const useBoothRanking = (limit: number = 25) => {
       });
 
       if (response.code === 200) {
-        console.log('档口排行榜API响应数据:', response.data);
+        console.log("档口排行榜API响应数据:", response.data);
 
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           items: Array.isArray(response.data) ? response.data : [],
           loading: false,
         }));
       } else {
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
-          error: response.message || '加载档口排行榜失败',
+          error: response.message || "加载档口排行榜失败",
           loading: false,
         }));
       }
     } catch (err) {
-      console.error('档口排行榜API调用失败:', err);
-      setState(prev => ({
+      console.error("档口排行榜API调用失败:", err);
+      setState((prev) => ({
         ...prev,
-        error: err instanceof Error ? err.message : '网络错误',
+        error: err instanceof Error ? err.message : "网络错误",
         loading: false,
       }));
     }
@@ -207,7 +207,7 @@ export const useBoothRanking = (limit: number = 25) => {
 
 // 档口推荐Hook（支持分页）
 export const useBoothRecommendations = (
-  type: 'booth_hot' | 'booth_new' = 'booth_hot',
+  type: "booth_hot" | "booth_new" = "booth_hot",
   pageSize: number = 10
 ) => {
   const [state, setState] = useState<InfiniteScrollState<Booth>>({
@@ -220,7 +220,7 @@ export const useBoothRecommendations = (
   const loadMore = useCallback(async () => {
     if (state.loading || !state.hasMore) return;
 
-    setState(prev => ({ ...prev, loading: true, error: undefined }));
+    setState((prev) => ({ ...prev, loading: true, error: undefined }));
 
     try {
       const userId = getCurrentUserId();
@@ -232,7 +232,7 @@ export const useBoothRecommendations = (
       });
 
       if (response.code === 200) {
-        console.log('档口推荐API响应数据:', response.data);
+        console.log("档口推荐API响应数据:", response.data);
 
         // 兼容不同的数据结构
         let items: Booth[] = [];
@@ -242,7 +242,7 @@ export const useBoothRecommendations = (
           // 如果直接返回数组
           items = response.data;
           hasMore = false;
-        } else if (response.data && typeof response.data === 'object') {
+        } else if (response.data && typeof response.data === "object") {
           // 如果返回分页对象
           const data = response.data as any;
           if (Array.isArray(data.rows)) {
@@ -255,12 +255,12 @@ export const useBoothRecommendations = (
             items = data.list;
             hasMore = data.hasMore || false;
           } else {
-            console.warn('未知的数据结构:', data);
+            console.warn("未知的数据结构:", data);
             items = [];
           }
         }
 
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           items: [...prev.items, ...items],
           currentPage: prev.currentPage + 1,
@@ -268,18 +268,18 @@ export const useBoothRecommendations = (
           loading: false,
         }));
       } else {
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
-          error: response.message || '加载档口推荐失败',
+          error: response.message || "加载档口推荐失败",
           loading: false,
           hasMore: false,
         }));
       }
     } catch (err) {
-      console.error('档口推荐API调用失败:', err);
-      setState(prev => ({
+      console.error("档口推荐API调用失败:", err);
+      setState((prev) => ({
         ...prev,
-        error: err instanceof Error ? err.message : '网络错误',
+        error: err instanceof Error ? err.message : "网络错误",
         loading: false,
         hasMore: false,
       }));
@@ -305,7 +305,7 @@ export const useBoothRecommendations = (
 
 // 商品推荐Hook（支持分页）
 export const useProductRecommendations = (
-  type: 'product_hot' | 'product_new' = 'product_hot',
+  type: "product_hot" | "product_new" = "product_hot",
   pageSize: number = 12
 ) => {
   const [state, setState] = useState<InfiniteScrollState<Product>>({
@@ -318,7 +318,7 @@ export const useProductRecommendations = (
   const loadMore = useCallback(async () => {
     if (state.loading || !state.hasMore) return;
 
-    setState(prev => ({ ...prev, loading: true, error: undefined }));
+    setState((prev) => ({ ...prev, loading: true, error: undefined }));
 
     try {
       const userId = getCurrentUserId();
@@ -330,7 +330,7 @@ export const useProductRecommendations = (
       });
 
       if (response.code === 200) {
-        console.log('商品推荐API响应数据:', response.data);
+        console.log("商品推荐API响应数据:", response.data);
 
         // 兼容不同的数据结构
         let items: Product[] = [];
@@ -340,7 +340,7 @@ export const useProductRecommendations = (
           // 如果直接返回数组
           items = response.data;
           hasMore = false;
-        } else if (response.data && typeof response.data === 'object') {
+        } else if (response.data && typeof response.data === "object") {
           // 如果返回分页对象
           const data = response.data as any;
           if (Array.isArray(data.rows)) {
@@ -353,12 +353,12 @@ export const useProductRecommendations = (
             items = data.list;
             hasMore = data.hasMore || false;
           } else {
-            console.warn('未知的数据结构:', data);
+            console.warn("未知的数据结构:", data);
             items = [];
           }
         }
 
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           items: [...prev.items, ...items],
           currentPage: prev.currentPage + 1,
@@ -366,18 +366,18 @@ export const useProductRecommendations = (
           loading: false,
         }));
       } else {
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
-          error: response.message || '加载商品推荐失败',
+          error: response.message || "加载商品推荐失败",
           loading: false,
           hasMore: false,
         }));
       }
     } catch (err) {
-      console.error('商品推荐API调用失败:', err);
-      setState(prev => ({
+      console.error("商品推荐API调用失败:", err);
+      setState((prev) => ({
         ...prev,
-        error: err instanceof Error ? err.message : '网络错误',
+        error: err instanceof Error ? err.message : "网络错误",
         loading: false,
         hasMore: false,
       }));
@@ -403,10 +403,12 @@ export const useProductRecommendations = (
 
 // 个性化推荐Hook
 export const usePersonalizedRecommendations = <T extends Booth | Product>(
-  targetType: 'booth' | 'product',
+  targetType: "booth" | "product",
   pageSize: number = 10
 ) => {
-  const [state, setState] = useState<InfiniteScrollState<PersonalizedRecommendation<T>>>({
+  const [state, setState] = useState<
+    InfiniteScrollState<PersonalizedRecommendation<T>>
+  >({
     items: [],
     loading: false,
     hasMore: true,
@@ -416,22 +418,25 @@ export const usePersonalizedRecommendations = <T extends Booth | Product>(
   const loadMore = useCallback(async () => {
     if (state.loading || !state.hasMore || !isLoggedIn()) return;
 
-    setState(prev => ({ ...prev, loading: true, error: undefined }));
+    setState((prev) => ({ ...prev, loading: true, error: undefined }));
 
     try {
-      const response = targetType === 'booth'
-        ? await apiClient.getPersonalizedBooths({
-            pageNum: state.currentPage,
-            pageSize,
-          })
-        : await apiClient.getPersonalizedProducts({
-            pageNum: state.currentPage,
-            pageSize,
-          });
+      const response =
+        targetType === "booth"
+          ? await apiClient.getPersonalizedBooths({
+              pageNum: state.currentPage,
+              pageSize,
+            })
+          : await apiClient.getPersonalizedProducts({
+              pageNum: state.currentPage,
+              pageSize,
+            });
 
       if (response.code === 200) {
-        const data = response.data as PaginatedResponse<PersonalizedRecommendation<T>>;
-        setState(prev => ({
+        const data = response.data as PaginatedResponse<
+          PersonalizedRecommendation<T>
+        >;
+        setState((prev) => ({
           ...prev,
           items: [...prev.items, ...data.rows],
           currentPage: prev.currentPage + 1,
@@ -439,16 +444,16 @@ export const usePersonalizedRecommendations = <T extends Booth | Product>(
           loading: false,
         }));
       } else {
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
-          error: response.message || '加载个性化推荐失败',
+          error: response.message || "加载个性化推荐失败",
           loading: false,
         }));
       }
     } catch (err) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
-        error: err instanceof Error ? err.message : '网络错误',
+        error: err instanceof Error ? err.message : "网络错误",
         loading: false,
       }));
     }
@@ -468,14 +473,14 @@ export const usePersonalizedRecommendations = <T extends Booth | Product>(
       reset();
       loadMore();
     }
-  }, [targetType, pageSize]);
+  }, [targetType, pageSize, reset, loadMore]);
 
   return { ...state, loadMore, reset };
 };
 
 // 混合推荐Hook
 export const useMixedRecommendations = (
-  targetType: 'booth' | 'product',
+  targetType: "booth" | "product",
   pageSize: number = 10
 ) => {
   const [state, setState] = useState<InfiniteScrollState<MixedRecommendation>>({
@@ -488,7 +493,7 @@ export const useMixedRecommendations = (
   const loadMore = useCallback(async () => {
     if (state.loading || !state.hasMore || !isLoggedIn()) return;
 
-    setState(prev => ({ ...prev, loading: true, error: undefined }));
+    setState((prev) => ({ ...prev, loading: true, error: undefined }));
 
     try {
       const response = await apiClient.getMixedRecommendations({
@@ -499,7 +504,7 @@ export const useMixedRecommendations = (
 
       if (response.code === 200) {
         const data = response.data as PaginatedResponse<MixedRecommendation>;
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           items: [...prev.items, ...data.rows],
           currentPage: prev.currentPage + 1,
@@ -507,16 +512,16 @@ export const useMixedRecommendations = (
           loading: false,
         }));
       } else {
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
-          error: response.message || '加载混合推荐失败',
+          error: response.message || "加载混合推荐失败",
           loading: false,
         }));
       }
     } catch (err) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
-        error: err instanceof Error ? err.message : '网络错误',
+        error: err instanceof Error ? err.message : "网络错误",
         loading: false,
       }));
     }
@@ -536,7 +541,7 @@ export const useMixedRecommendations = (
       reset();
       loadMore();
     }
-  }, [targetType, pageSize]);
+  }, [targetType, pageSize, reset, loadMore]);
 
   return { ...state, loadMore, reset };
 };
@@ -544,7 +549,9 @@ export const useMixedRecommendations = (
 // 图片搜索Hook
 export const useImageSearch = () => {
   const [searching, setSearching] = useState(false);
-  const [searchResult, setSearchResult] = useState<ImageSearchResponse | null>(null);
+  const [searchResult, setSearchResult] = useState<ImageSearchResponse | null>(
+    null
+  );
   const [error, setError] = useState<string | null>(null);
 
   const searchBooths = useCallback(async (params: ImageSearchParams) => {
@@ -556,7 +563,7 @@ export const useImageSearch = () => {
       setSearchResult(response);
       return response;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '图片搜索失败';
+      const errorMessage = err instanceof Error ? err.message : "图片搜索失败";
       setError(errorMessage);
       return null;
     } finally {
@@ -573,7 +580,7 @@ export const useImageSearch = () => {
       setSearchResult(response);
       return response;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '图片搜索失败';
+      const errorMessage = err instanceof Error ? err.message : "图片搜索失败";
       setError(errorMessage);
       return null;
     } finally {
@@ -594,4 +601,102 @@ export const useImageSearch = () => {
     searchProducts,
     clearResults,
   };
+};
+
+// 最新档口与新产品Hook（支持分页）
+export const useLatestBoothsWithNewProducts = (pageSize: number = 12) => {
+  const [state, setState] = useState<InfiniteScrollState<Booth>>({
+    items: [],
+    loading: false,
+    hasMore: true,
+    currentPage: 1,
+  });
+
+  const loadMore = useCallback(async () => {
+    if (state.loading || !state.hasMore) return;
+
+    setState(prev => ({ ...prev, loading: true, error: undefined }));
+
+    try {
+      const userId = getCurrentUserId();
+      const response = await apiClient.getLatestBoothsWithNewProducts({
+        pageNum: state.currentPage,
+        pageSize,
+        userId,
+      });
+
+      if (response.code === 200) {
+        console.log('最新档口新品API响应数据:', response.data);
+
+        // 兼容不同的数据结构，与useBoothRecommendations保持一致
+        let items: Booth[] = [];
+        let hasMore = false;
+        let total = 0;
+
+        if (Array.isArray(response.data)) {
+          // 如果直接返回数组
+          items = response.data;
+          // 如果返回数组，假设还有更多数据（除非数组长度小于页面大小）
+          hasMore = items.length === pageSize;
+        } else if (response.data && typeof response.data === 'object') {
+          // 如果返回分页对象
+          const data = response.data as any;
+          total = data.total || 0;
+          
+          if (Array.isArray(data.rows)) {
+            items = data.rows;
+          } else if (Array.isArray(data.data)) {
+            items = data.data;
+          } else if (Array.isArray(data.list)) {
+            items = data.list;
+          } else {
+            console.warn('未知的数据结构:', data);
+            items = [];
+          }
+          
+          // 根据总数和当前数据计算是否还有更多
+          const currentTotal = state.items.length + items.length;
+          hasMore = data.hasMore !== undefined ? data.hasMore : (total > 0 ? currentTotal < total : items.length === pageSize);
+        }
+
+        setState(prev => ({
+          ...prev,
+          items: [...prev.items, ...items],
+          currentPage: prev.currentPage + 1,
+          hasMore: hasMore,
+          loading: false,
+        }));
+      } else {
+        setState(prev => ({
+          ...prev,
+          error: response.message || '加载最新档口新品失败',
+          loading: false,
+          hasMore: false,
+        }));
+      }
+    } catch (err) {
+      console.error('最新档口新品API调用失败:', err);
+      setState(prev => ({
+        ...prev,
+        error: err instanceof Error ? err.message : '网络错误',
+        loading: false,
+        hasMore: false,
+      }));
+    }
+  }, [pageSize, state.currentPage, state.loading, state.hasMore]);
+
+  const reset = useCallback(() => {
+    setState({
+      items: [],
+      loading: false,
+      hasMore: true,
+      currentPage: 1,
+    });
+  }, []);
+
+  useEffect(() => {
+    loadMore();
+  }, []);
+
+  return { ...state, loadMore, reset };
 };

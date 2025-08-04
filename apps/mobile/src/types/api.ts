@@ -6,7 +6,7 @@ interface Banner {
   title: string;
   imageUrl: string;
   linkUrl: string;
-  linkType: 'product' | 'booth' | 'external';
+  linkType: "product" | "booth" | "external";
   targetId?: string;
   sortOrder: number;
 }
@@ -44,7 +44,7 @@ interface PersonalizedRecommendation<T> {
   id: string;
   score: number;
   reason: string;
-  type: 'booth' | 'product';
+  type: "booth" | "product";
   algorithm: string;
   data: T;
 }
@@ -52,8 +52,8 @@ interface PersonalizedRecommendation<T> {
 // 混合推荐数据
 interface MixedRecommendation {
   id: string;
-  type: 'booth' | 'product';
-  algorithm: 'personalized' | 'collaborative' | 'trending';
+  type: "booth" | "product";
+  algorithm: "personalized" | "collaborative" | "trending";
   score: number;
   reason?: string;
   data: Booth | Product;
@@ -72,7 +72,7 @@ interface HomepageData {
   };
   metadata: {
     hasPersonalization: boolean;
-    userType: 'guest' | 'user';
+    userType: "guest" | "user";
     generatedAt: string;
   };
   timestamp: string;
@@ -82,13 +82,13 @@ interface HomepageData {
 // 用户行为记录数据
 interface BehaviorRecord {
   userId: number;
-  behaviorType: 'view' | 'click' | 'favorite' | 'share';
-  targetType: 'booth' | 'product' | 'banner';
+  behaviorType: "view" | "click" | "favorite" | "share";
+  targetType: "booth" | "product" | "banner";
   targetId: string;
   sessionId?: string;
   metadata?: {
     source?: string;
-    platform?: 'pc' | 'mobile';
+    platform?: "pc" | "mobile";
     position?: number;
     algorithm?: string;
     pageNum?: number;
@@ -99,7 +99,7 @@ interface BehaviorRecord {
 // 搜索结果数据
 interface SearchResult {
   id: string;
-  type: 'booth' | 'product';
+  type: "booth" | "product";
   title: string;
   description: string;
   imageUrl: string;
@@ -140,7 +140,7 @@ interface InfiniteScrollState<T> {
 
 // 搜索页面状态
 interface SearchPageState {
-  activeTab: 'product' | 'booth';
+  activeTab: "product" | "booth";
   productKeyword: string;
   boothKeyword: string;
   productId: string;
@@ -158,7 +158,10 @@ interface HomepageProps {
   latestBooths: Booth[];
   hotProducts: Product[];
   latestProducts: Product[];
-  personalizedRecommendations?: (PersonalizedRecommendation<Booth> | PersonalizedRecommendation<Product>)[];
+  personalizedRecommendations?: (
+    | PersonalizedRecommendation<Booth>
+    | PersonalizedRecommendation<Product>
+  )[];
   onBannerClick: (banner: Banner) => void;
   onBoothClick: (booth: Booth, index: number) => void;
   onProductClick: (product: Product, index: number) => void;
@@ -168,8 +171,8 @@ interface HomepageProps {
 interface RecommendationSectionProps<T> {
   title: string;
   items: T[];
-  type: 'booth' | 'product';
-  layout?: 'list' | 'grid';
+  type: "booth" | "product";
+  layout?: "list" | "grid";
   onItemClick: (item: T, index: number) => void;
   onLoadMore?: () => void;
   loading?: boolean;
@@ -247,6 +250,7 @@ interface ImageSearchParams {
   minPrice?: number;
   maxPrice?: number;
 }
+
 
 // 导出所有类型
 export type {

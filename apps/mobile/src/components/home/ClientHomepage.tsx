@@ -6,7 +6,7 @@ import { ClientSearchBar } from "./ClientSearchBar";
 import { HybridBanner } from "./HybridBanner";
 import { RankingBooths } from "./RankingBooths";
 import { StaticBooths } from "./StaticBooths";
-import { InfiniteProductRecommend } from "./InfiniteProductRecommend";
+import InfiniteBoothsWithNewProducts from "./InfiniteBoothsWithNewProducts";
 import { useBanners, useBehaviorTracking } from "@/hooks/useApi";
 import type { Banner } from "@/types/api";
 
@@ -64,11 +64,7 @@ export function ClientHomepage() {
         <StaticBooths title="最新档口" type="booth_new" limit={10} />
 
         {/* 近期上新 - 无限滚动 */}
-        <InfiniteProductRecommend
-          title="近期上新"
-          type="product_new"
-          layout="grid"
-        />
+        <InfiniteBoothsWithNewProducts title="近期上新" layout="grid" />
       </div>
     </div>
   );
