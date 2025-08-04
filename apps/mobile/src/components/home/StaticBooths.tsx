@@ -138,7 +138,7 @@ export function StaticBooths({
                         {/* 商品图片 */}
                         <div className="w-20 h-20 bg-gray-100 relative overflow-hidden">
                           <Image
-                            src={booth.coverImage}
+                            src={booth.coverImg}
                             alt={booth.boothName}
                             fill
                             sizes="80px"

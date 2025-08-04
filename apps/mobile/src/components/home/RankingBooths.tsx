@@ -219,18 +219,12 @@ export function RankingBooths({
                 >
                   {/* 每组显示5个档口 */}
                   <div
-                    className={`flex ${
-                      group.length === 1
-                        ? "justify-center"
-                        : group.length <= 4
-                        ? "justify-evenly"
-                        : "justify-between"
-                    }`}
+                      className={`flex`}
                   >
                     {group.map((booth, itemIndex) => {
                       const overallIndex = groupIndex * 5 + itemIndex;
                       return (
-                        <div key={booth.id} className="flex-1">
+                        <div key={booth.id}>
                           <div
                             onClick={() =>
                               handleBoothClick(booth, groupIndex, itemIndex)
