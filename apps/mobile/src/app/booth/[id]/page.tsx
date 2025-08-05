@@ -33,11 +33,14 @@ export default function RefactoredBoothDetailPage() {
     isFavorited,
     isLoading,
     isProductsLoading,
+    isLoadingMore,
+    hasMoreProducts,
     isError,
     error,
     handleFavoriteToggle,
     handleShareClick,
     handleRefresh,
+    handleLoadMore,
   } = useBoothDetail({
     boothId,
     autoTrackView: true,
@@ -153,8 +156,12 @@ export default function RefactoredBoothDetailPage() {
 
               <CompetitorProductShowcase
                 products={productsArray}
+                total={products?.total || 0}
                 onProductClick={handleProductClick}
                 loading={isProductsLoading}
+                isLoadingMore={isLoadingMore}
+                hasMore={hasMoreProducts}
+                onLoadMore={handleLoadMore}
               />
 
               <div className="h-4" />

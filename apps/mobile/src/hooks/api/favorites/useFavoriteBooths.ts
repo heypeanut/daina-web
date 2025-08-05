@@ -6,6 +6,7 @@ import {
   isBoothFollowed,
   type FavoriteBooth,
 } from '@/lib/api/user-behavior';
+import { isLoggedIn } from '@/lib/auth';
 
 // Query Keys
 export const FAVORITE_BOOTHS_QUERY_KEYS = {
@@ -55,7 +56,7 @@ export function useBoothFollowStatus(
     queryKey: FAVORITE_BOOTHS_QUERY_KEYS.check(boothId),
     queryFn: async () => await isBoothFollowed(boothId),
     staleTime: CACHE_TIMES.FOLLOW_CHECK,
-    enabled: enabled && !!boothId,
+    enabled: enabled && !!boothId && isLoggedIn(),
   });
 }
 

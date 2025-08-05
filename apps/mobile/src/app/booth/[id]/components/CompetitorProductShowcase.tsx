@@ -1,15 +1,20 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
+import Masonry from "react-masonry-css";
 import { BoothProduct } from "@/lib/api/booth";
-import { Grid, List, ChevronDown, Package } from "lucide-react";
+import { Grid, List, ChevronDown, Package, Loader2 } from "lucide-react";
 import { ProductShowcaseSkeleton } from "./BoothDetailSkeleton";
 
 interface CompetitorProductShowcaseProps {
   products: BoothProduct[];
+  total?: number;
   onProductClick: (product: BoothProduct) => void;
   loading?: boolean;
+  isLoadingMore?: boolean;
+  hasMore?: boolean;
+  onLoadMore?: () => void;
   className?: string;
 }
 
@@ -25,12 +30,52 @@ const sortOptions = [
 
 export function CompetitorProductShowcase({
   products = [],
+  total = 0,
   onProductClick,
   loading = false,
+  isLoadingMore = false,
+  hasMore = false,
+  onLoadMore,
   className = "",
 }: CompetitorProductShowcaseProps) {
   const [sortBy, setSortBy] = useState<SortOption>("default");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+  
+  // 瀑布流列数配置 - 移动端固定2列
+  const breakpointColumnsObj = {
+    default: 2,
+    768: 2,
+    640: 2,
+    480: 2
+  };
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const target = entries[0];
+        if (target.isIntersecting && hasMore && !isLoadingMore && onLoadMore) {
+          onLoadMore();
+        }
+      },
+      {
+        threshold: 0.1,
+        rootMargin: '100px',
+      }
+    );
+
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [hasMore, isLoadingMore, onLoadMore]);
+
+  const handleLoadMoreClick = useCallback(() => {
+    if (hasMore && !isLoadingMore && onLoadMore) {
+      onLoadMore();
+    }
+  }, [hasMore, isLoadingMore, onLoadMore]);
 
   // Sort products based on selected option
   const sortedProducts = React.useMemo(() => {
@@ -81,6 +126,8 @@ export function CompetitorProductShowcase({
               src={product.coverImage || "/placeholder-product.png"}
               alt={product.name}
               fill
+              priority={false} 
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               className="w-full h-full object-cover"
             />
 
@@ -139,6 +186,7 @@ export function CompetitorProductShowcase({
               src={product.coverImage || "/placeholder-product.png"}
               alt={product.name}
               fill
+              priority={false} 
               className="w-full h-full object-cover rounded"
             />
             {hasNewTag && (
@@ -183,9 +231,16 @@ export function CompetitorProductShowcase({
       {/* Header */}
       <div className="px-4 py-4 border-b border-gray-100">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-lg font-semibold text-gray-900">
-            商品展示 ({products.length})
-          </h3>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">
+              商品展示
+            </h3>
+            {total > products.length && (
+              <p className="text-xs text-gray-500 mt-1">
+                已加载 {products.length} 个，共 {total} 个商品
+              </p>
+            )}
+          </div>
 
           {/* View mode toggle */}
           <div className="flex items-center gap-2">
@@ -271,20 +326,65 @@ export function CompetitorProductShowcase({
             <Package size={48} className="mx-auto mb-4 text-gray-300" />
             <p>暂无商品</p>
           </div>
-        ) : (
-          <div
-            className={
-              viewMode === "grid" ? "grid grid-cols-2 gap-3" : "space-y-3"
-            }
+        ) : viewMode === "grid" ? (
+          <Masonry
+            breakpointCols={breakpointColumnsObj}
+            className="flex -ml-3 w-auto"
+            columnClassName="pl-3 bg-clip-padding"
           >
+            {sortedProducts.map((product) => (
+              <div key={product.id} className="mb-3">
+                <ProductCard
+                  product={product}
+                  isGridView={true}
+                />
+              </div>
+            ))}
+          </Masonry>
+        ) : (
+          <div className="space-y-3">
             {sortedProducts.map((product) => (
               <ProductCard
                 key={product.id}
                 product={product}
-                isGridView={viewMode === "grid"}
+                isGridView={false}
               />
             ))}
           </div>
+        )}
+
+        {/* 加载更多 */}
+        {sortedProducts.length > 0 && (
+          <>
+            {/* 无限滚动触发区域 */}
+            <div ref={loadMoreRef} className="h-6 flex items-center justify-center">
+              {isLoadingMore && (
+                <div className="flex items-center gap-2 text-gray-500">
+                  <Loader2 size={16} className="animate-spin" />
+                  <span className="text-sm">加载中...</span>
+                </div>
+              )}
+            </div>
+
+            {/* 手动加载更多按钮 */}
+            {/* {hasMore && !isLoadingMore && (
+              <div className="text-center mt-4">
+                <button
+                  onClick={handleLoadMoreClick}
+                  className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm"
+                >
+                  加载更多商品
+                </button>
+              </div>
+            )} */}
+
+            {/* 已加载完成提示 */}
+            {!hasMore && products.length > 0 && (
+              <div className="text-center mt-4 text-gray-500 text-sm">
+                已显示全部 {products.length} 个商品
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

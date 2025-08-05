@@ -56,7 +56,6 @@ export const useBehaviorTracking = () => {
           targetId,
           metadata: {
             platform: "mobile",
-            timestamp: new Date().toISOString(),
             ...metadata,
           },
         });
@@ -119,21 +118,7 @@ export const useBanners = (limit: number = 5) => {
       if (response.code === 200) {
         console.log("轮播图API响应数据:", response.data);
 
-        // 兼容不同的数据结构
-        let bannerData: Banner[] = [];
-
-        if (Array.isArray(response.data)) {
-          bannerData = response.data;
-        } else if (response.data && Array.isArray(response.data.data)) {
-          bannerData = response.data.data;
-        } else if (response.data && Array.isArray(response.data.list)) {
-          bannerData = response.data.list;
-        } else {
-          console.warn("轮播图数据结构异常:", response.data);
-          bannerData = [];
-        }
-
-        setBanners(bannerData);
+        setBanners(response.data);
       } else {
         setError(response.message || "加载轮播图失败");
       }

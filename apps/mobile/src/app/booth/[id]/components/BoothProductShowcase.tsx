@@ -3,10 +3,11 @@
 import React, { useState } from 'react';
 import { Filter, Grid } from 'lucide-react';
 import { UnifiedSearchBar } from '@/components/common/UnifiedSearchBar';
+import { BoothProduct } from '@/lib/api/booth';
 
 interface BoothProductShowcaseProps {
-  products: [];
-  onProductClick: (product: any) => void;
+  products: BoothProduct[];
+  onProductClick: (product: BoothProduct) => void;
   loading?: boolean;
   className?: string;
 }

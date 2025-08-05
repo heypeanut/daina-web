@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Masonry from "react-masonry-css";
 import { Booth } from "@/types/booth";
 import { MobileBoothCard } from "./MobileBoothCard";
 import { InfiniteScrollList } from "@/components/common/InfiniteScrollList";
@@ -62,22 +63,14 @@ export function BoothGrid({
 }: BoothGridProps) {
   // 初始加载状态：正在加载且暂无数据
   const isInitialLoading = isLoading && booths.length === 0;
-
-  const renderBoothItem = (booth: Booth) => (
-    <BoothItem
-      key={booth.id}
-      booth={booth}
-      onCardClick={onBoothClick}
-      onFavoriteClick={onFavoriteToggle}
-      isFavorited={favoriteIds.has(booth.id)}
-      layout={layout}
-    />
-  );
-
-  const containerClassName =
-    layout === "grid"
-      ? `columns-2 gap-2 px-2 ${className}`
-      : `space-y-0 ${className}`;
+  
+  // 瀑布流列数配置 - 移动端固定2列
+  const breakpointColumnsObj = {
+    default: 2,
+    768: 2,
+    640: 2,
+    480: 2
+  };
 
   // 如果初始加载，显示骨架屏
   if (isInitialLoading) {
@@ -85,7 +78,7 @@ export function BoothGrid({
       <BoothGridSkeleton
         count={6}
         layout={layout}
-        className={containerClassName}
+        className={layout === "grid" ? "px-2" : className}
       />
     );
   }
@@ -102,16 +95,79 @@ export function BoothGrid({
     );
   }
 
+  // 列表布局直接使用InfiniteScrollList
+  if (layout === "list") {
+    return (
+      <InfiniteScrollList
+        items={booths}
+        renderItem={(booth: Booth) => (
+          <BoothItem
+            key={booth.id}
+            booth={booth}
+            onCardClick={onBoothClick}
+            onFavoriteClick={onFavoriteToggle}
+            isFavorited={favoriteIds.has(booth.id)}
+            layout={layout}
+          />
+        )}
+        onLoadMore={onLoadMore}
+        hasNextPage={hasNextPage}
+        isLoading={isLoading}
+        isEmpty={false}
+        emptyTitle=""
+        className={`space-y-0 ${className}`}
+      />
+    );
+  }
+
+  // 网格布局使用瀑布流 + 自定义无限滚动
   return (
-    <InfiniteScrollList
-      items={booths}
-      renderItem={renderBoothItem}
-      onLoadMore={onLoadMore}
-      hasNextPage={hasNextPage}
-      isLoading={isLoading}
-      isEmpty={false}
-      emptyTitle=""
-      className={containerClassName}
-    />
+    <div className={`px-2 ${className}`}>
+      <Masonry
+        breakpointCols={breakpointColumnsObj}
+        className="flex -ml-2 w-auto"
+        columnClassName="pl-2 bg-clip-padding"
+      >
+        {booths.map((booth) => (
+          <div key={booth.id} className="mb-2">
+            <BoothItem
+              booth={booth}
+              onCardClick={onBoothClick}
+              onFavoriteClick={onFavoriteToggle}
+              isFavorited={favoriteIds.has(booth.id)}
+              layout={layout}
+            />
+          </div>
+        ))}
+      </Masonry>
+
+      {/* 无限滚动触发器 */}
+      {hasNextPage && (
+        <div 
+          ref={(el) => {
+            if (el) {
+              const observer = new IntersectionObserver(
+                (entries) => {
+                  if (entries[0].isIntersecting && hasNextPage && !isLoading) {
+                    onLoadMore();
+                  }
+                },
+                { threshold: 0.1, rootMargin: '50px' }
+              );
+              observer.observe(el);
+              return () => observer.disconnect();
+            }
+          }}
+          className="w-full flex justify-center pt-4"
+        >
+          {isLoading && booths.length > 0 && (
+            <div className="flex items-center space-x-3">
+              <div className="w-4 h-4 border-2 border-gray-200 border-t-orange-500 rounded-full animate-spin" />
+              <span className="text-sm text-gray-600 font-medium">加载更多...</span>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }

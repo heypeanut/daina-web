@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import React, { useState, useEffect, useCallback } from "react";
+import { useQuery, useInfiniteQuery, useMutation } from "@tanstack/react-query";
 import {
   getBoothDetail,
   getBoothProducts,
@@ -19,6 +19,7 @@ import { ContactType } from "../types/detail";
 import { useDictMap } from "@/hooks/api/useDictionary";
 import { DictType } from "@/types/dictionary";
 import { translateDictValue } from "@/utils/dictionary";
+import { isLoggedIn } from "@/lib/auth";
 
 interface UseBoothDetailOptions {
   boothId: string;
@@ -56,23 +57,45 @@ export function useBoothDetail(options: UseBoothDetailOptions) {
     enabled: !!boothId,
   });
 
-  // 档口商品查询 - 使用新的分页参数格式
+  // 档口商品查询 - 使用无限滚动分页
   const {
-    data: products = { rows: [], total: 0 },
+    data: productsPages,
     isLoading: isProductsLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
     refetch: refetchProducts,
-  } = useQuery({
+  } = useInfiniteQuery({
     queryKey: ["booth-products", boothId],
-    queryFn: async () => {
+    queryFn: async ({ pageParam = 1 }) => {
       const params: GetBoothProductsParams = {
-        pageNum: 1,
-        pageSize: 20, // 增加每页数量以获取更多商品
+        pageNum: pageParam,
+        pageSize: 20,
       };
       return await getBoothProducts(boothId, params);
     },
-    staleTime: 10 * 60 * 1000, // 10分钟
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) => {
+      const totalLoaded = allPages.reduce((acc, page) => acc + page.rows.length, 0);
+      return totalLoaded < lastPage.total ? allPages.length + 1 : undefined;
+    },
+    staleTime: 10 * 60 * 1000,
     enabled: !!boothId && !!booth,
   });
+
+  const products = React.useMemo(() => {
+    if (!productsPages?.pages) {
+      return { rows: [], total: 0 };
+    }
+    
+    const allProducts = productsPages.pages.flatMap(page => page.rows || []);
+    const total = productsPages.pages[0]?.total || 0;
+    
+    return {
+      rows: allProducts,
+      total: total,
+    };
+  }, [productsPages]);
 
   // 收藏状态查询
   const { data: isFavorited = false, isLoading: isFavoriteLoading } =
@@ -80,12 +103,10 @@ export function useBoothDetail(options: UseBoothDetailOptions) {
 
   // 收藏操作
   const followMutation = useFollowBooth({
-    onSuccess: () => console.log("收藏成功"),
     onError: (error) => console.error("收藏失败:", error),
   });
 
   const unfollowMutation = useUnfollowBooth({
-    onSuccess: () => console.log("取消收藏成功"),
     onError: (error) => console.error("取消收藏失败:", error),
   });
 
@@ -121,7 +142,7 @@ export function useBoothDetail(options: UseBoothDetailOptions) {
 
   // 自动触发浏览埋点
   useEffect(() => {
-    if (booth && autoTrackView && !hasTrackedView) {
+    if (booth && autoTrackView && !hasTrackedView && isLoggedIn()) {
       trackViewMutation.mutate(boothId);
       setHasTrackedView(true);
     }
@@ -219,6 +240,12 @@ export function useBoothDetail(options: UseBoothDetailOptions) {
     onShareSuccess?.();
   }, [boothId, booth, trackShareMutation, onShareSuccess]);
 
+  const handleLoadMore = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
   // 刷新数据
   const handleRefresh = useCallback(() => {
     refetchBooth();
@@ -245,6 +272,8 @@ export function useBoothDetail(options: UseBoothDetailOptions) {
     // 状态
     isLoading: isBoothLoading || isFavoriteLoading,
     isProductsLoading,
+    isLoadingMore: isFetchingNextPage,
+    hasMoreProducts: hasNextPage,
     isError: isBoothError,
     error: boothError,
     activeTab,
@@ -258,5 +287,6 @@ export function useBoothDetail(options: UseBoothDetailOptions) {
     handleShareClick,
     handleRefresh,
     handleTabChange,
+    handleLoadMore,
   };
 }

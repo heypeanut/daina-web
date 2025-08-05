@@ -244,7 +244,7 @@ export function RankingBooths({
                                   {booth.coverImg ? (
                                     <Image
                                       src={booth.coverImg}
-                                      alt={booth.boothName}
+                                      alt={booth.boothName || "name"}
                                       width={64}
                                       height={64}
                                       className="w-full h-full object-cover"
