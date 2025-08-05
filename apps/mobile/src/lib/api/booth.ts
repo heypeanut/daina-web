@@ -1,6 +1,7 @@
 // 新版档口API - 使用tenant端接口
 import { Booth } from "@/types/booth";
 import { tenantApi, PaginatedResponse } from "./config";
+import { isLoggedIn } from "@/lib/auth";
 
 export interface BoothProduct {
   id: string;
@@ -131,6 +132,11 @@ export async function getBoothProducts(
  * 记录档口浏览
  */
 export async function trackBoothView(boothId: string): Promise<void> {
+  // 如果未登录，直接返回，不执行埋点
+  if (!isLoggedIn()) {
+    return;
+  }
+
   try {
     await tenantApi.post("/user/history", {
       type: "booth",

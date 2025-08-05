@@ -1,5 +1,6 @@
 // 新版用户行为API - 收藏、历史记录等
 import { tenantApi, PaginatedResponse } from './config';
+import { isLoggedIn } from '@/lib/auth';
 
 // 接口类型定义
 export interface Product {
@@ -192,7 +193,16 @@ export async function addFootprint(
   type: "product" | "booth",
   targetId: string
 ): Promise<void> {
-  await tenantApi.post('/user/history', { type, targetId });
+  // 如果未登录，直接返回，不执行埋点
+  if (!isLoggedIn()) {
+    return;
+  }
+
+  try {
+    await tenantApi.post('/user/history', { type, targetId });
+  } catch (error) {
+    console.warn("Failed to add footprint:", error);
+  }
 }
 
 /**
@@ -203,7 +213,18 @@ export async function getFootprints(
   page: number = 1,
   pageSize: number = 20
 ): Promise<PaginatedResponse<Footprint>> {
-  const params: any = { page, pageSize };
+  // 如果未登录，返回空结果
+  if (!isLoggedIn()) {
+    return {
+      rows: [],
+      total: 0,
+      page,
+      pageSize,
+      hasNext: false,
+    };
+  }
+
+  const params: { page: number; pageSize: number; type?: string } = { page, pageSize };
   if (type) params.type = type;
   
   const response = await tenantApi.get('/user/history', { params });
@@ -214,6 +235,11 @@ export async function getFootprints(
  * 清除浏览记录
  */
 export async function clearFootprints(type?: "product" | "booth"): Promise<void> {
+  // 如果未登录，直接返回
+  if (!isLoggedIn()) {
+    return;
+  }
+
   const params = type ? { type } : undefined;
   await tenantApi.delete('/user/history', undefined, { params });
 }
@@ -222,5 +248,10 @@ export async function clearFootprints(type?: "product" | "booth"): Promise<void>
  * 删除单个浏览记录
  */
 export async function removeFootprint(footprintId: string): Promise<void> {
+  // 如果未登录，直接返回
+  if (!isLoggedIn()) {
+    return;
+  }
+
   await tenantApi.delete(`/user/history/${footprintId}`);
 }
