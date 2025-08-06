@@ -94,6 +94,23 @@ export function InfiniteBoothsWithNewProducts({
     );
   }
 
+  // 初始加载状态
+  if (items.length === 0 && loading) {
+    return (
+      <div className="px-4 py-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">{title}</h2>
+        <div className="flex justify-center py-8">
+          <div className="flex items-center space-x-3">
+            <div className="w-4 h-4 border-2 border-gray-200 border-t-orange-500 rounded-full animate-spin" />
+            <span className="text-sm text-gray-600 font-medium">
+              正在加载...
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (items.length === 0 && !loading) {
     return (
       <div className="px-4 py-6">

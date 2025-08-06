@@ -592,13 +592,16 @@ export const useImageSearch = () => {
 export const useLatestBoothsWithNewProducts = (pageSize: number = 12) => {
   const [state, setState] = useState<InfiniteScrollState<Booth>>({
     items: [],
-    loading: false,
+    loading: true,
     hasMore: true,
     currentPage: 1,
   });
 
   const loadMore = useCallback(async () => {
-    if (state.loading || !state.hasMore) return;
+    // 如果是后续加载（已有数据）且正在加载，则跳过
+    if (state.items.length > 0 && state.loading) return;
+    // 如果没有更多数据，则跳过
+    if (!state.hasMore) return;
 
     setState(prev => ({ ...prev, loading: true, error: undefined }));
 
