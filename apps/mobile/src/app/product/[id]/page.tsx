@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { MobileLayout } from '@/components/layout/MobileLayout';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
-import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { ProductDetailSkeleton } from './components/ProductDetailSkeleton';
 import { Phone, QrCode } from 'lucide-react';
 
 // 产品页面组件
@@ -102,11 +102,7 @@ export default function ProductDetailPage() {
   if (isLoading) {
     return (
       <MobileLayout showTabBar={false}>
-        <div className="min-h-screen bg-gray-50">
-          <div className="flex items-center justify-center min-h-96">
-            <LoadingSpinner />
-          </div>
-        </div>
+        <ProductDetailSkeleton />
       </MobileLayout>
     );
   }

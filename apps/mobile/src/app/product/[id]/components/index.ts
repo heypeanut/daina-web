@@ -6,3 +6,4 @@ export { ServiceGuarantee } from './ServiceGuarantee';
 export { ProductSpecs } from './ProductSpecs';
 export { BoothInfoCard } from './BoothInfoCard';
 export { ProductActionBar } from './ProductActionBar';
+export { ProductDetailSkeleton } from './ProductDetailSkeleton';
