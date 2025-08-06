@@ -3,6 +3,7 @@ import { Booth } from "@/types/booth";
 import { tenantApi, PaginatedResponse } from "./config";
 import { isLoggedIn } from "@/lib/auth";
 import { ProductDetail } from "@/app/product/[id]/types";
+import { searchBooths as searchBoothsAPI } from "./search";
 
 export interface BoothProduct {
   id: string;
@@ -74,14 +75,27 @@ export async function getBoothCategories(): Promise<BoothCategory[]> {
 }
 
 /**
- * 搜索档口
+ * 搜索档口 - 使用专门的搜索接口
  */
 export async function searchBooths(
   keyword: string,
   pageNum: number = 1,
   size: number = 20
 ): Promise<GetBoothsResponse> {
-  return getBooths({ pageNum, size, keyword });
+  const searchResponse = await searchBoothsAPI({
+    keyword,
+    pageNum,
+    pageSize: size,
+  });
+  
+  // 转换响应格式以保持兼容性
+  return {
+    rows: searchResponse.rows,
+    total: searchResponse.total,
+    page: pageNum,
+    size: size,
+    hasNext: pageNum * size < searchResponse.total,
+  };
 }
 
 /**

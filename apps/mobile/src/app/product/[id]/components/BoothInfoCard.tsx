@@ -35,7 +35,7 @@ export function BoothInfoCard({
           {/* 店铺头像 */}
           <div className="w-24 h-24 flex-shrink-0">
             <ImageLazyLoader
-              src={booth.coverImg || ''}
+              src={booth.imageUrl || ''}
               alt={booth.boothName}
               width={96}
               height={96}

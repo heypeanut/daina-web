@@ -11,12 +11,12 @@ interface Banner {
   sortOrder: number;
 }
 
-// 档口数据
+// 档口数据  
 interface Booth {
   id: string;
   boothName: string;
   description?: string;
-  coverImg: string;
+  imageUrl: string;
   score: number;
   market: string;
   address: string;
@@ -27,14 +27,14 @@ interface Booth {
 
 // 商品数据
 interface Product {
-  id: number;
+  id: string;
   name: string;
-  description: string;
+  description?: string;
   price: number;
   imageUrl: string;
-  boothId: string;
-  boothName: string;
-  score: number;
+  boothId?: string;
+  boothName?: string;
+  score?: number;
   sales?: number;
   isHot?: boolean;
 }
@@ -206,6 +206,44 @@ interface InfiniteScrollProps<T> {
   errorComponent?: React.ReactNode;
 }
 
+// 商品搜索相关类型
+interface ProductSearchParams {
+  keyword: string;
+  pageNum?: number;
+  pageSize?: number;
+  boothId?: string;
+  categoryId?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  sortBy?: 'relevance' | 'price' | 'sales' | 'latest';
+}
+
+interface BoothSearchParams {
+  keyword: string;
+  pageNum?: number;
+  pageSize?: number;
+  location?: string;
+  categoryId?: string;
+  sortBy?: 'relevance' | 'popular' | 'rating';
+}
+
+interface SearchResponseBase {
+  total: number;
+  page?: number;
+  pageSize?: number;
+  totalPages?: number;
+  searchTime?: number;
+  suggestions?: string[];
+}
+
+interface ProductSearchResponse extends SearchResponseBase {
+  rows: Product[];
+}
+
+interface BoothSearchResponse extends SearchResponseBase {
+  rows: Booth[];
+}
+
 // 图片搜索相关类型
 interface ImageSearchResult {
   similarity: number;
@@ -270,6 +308,13 @@ export type {
   BannerSectionProps,
   SearchBarProps,
   InfiniteScrollProps,
+  // 搜索相关类型
+  ProductSearchParams,
+  BoothSearchParams,
+  SearchResponseBase,
+  ProductSearchResponse,
+  BoothSearchResponse,
+  // 图片搜索类型
   ImageSearchResult,
   ImageSearchResponse,
   ImageSearchParams,

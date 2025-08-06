@@ -43,7 +43,7 @@ export function MobileBoothCard({
       {/* 档口头像 */}
       <div className="relative">
         <ImageLazyLoader
-          src={booth.coverImg}
+          src={booth.imageUrl}
           alt={booth.boothName || ''}
           width={200}
           height={200}

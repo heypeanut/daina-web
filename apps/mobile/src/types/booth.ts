@@ -1,8 +1,8 @@
 export interface Booth {
-  id?: string;
-  boothName?: string;
+  id: string;
+  boothName: string;
   avatar?: string;
-  coverImg?: string;
+  coverImg: string;
   description?: string;
   location?: string;
   category?: string;

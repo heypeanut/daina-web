@@ -218,9 +218,7 @@ export function RankingBooths({
                   className="flex-[0_0_100%] min-w-0 px-2"
                 >
                   {/* 每组显示5个档口 */}
-                  <div
-                      className={`flex`}
-                  >
+                  <div className={`flex`}>
                     {group.map((booth, itemIndex) => {
                       const overallIndex = groupIndex * 5 + itemIndex;
                       return (

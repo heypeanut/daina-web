@@ -56,7 +56,9 @@ export default function ImageSearchPage() {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
         // 使用相同的处理逻辑
-        handleFileSelect({ target: { files: [file] } } as any);
+        handleFileSelect({ 
+          target: { files: [file] } 
+        } as React.ChangeEvent<HTMLInputElement>);
       }
       // 清理临时元素
       document.body.removeChild(cameraInput);
