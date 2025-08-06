@@ -3,7 +3,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { ImageLazyLoader } from '@/components/common/ImageLazyLoader';
 import useEmblaCarousel from 'embla-carousel-react';
-import { Dialog, DialogContent } from 'ui';
+import { Dialog, DialogContent, DialogTitle } from 'ui';
 import { ProductImage } from '../types';
 
 interface ProductImageViewerProps {
@@ -158,7 +158,10 @@ export function ProductImageViewer({
 
       {/* Dialog 图片查看器 */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-6xl  p-0 bg-black border-none">
+        <DialogTitle />
+        <DialogContent aria-describedby={undefined} className="max-w-6xl p-0 bg-black/10 border-none h-screen [&>button]:hidden focus-visible:outline-none" onClick={() => {
+          setIsDialogOpen(false);
+        }}>
           {/* 大图展示区域 */}
           <div className="relative w-full overflow-hidden">
             <div 
@@ -171,13 +174,13 @@ export function ProductImageViewer({
                     key={index}
                     className="flex-[0_0_100%] min-w-0 relative flex items-center justify-center"
                   >
-                    <ImageLazyLoader
-                      src={imageUrl}
-                      alt={`${productName} - 图片 ${index + 1}`}
-                      width={800}
-                      height={800}
-                      className="max-w-full max-h-full object-contain"
-                    />
+                      <ImageLazyLoader
+                        src={imageUrl}
+                        width={800}
+                        height={600}
+                        alt={`${productName} - 图片 ${index + 1}`}
+                        className="max-w-full max-h-full object-contain"
+                      />
                   </div>
                 ))}
               </div>

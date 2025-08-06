@@ -14,6 +14,7 @@ interface ImageLazyLoaderProps {
   placeholder?: React.ReactNode;
   onLoad?: () => void;
   onError?: () => void;
+  fill?: boolean; // 支持 fill 模式
 }
 
 export function ImageLazyLoader({
@@ -26,6 +27,7 @@ export function ImageLazyLoader({
   placeholder,
   onLoad,
   onError,
+  fill = false,
 }: ImageLazyLoaderProps) {
   const [imgSrc, setImgSrc] = useState(src || fallbackSrc);
   const [isLoading, setIsLoading] = useState(true);
@@ -63,19 +65,22 @@ export function ImageLazyLoader({
 
   return (
     <div className="relative">
-      {isLoading && (placeholder || defaultPlaceholder)}
+      {/* {isLoading && (placeholder || defaultPlaceholder)} */}
       <Image
         src={imgSrc}
         alt={alt}
-        width={width}
-        height={height}
+        {...(fill 
+          ? { fill: true } 
+          : { width, height }
+        )}
         className={`${className} ${
           isLoading ? "opacity-0 absolute inset-0" : "opacity-100"
-        } transition-opacity duration-300`}
+        } transition-opacity duration-150`}
         onLoad={handleLoad}
         onError={handleError}
         priority={false}
         loading="lazy"
+        style={fill ? undefined : { width: 'auto', height: 'auto' }}
       />
     </div>
   );
