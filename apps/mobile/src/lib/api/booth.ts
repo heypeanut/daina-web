@@ -2,6 +2,7 @@
 import { Booth } from "@/types/booth";
 import { tenantApi, PaginatedResponse } from "./config";
 import { isLoggedIn } from "@/lib/auth";
+import { ProductDetail } from "@/app/product/[id]/types";
 
 export interface BoothProduct {
   id: string;
@@ -177,5 +178,49 @@ export async function trackBoothShare(boothId: string): Promise<void> {
     });
   } catch (error) {
     console.warn("Failed to track booth share:", error);
+  }
+}
+
+// ==================== 产品详情相关API ====================
+
+/**
+ * 获取产品详情 - 使用 /api/tenant/product/{id} 接口
+ */
+export async function getProductDetail(id: string): Promise<ProductDetail> {
+  const response = await tenantApi.get(`/product/${id}`);
+  return response.data;
+}
+
+/**
+ * 记录产品浏览
+ */
+export async function trackProductView(productId: string): Promise<void> {
+  // 如果未登录，直接返回，不执行埋点
+  if (!isLoggedIn()) {
+    return;
+  }
+
+  try {
+    await tenantApi.post("/user/history", {
+      type: "product",
+      targetId: productId,
+    });
+  } catch (error) {
+    console.warn("Failed to track product view:", error);
+  }
+}
+
+/**
+ * 记录产品分享行为
+ */
+export async function trackProductShare(productId: string): Promise<void> {
+  try {
+    await tenantApi.post("/analytics/share", {
+      productId,
+      shareType: "product",
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.warn("Failed to track product share:", error);
   }
 }

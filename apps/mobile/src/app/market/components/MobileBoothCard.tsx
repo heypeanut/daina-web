@@ -44,7 +44,7 @@ export function MobileBoothCard({
       <div className="relative">
         <ImageLazyLoader
           src={booth.coverImg}
-          alt={booth.boothName}
+          alt={booth.boothName || ''}
           width={200}
           height={200}
           className="w-full aspect-auto object-cover transition-transform duration-200 group-hover:scale-105"
