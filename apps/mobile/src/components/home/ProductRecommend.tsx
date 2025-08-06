@@ -64,7 +64,7 @@ export function ProductRecommend({
       {layout === "grid" ? (
         // 网格布局 - 2列
         <div className="grid grid-cols-2 gap-3 p-4">
-          {products.slice(0, 6).map(
+          {products.map(
             (product, index) => (
               console.log("product", product.images[0].url),
               (
