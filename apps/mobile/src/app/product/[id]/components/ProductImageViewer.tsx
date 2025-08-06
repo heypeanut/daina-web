@@ -3,6 +3,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { ImageLazyLoader } from '@/components/common/ImageLazyLoader';
 import useEmblaCarousel from 'embla-carousel-react';
+import { Dialog, DialogContent } from 'ui';
 import { ProductImage } from '../types';
 
 interface ProductImageViewerProps {
@@ -16,8 +17,9 @@ export function ProductImageViewer({
   productName,
   className = ''
 }: ProductImageViewerProps) {
-  const [isZoomed, setIsZoomed] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [dialogSelectedIndex, setDialogSelectedIndex] = useState(0);
 
   // 确保至少有一张图片，转换为URL数组
   const imageUrls = images.length > 0 
@@ -31,10 +33,24 @@ export function ProductImageViewer({
     dragFree: false,
   });
 
+  // Dialog 中的 carousel 实例
+  const [dialogEmblaRef, dialogEmblaApi] = useEmblaCarousel({
+    loop: imageUrls.length > 1,
+    align: 'start',
+    skipSnaps: false,
+    dragFree: false,
+  });
+
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
     setSelectedIndex(emblaApi.selectedScrollSnap());
   }, [emblaApi]);
+
+  // Dialog carousel 的选择处理
+  const onDialogSelect = useCallback(() => {
+    if (!dialogEmblaApi) return;
+    setDialogSelectedIndex(dialogEmblaApi.selectedScrollSnap());
+  }, [dialogEmblaApi]);
 
   useEffect(() => {
     if (!emblaApi) return;
@@ -45,6 +61,16 @@ export function ProductImageViewer({
     };
   }, [emblaApi, onSelect]);
 
+  // Dialog carousel 的 useEffect
+  useEffect(() => {
+    if (!dialogEmblaApi) return;
+    onDialogSelect();
+    dialogEmblaApi.on('select', onDialogSelect);
+    return () => {
+      dialogEmblaApi.off('select', onDialogSelect);
+    };
+  }, [dialogEmblaApi, onDialogSelect]);
+
   const scrollTo = useCallback(
     (index: number) => {
       if (emblaApi) emblaApi.scrollTo(index);
@@ -52,9 +78,14 @@ export function ProductImageViewer({
     [emblaApi]
   );
 
-  const toggleZoom = () => {
-    setIsZoomed(!isZoomed);
-  };
+  // Dialog carousel 的滚动函数
+  const dialogScrollTo = useCallback(
+    (index: number) => {
+      if (dialogEmblaApi) dialogEmblaApi.scrollTo(index);
+    },
+    [dialogEmblaApi]
+  );
+
 
   return (
     <div className={`relative bg-white -mb-2 ${className}`}>
@@ -69,16 +100,23 @@ export function ProductImageViewer({
               <div
                 key={index}
                 className="flex-[0_0_100%] min-w-0 relative cursor-pointer"
-                onClick={toggleZoom}
+                onClick={() => {
+                  setDialogSelectedIndex(selectedIndex);
+                  setIsDialogOpen(true);
+                  // 延迟设置 Dialog carousel 的索引，确保 carousel 已经初始化
+                  setTimeout(() => {
+                    if (dialogEmblaApi) {
+                      dialogEmblaApi.scrollTo(selectedIndex);
+                    }
+                  }, 100);
+                }}
               >
                 <ImageLazyLoader
                   src={imageUrl}
                   alt={`${productName} - 图片 ${index + 1}`}
                   width={400}
                   height={400}
-                  className={`w-full h-full object-cover transition-transform duration-300 ${
-                    isZoomed ? 'scale-150' : 'scale-100'
-                  }`}
+                  className="w-full h-full object-cover"
                 />
               </div>
             ))}
@@ -86,23 +124,15 @@ export function ProductImageViewer({
         </div>
 
         {/* 指示器 */}
-        {imageUrls.length > 1 && (
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
-            {imageUrls.map((_, index) => (
-              <button
-                key={index}
-                className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                  index === selectedIndex ? "bg-white scale-125" : "bg-white/50"
-                }`}
-                onClick={() => scrollTo(index)}
-              />
-            ))}
-          </div>
-        )}
+        <div className="absolute bottom-3 -right-2 transform -translate-x-1/2 flex space-x-2 z-20 bg-black/50 rounded-lg px-2 py-1">
+         <span className="text-white text-sm">
+          {selectedIndex + 1}/{imageUrls.length}
+         </span>
+        </div>
       </div>
 
       {/* 缩略图导航 */}
-      {imageUrls.length > 1 && imageUrls.length <= 5 && (
+      {imageUrls.length  && (
         <div className="flex gap-2 p-4 overflow-x-auto">
           {imageUrls.map((imageUrl, index) => (
             <button
@@ -126,23 +156,45 @@ export function ProductImageViewer({
         </div>
       )}
 
-      {/* 缩放提示 */}
-      {isZoomed && (
-        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 touch-pan-x touch-pan-y">
-          <div className="text-white text-center p-4 max-w-full max-h-full">
-            <p className="text-sm mb-4 opacity-80">点击退出放大</p>
-            <div className="overflow-auto max-h-[80vh] flex items-center justify-center">
-              <ImageLazyLoader
-                src={imageUrls[selectedIndex]}
-                alt={`${productName} - 放大图`}
-                width={400}
-                height={400}
-                className="max-w-full max-h-full object-contain select-none"
-              />
+      {/* Dialog 图片查看器 */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-6xl  p-0 bg-black border-none">
+          {/* 大图展示区域 */}
+          <div className="relative w-full overflow-hidden">
+            <div 
+              className="overflow-hidden h-full relative"
+              ref={dialogEmblaRef}
+            >
+              <div className="flex h-full">
+                {imageUrls.map((imageUrl, index) => (
+                  <div
+                    key={index}
+                    className="flex-[0_0_100%] min-w-0 relative flex items-center justify-center"
+                  >
+                    <ImageLazyLoader
+                      src={imageUrl}
+                      alt={`${productName} - 图片 ${index + 1}`}
+                      width={800}
+                      height={800}
+                      className="max-w-full max-h-full object-contain"
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
+
+            {/* Dialog 指示器 */}
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20 bg-black/70 rounded-lg px-3 py-2">
+              <span className="text-white text-sm">
+                {dialogSelectedIndex + 1}/{imageUrls.length}
+              </span>
+            </div>
+
+          
           </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }

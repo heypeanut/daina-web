@@ -163,7 +163,7 @@ export function UnifiedSearchBar({
             className={`flex-1 ${searchBoxClass} cursor-pointer active:bg-white/90`}
           >
             <Search size={16} className="text-gray-400 mr-3" />
-            <span className="flex-1 text-sm text-gray-500">
+            <span className="flex-1 text-sm text-gray-500 truncate">
               {placeholder}
             </span>
           </div>
@@ -278,7 +278,7 @@ export function UnifiedSearchBar({
             className={`flex-1 ${searchBoxClass} cursor-pointer active:bg-white/90`}
           >
             <Search size={16} className="text-gray-400 mr-3" />
-            <span className="flex-1 text-sm text-gray-500">
+            <span className="flex-1 text-sm text-gray-500 truncate">
               {placeholder}
             </span>
           </div>
