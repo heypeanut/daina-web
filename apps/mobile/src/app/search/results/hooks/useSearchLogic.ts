@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useInfiniteProductSearch, useInfiniteBoothSearch } from '@/hooks/api/search';
-import type { ImageSearchResponse, Product } from '@/types/api';
+import type { ImageSearchResponse } from '@/types/api';
 import type { Booth } from '@/types/booth';
 
 type SortOption = 'relevance' | 'price' | 'sales';
@@ -54,32 +54,12 @@ export function useSearchLogic() {
 
   // 扁平化商品数据
   const flattenedProducts = useMemo(() => {
-    const flattened = productInfiniteSearch.data?.pages.flatMap(page => page.rows) || [];
-    console.log('📦 [搜索逻辑调试] 产品数据扁平化:', {
-      pagesCount: productInfiniteSearch.data?.pages?.length || 0,
-      totalProducts: flattened.length,
-      pages: productInfiniteSearch.data?.pages?.map(page => ({
-        rowsCount: page.rows?.length || 0,
-        page: page.page,
-        total: page.total
-      })) || []
-    });
-    return flattened;
+    return productInfiniteSearch.data?.pages.flatMap(page => page.rows) || [];
   }, [productInfiniteSearch.data]);
 
   // 扁平化档口数据
   const flattenedBooths = useMemo(() => {
-    const flattened = boothInfiniteSearch.data?.pages.flatMap(page => page.rows) || [];
-    console.log('🏪 [搜索逻辑调试] 档口数据扁平化:', {
-      pagesCount: boothInfiniteSearch.data?.pages?.length || 0,
-      totalBooths: flattened.length,
-      pages: boothInfiniteSearch.data?.pages?.map(page => ({
-        rowsCount: page.rows?.length || 0,
-        page: page.page,
-        total: page.total
-      })) || []
-    });
-    return flattened;
+    return boothInfiniteSearch.data?.pages.flatMap(page => page.rows) || [];
   }, [boothInfiniteSearch.data]);
 
   // 获取总数量
@@ -164,7 +144,7 @@ export function useSearchLogic() {
     setIsImageSearch(false);
     
     // 根据URL参数设置tab
-    if (searchParams.get("tab") === "booth") {
+    if (searchParams.get("type") === "booth") {
       setActiveTab("booth");
     }
   };
@@ -175,7 +155,7 @@ export function useSearchLogic() {
   };
 
   // 防抖定时器
-  const sortChangeTimer = useRef<NodeJS.Timeout>();
+  const sortChangeTimer = useRef<NodeJS.Timeout>(null);
   
   const handleSortChange = useCallback((newSortBy: SortOption) => {
     setSortBy(newSortBy);
@@ -208,7 +188,7 @@ export function useSearchLogic() {
   }, []);
 
   // 防重复请求的引用
-  const loadMoreTimer = useRef<NodeJS.Timeout>();
+  const loadMoreTimer = useRef<NodeJS.Timeout>(null);
   const lastLoadMoreTime = useRef<number>(0);
   const LOAD_MORE_DEBOUNCE_DELAY = 500; // 500ms 防抖
   
@@ -218,18 +198,9 @@ export function useSearchLogic() {
     
     // 防止频繁调用
     if (now - lastLoadMoreTime.current < LOAD_MORE_DEBOUNCE_DELAY) {
-      console.log('⏰ [搜索逻辑调试] handleLoadMore 调用过于频繁，已跳过');
       return;
     }
     
-    console.log('🎯 [搜索逻辑调试] handleLoadMore 被调用', {
-      activeTab,
-      productHasNext: productInfiniteSearch.hasNextPage,
-      productIsFetching: productInfiniteSearch.isFetchingNextPage,
-      boothHasNext: boothInfiniteSearch.hasNextPage,
-      boothIsFetching: boothInfiniteSearch.isFetchingNextPage,
-      timeSinceLastCall: now - lastLoadMoreTime.current
-    });
     
     // 清除之前的定时器
     if (loadMoreTimer.current) {
@@ -242,23 +213,11 @@ export function useSearchLogic() {
       
       if (activeTab === "product") {
         if (productInfiniteSearch.hasNextPage && !productInfiniteSearch.isFetchingNextPage) {
-          console.log('📦 [搜索逻辑调试] 调用产品 fetchNextPage');
           productInfiniteSearch.fetchNextPage();
-        } else {
-          console.log('⚠️ [搜索逻辑调试] 产品无法加载更多:', {
-            hasNext: productInfiniteSearch.hasNextPage,
-            isFetching: productInfiniteSearch.isFetchingNextPage
-          });
         }
       } else {
         if (boothInfiniteSearch.hasNextPage && !boothInfiniteSearch.isFetchingNextPage) {
-          console.log('🏪 [搜索逻辑调试] 调用档口 fetchNextPage');
           boothInfiniteSearch.fetchNextPage();
-        } else {
-          console.log('⚠️ [搜索逻辑调试] 档口无法加载更多:', {
-            hasNext: boothInfiniteSearch.hasNextPage,
-            isFetching: boothInfiniteSearch.isFetchingNextPage
-          });
         }
       }
     }, 100); // 100ms 延迟执行，给React时间更新状态
@@ -314,6 +273,9 @@ export function useSearchLogic() {
     // 无限滚动状态（新增）
     hasNextPage: activeTab === 'product' ? productSearch.hasNextPage : boothSearch.hasNextPage,
     isFetchingNextPage: activeTab === 'product' ? productSearch.isFetchingNextPage : boothSearch.isFetchingNextPage,
+    
+    // 档口内搜索标志（新增）
+    isBoothInternalSearch: !!boothIdParam,
   };
 }
 

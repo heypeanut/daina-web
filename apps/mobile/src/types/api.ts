@@ -31,7 +31,10 @@ interface Product {
   name: string;
   description?: string;
   price: number;
-  imageUrl: string;
+  images: {
+    id: string;
+    url: string;
+  }[];
   boothId?: string;
   boothName?: string;
   score?: number;

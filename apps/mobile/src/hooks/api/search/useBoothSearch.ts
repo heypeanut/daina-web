@@ -79,6 +79,7 @@ export function useInfiniteBoothSearch(
       };
       return await searchBooths(searchParams, signal);
     },
+    initialPageParam: 1,
     getNextPageParam: (lastPage, pages) => {
       // 修复页面计算逻辑：API使用 1-based 的页码
       // pages.length 表示已加载的页数，下一页就是 pages.length + 1
@@ -122,6 +123,6 @@ export function useInfiniteBoothSearch(
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     refetchOnWindowFocus: false,
     refetchOnMount: true,
-    notifyOnChangeProps: ['data', 'error', 'isError', 'isLoading'],
+    notifyOnChangeProps: ['data', 'error', 'isError', 'isLoading', 'isFetchingNextPage'],
   });
 }

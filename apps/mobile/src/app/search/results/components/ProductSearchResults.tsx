@@ -1,9 +1,9 @@
 "use client";
 
-import React from 'react';
-import { ProductRecommend } from '@/components/home/ProductRecommend';
+import React, { useRef, useEffect } from 'react';
+import { Loader2 } from 'lucide-react';
+import Image from 'next/image';
 import { LoadingState, ErrorState, EmptyState } from './SearchStates';
-import { InfiniteScrollIndicator } from './InfiniteScrollIndicator';
 import type { ProductSearchResponse, Product } from '@/types/api';
 
 interface ProductSearchResultsProps {
@@ -16,6 +16,7 @@ interface ProductSearchResultsProps {
   // 新增：无限滚动相关属性
   isFetchingNextPage?: boolean;
   hasNextPage?: boolean;
+  onLoadMore?: () => void;
 }
 
 /**
@@ -31,7 +32,31 @@ export function ProductSearchResults({
   searchKeyword,
   isFetchingNextPage = false,
   hasNextPage = false,
+  onLoadMore,
 }: ProductSearchResultsProps) {
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  // 无限滚动触发器
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const target = entries[0];
+        if (target.isIntersecting && hasNextPage && !isFetchingNextPage && onLoadMore) {
+          onLoadMore();
+        }
+      },
+      {
+        threshold: 0.1,
+        rootMargin: '100px',
+      }
+    );
+
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, onLoadMore]);
   // 初始加载状态
   if (productLoading && !productSearchData?.rows?.length) {
     return <LoadingState />;
@@ -45,25 +70,78 @@ export function ProductSearchResults({
   // 有数据时显示商品列表
   if (productSearchData?.rows?.length) {
     return (
-      <>
-        <ProductRecommend
-          title=""
-          products={productSearchData.rows}
-          layout="grid"
-          showMore={false}
-          onProductClick={onProductClick}
-        />
-        
-        {/* 无限滚动指示器 */}
-        <InfiniteScrollIndicator
-          isLoading={isFetchingNextPage}
-          hasMore={hasNextPage}
-          totalCount={productSearchData.total}
-          loadedCount={productSearchData.rows.length}
-          itemType="商品"
-          className="bg-white"
-        />
-      </>
+      <div className="bg-white">
+        {/* 商品网格 */}
+        <div className="px-4 py-4">
+          <div className="grid grid-cols-2 gap-3">
+            {productSearchData.rows.map((product, index) => (
+              <div
+                key={product.id}
+                onClick={() => onProductClick(product, index)}
+                className="bg-white rounded-lg border border-gray-200 overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+              >
+                {/* 商品图片 */}
+                <div className="relative aspect-square">
+                  <Image
+                    src={product.images?.[0]?.url || '/placeholder-product.png'}
+                    alt={product.name}
+                    fill
+                    sizes="(max-width: 768px) 50vw, 33vw"
+                    priority={index < 4}
+                    className="w-full h-full object-cover"
+                  />
+                  {product.isHot && (
+                    <span className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">
+                      热销
+                    </span>
+                  )}
+                </div>
+
+                {/* 商品信息 */}
+                <div className="p-3">
+                  <h4 className="text-sm font-medium text-gray-900 mb-2 line-clamp-2">
+                    {product.name}
+                  </h4>
+
+                  {/* 价格 */}
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-red-500 font-bold text-lg">
+                      ¥{product.price?.toFixed(2) || '0.00'}
+                    </span>
+                  </div>
+
+                  {/* 档口信息 */}
+                  {product.boothName && (
+                    <div className="text-xs text-gray-500">
+                      {product.boothName}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* 加载更多区域 */}
+          <>
+            {/* 无限滚动触发区域 */}
+            <div ref={loadMoreRef} className="h-6 flex items-center justify-center">
+              {isFetchingNextPage && (
+                <div className="flex items-center gap-2 text-gray-500">
+                  <Loader2 size={16} className="animate-spin" />
+                  <span className="text-sm">加载中...</span>
+                </div>
+              )}
+            </div>
+
+            {/* 已加载完成提示 */}
+            {!hasNextPage && productSearchData.rows.length > 0 && (
+              <div className="text-center mt-4 text-gray-500 text-sm">
+                已显示全部 {productSearchData.rows.length} 个商品
+              </div>
+            )}
+          </>
+        </div>
+      </div>
     );
   }
 

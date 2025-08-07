@@ -14,9 +14,7 @@ import {
   ProductSearchResults,
   BoothSearchResults,
 } from "./components";
-import { DebugConsole, QuickTestButtons } from "./components/DebugConsole";
 import { useSearchLogic } from "./hooks/useSearchLogic";
-import { useInfiniteScroll } from "./hooks/useInfiniteScroll";
 import { generateSearchLog } from "./utils/searchUtils";
 import type { SortOption } from "./types";
 
@@ -43,19 +41,9 @@ export default function SearchResultsPage() {
     handleLoadMore,
     hasNextPage,
     isFetchingNextPage,
+    isBoothInternalSearch,
   } = useSearchLogic();
 
-  // 滑动加载更多Hook
-  useInfiniteScroll(
-    hasNextPage,
-    isFetchingNextPage,
-    handleLoadMore,
-    {
-      threshold: 200,
-      enabled: !isImageSearch && !!searchKeyword,
-      debounceMs: 100,
-    }
-  );
 
   // 事件处理函数
   const handleProductClick = (product: Product, index: number) => {
@@ -86,8 +74,9 @@ export default function SearchResultsPage() {
           onRefetch={productSearch.refetch}
           searchKeyword={searchKeyword}
           // 新增：无限滚动相关属性
-          isFetchingNextPage={productSearch.isFetchingNextPage}
+          isFetchingNextPage={isFetchingNextPage}
           hasNextPage={productSearch.hasNextPage}
+          onLoadMore={handleLoadMore}
         />
       );
     }
@@ -104,51 +93,11 @@ export default function SearchResultsPage() {
         // 新增：无限滚动相关属性
         isFetchingNextPage={boothSearch.isFetchingNextPage}
         hasNextPage={boothSearch.hasNextPage}
+        onLoadMore={handleLoadMore}
       />
     );
   };
 
-  // 渲染手动加载更多按钮（作为滑动加载的备选方案）
-  const renderLoadMoreButton = () => {
-    // 图片搜索或没有搜索关键词时不显示
-    if (isImageSearch || !searchKeyword) {
-      return null;
-    }
-
-    // 没有更多数据时不显示
-    if (!hasNextPage) {
-      return null;
-    }
-
-    // 正在加载时不显示按钮（显示底部加载状态）
-    if (isFetchingNextPage) {
-      return null;
-    }
-
-    // 当前数据为空时不显示
-    const currentData = activeTab === "product" ? productSearch.data : boothSearch.data;
-    if (!currentData?.rows?.length) {
-      return null;
-    }
-
-    return (
-      <div className="px-4 py-6 text-center">
-        <button
-          className="px-6 py-2 bg-white border border-gray-300 rounded-full text-sm text-gray-600 active:bg-gray-50 transition-colors hover:bg-gray-50 disabled:opacity-50"
-          onClick={() => {
-            console.log('💆 [主页面调试] 点击加载更多按钮');
-            handleLoadMore();
-          }}
-          disabled={isFetchingNextPage}
-        >
-          {isFetchingNextPage ? '加载中...' : '点击加载更多'}
-        </button>
-        <p className="text-xs text-gray-400 mt-2">
-          也可以滑动到底部自动加载
-        </p>
-      </div>
-    );
-  };
 
   return (
     <MobileLayout showTabBar={false}>
@@ -175,6 +124,7 @@ export default function SearchResultsPage() {
           boothCount={boothSearch.data?.total || 0}
           isImageSearch={isImageSearch}
           searchKeyword={searchKeyword}
+          isBoothInternalSearch={isBoothInternalSearch}
         />
 
         {/* 筛选栏 */}
@@ -187,32 +137,10 @@ export default function SearchResultsPage() {
         />
 
         {/* 搜索结果 */}
-        <div className="pb-4">
+        <div className="py-2 pb-6">
           {renderSearchResults()}
         </div>
 
-        {/* 手动加载更多按钮（备选方案） */}
-        {renderLoadMoreButton()}
-        
-        {/* 调试控制台（仅开发环境） */}
-        {process.env.NODE_ENV === 'development' && (
-          <>
-            <DebugConsole
-              searchKeyword={searchKeyword}
-              activeTab={activeTab}
-              hasNextPage={hasNextPage}
-              isFetchingNextPage={isFetchingNextPage}
-              totalProducts={productSearch.data?.total || 0}
-              totalBooths={boothSearch.data?.total || 0}
-            />
-            <QuickTestButtons
-              onLoadMore={handleLoadMore}
-              onScrollToBottom={() => {
-                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-              }}
-            />
-          </>
-        )}
       </div>
     </MobileLayout>
   );

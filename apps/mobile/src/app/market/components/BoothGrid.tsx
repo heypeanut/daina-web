@@ -2,6 +2,7 @@
 
 import React from "react";
 import Masonry from "react-masonry-css";
+import { Loader2 } from "lucide-react";
 import { Booth } from "@/types/booth";
 import { MobileBoothCard } from "./MobileBoothCard";
 import { InfiniteScrollList } from "@/components/common/InfiniteScrollList";
@@ -161,11 +162,18 @@ export function BoothGrid({
           className="w-full flex justify-center pt-4"
         >
           {isLoading && booths.length > 0 && (
-            <div className="flex items-center space-x-3">
-              <div className="w-4 h-4 border-2 border-gray-200 border-t-orange-500 rounded-full animate-spin" />
-              <span className="text-sm text-gray-600 font-medium">加载更多...</span>
+            <div className="flex items-center gap-2 text-gray-500">
+              <Loader2 size={16} className="animate-spin" />
+              <span className="text-sm">加载中...</span>
             </div>
           )}
+        </div>
+      )}
+
+      {/* 已加载完成提示 */}
+      {!hasNextPage && booths.length > 0 && (
+        <div className="text-center mt-4 text-gray-500 text-sm">
+          已显示全部 {booths.length} 个档口
         </div>
       )}
     </div>

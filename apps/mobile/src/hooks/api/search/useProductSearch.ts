@@ -56,7 +56,7 @@ export function useProductSearch(
     staleTime: CACHE_TIMES.PRODUCT_SEARCH,
     gcTime: PERFORMANCE_CONFIG.GC_TIME,
     enabled: enabled && !!params.keyword?.trim(),
-    keepPreviousData,
+    placeholderData: keepPreviousData ? (previousData) => previousData : undefined,
     retry: PERFORMANCE_CONFIG.RETRY_COUNT,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     refetchOnWindowFocus: false,
@@ -81,6 +81,7 @@ export function useInfiniteProductSearch(
       };
       return await searchProducts(searchParams, signal);
     },
+    initialPageParam: 1,
     getNextPageParam: (lastPage, pages) => {
       // 修复页面计算逻辑：API使用 1-based 的页码
       // pages.length 表示已加载的页数，下一页就是 pages.length + 1
@@ -89,30 +90,13 @@ export function useInfiniteProductSearch(
       const pageSize = lastPage.pageSize || 20;
       const totalPages = lastPage.totalPages || Math.ceil(lastPage.total / pageSize);
       
-      console.log('📊 [产品搜索调试] getNextPageParam 修复后:', {
-        currentPageNumber, // 当前已加载页数
-        nextPageNumber,    // 下一页页码
-        totalPages,
-        total: lastPage.total,
-        pageSize,
-        pagesLength: pages.length,
-        maxPages: PERFORMANCE_CONFIG.MAX_PAGES,
-        lastPageData: {
-          rowsCount: lastPage.rows?.length || 0,
-          apiPage: lastPage.page, // API返回的页码
-          apiTotalPages: lastPage.totalPages
-        }
-      });
-      
       // 限制最大页数，防止内存泄漏
       if (pages.length >= PERFORMANCE_CONFIG.MAX_PAGES) {
-        console.log('⚠️ [产品搜索调试] 达到最大页数限制');
         return undefined;
       }
       
       // 检查是否还有下一页
       const hasNextPage = nextPageNumber <= totalPages;
-      console.log('🔄 [产品搜索调试] hasNextPage:', hasNextPage, 'nextPage:', hasNextPage ? nextPageNumber : undefined);
       
       return hasNextPage ? nextPageNumber : undefined;
     },
@@ -126,6 +110,6 @@ export function useInfiniteProductSearch(
     refetchOnWindowFocus: false,
     refetchOnMount: true,
     // 减少不必要的重新渲染
-    notifyOnChangeProps: ['data', 'error', 'isError', 'isLoading'],
+    notifyOnChangeProps: ['data', 'error', 'isError', 'isLoading', 'isFetchingNextPage'],
   });
 }

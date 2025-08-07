@@ -35,7 +35,7 @@ export function SearchStats({
           </div>
           <div className="flex-1">
             <p className="text-sm text-gray-600">
-              基于此图片搜索到 <span className="text-red-500 font-medium">
+              基于此图片搜索到 <span className="text-orange-500 font-medium">
                 {imageSearchResults?.results?.length || 0}
               </span> 个相似档口
             </p>
@@ -52,7 +52,7 @@ export function SearchStats({
         <p className="text-sm text-gray-600">
           {searchKeyword ? (
             <>
-              找到 <span className="text-red-500 font-medium">
+              找到 <span className="text-orange-500 font-medium">
                 {activeTab === 'product' ? productTotal : boothTotal}
               </span> 个结果
             </>

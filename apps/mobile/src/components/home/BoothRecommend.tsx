@@ -8,8 +8,8 @@ import { Crown, TrendingUp } from 'lucide-react';
 interface BoothItem {
   id: string;
   boothName: string;
+  coverImg: string;
   description?: string;
-  imageUrl: string;
   score?: number;
   market?: string;
   address?: string;
@@ -75,7 +75,7 @@ export function BoothRecommend({
                 <div className="relative pt-2 pr-2">
                   <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-gray-100">
                     <Image
-                      src={booth.imageUrl}
+                      src={booth.coverImg}
                       alt={booth.boothName}
                       width={64}
                       height={64}
@@ -109,7 +109,7 @@ export function BoothRecommend({
               {/* 档口头像 */}
               <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 mr-3">
                 <Image
-                  src={booth.imageUrl}
+                  src={booth.coverImg}
                   alt={booth.boothName}
                   width={48}
                   height={48}

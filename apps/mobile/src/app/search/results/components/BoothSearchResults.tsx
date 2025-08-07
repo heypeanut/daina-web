@@ -1,9 +1,8 @@
 "use client";
 
-import React from 'react';
-import { BoothRecommend } from '@/components/home/BoothRecommend';
+import React, { useState } from 'react';
+import { BoothGrid } from '@/app/market/components/BoothGrid';
 import { LoadingState, ErrorState, EmptyState } from './SearchStates';
-import { InfiniteScrollIndicator } from './InfiniteScrollIndicator';
 import type { BoothSearchResponse } from '@/hooks/api/search';
 import type { Booth } from '@/types/booth';
 
@@ -17,6 +16,7 @@ interface BoothSearchResultsProps {
   // 新增：无限滚动相关属性
   isFetchingNextPage?: boolean;
   hasNextPage?: boolean;
+  onLoadMore?: () => void;
 }
 
 /**
@@ -32,7 +32,37 @@ export function BoothSearchResults({
   searchKeyword,
   isFetchingNextPage = false,
   hasNextPage = false,
+  onLoadMore,
 }: BoothSearchResultsProps) {
+  // 收藏状态管理（占位符实现）
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
+
+  // 处理收藏切换
+  const handleFavoriteToggle = (booth: Booth) => {
+    setFavoriteIds((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(booth.id)) {
+        newSet.delete(booth.id);
+        // TODO: 调用取消收藏 API
+      } else {
+        newSet.add(booth.id);
+        // TODO: 调用收藏 API
+      }
+      return newSet;
+    });
+  };
+
+  // 适配onBoothClick函数签名
+  const handleBoothClick = (booth: Booth) => {
+    // 找到booth在数组中的索引
+    const index = boothSearchData?.rows?.findIndex(b => b.id === booth.id) ?? 0;
+    onBoothClick(booth, index);
+  };
+
+  // 加载更多的占位符函数
+  const handleLoadMore = () => {
+    // 此功能由父组件的无限滚动处理
+  };
   // 初始加载状态
   if (boothLoading && !boothSearchData?.rows?.length) {
     return <LoadingState />;
@@ -46,25 +76,17 @@ export function BoothSearchResults({
   // 有数据时显示档口列表
   if (boothSearchData?.rows?.length) {
     return (
-      <>
-        <BoothRecommend
-          title=""
-          booths={boothSearchData.rows}
-          type="hot"
-          showMore={false}
-          onBoothClick={onBoothClick}
-        />
-        
-        {/* 无限滚动指示器 */}
-        <InfiniteScrollIndicator
-          isLoading={isFetchingNextPage}
-          hasMore={hasNextPage}
-          totalCount={boothSearchData.total}
-          loadedCount={boothSearchData.rows.length}
-          itemType="档口"
-          className="bg-white"
-        />
-      </>
+      <BoothGrid
+        booths={boothSearchData.rows}
+        onBoothClick={handleBoothClick}
+        onFavoriteToggle={handleFavoriteToggle}
+        favoriteIds={favoriteIds}
+        onLoadMore={handleLoadMore}
+        hasNextPage={hasNextPage}
+        isLoading={isFetchingNextPage}
+        layout="grid"
+        className="py-3"
+      />
     );
   }
 

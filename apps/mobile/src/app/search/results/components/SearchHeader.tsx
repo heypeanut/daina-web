@@ -12,20 +12,20 @@ export function SearchHeader({ keyword }: SearchHeaderProps) {
   const router = useRouter();
 
   return (
-    <div className="bg-red-500 px-4 py-3 sticky top-0 z-50">
+    <div className="bg-gradient-to-r from-orange-500 to-red-500 px-4 py-3 sticky top-0 z-50 safe-area-inset-top">
       <div className="flex items-center space-x-3">
         <button
           onClick={() => router.back()}
-          className="w-8 h-8 flex items-center justify-center text-white"
+          className="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center active:bg-white/30 transition-all shadow-sm hover:scale-105 active:scale-95"
         >
-          <ArrowLeft size={20} />
+          <ArrowLeft size={20} className="text-white" />
         </button>
         
         <div 
           onClick={() => router.push('/search')}
-          className="flex-1 flex items-center bg-white rounded-full px-4 py-3 cursor-pointer"
+          className="flex-1 flex items-center bg-white/95 backdrop-blur-sm rounded-full px-4 py-2.5 cursor-pointer transition-all duration-300 shadow-sm hover:bg-white active:bg-white/90"
         >
-          <Search size={18} className="text-gray-400 mr-3" />
+          <Search size={16} className="text-gray-400 mr-3" />
           <span className="flex-1 text-sm text-gray-700 truncate">
             {keyword || '搜索商品关键字或货号'}
           </span>

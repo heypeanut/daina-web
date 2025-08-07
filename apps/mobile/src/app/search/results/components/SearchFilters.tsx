@@ -43,10 +43,10 @@ export function SearchFilters({
             <button
               key={option.value}
               onClick={() => onSortChange(option.value)}
-              className={`px-3 py-1 rounded-full text-sm transition-colors ${
+              className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                 sortBy === option.value
-                  ? 'bg-red-500 text-white'
-                  : 'bg-gray-100 text-gray-700 active:bg-gray-200'
+                  ? 'bg-orange-500 text-white shadow-sm'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 active:bg-gray-200'
               }`}
             >
               {option.label}
