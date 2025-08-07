@@ -54,8 +54,8 @@ export default function SearchPage() {
     }
   }, [searchParams]);
 
-  const handleSearch = () => {
-    const currentKeyword = activeTab === 'product' ? productKeyword : boothKeyword;
+  const handleSearch = (keyword?: string) => {
+    const currentKeyword = keyword || (activeTab === 'product' ? productKeyword : boothKeyword);
     if (currentKeyword.trim()) {
       // 保存到搜索历史
       const newHistory = [currentKeyword.trim(), ...searchHistory.filter(item => item !== currentKeyword.trim())].slice(0, 10);
@@ -92,6 +92,7 @@ export default function SearchPage() {
     } else {
       setBoothKeyword(item);
     }
+    handleSearch(item);
   };
 
   const clearHistory = () => {
@@ -213,46 +214,6 @@ export default function SearchPage() {
               </div>
             </div>
           )}
-
-          {/* ID查询功能 */}
-          <div className="p-4 bg-white">
-            <div className="bg-gray-50 rounded-2xl p-4">
-              <h3 className="text-sm font-medium text-gray-700 mb-3">
-                {boothIdParam ? '商品ID快速查询' : 'ID快速查询'}
-              </h3>
-              <div className="flex items-center space-x-3">
-                <div className="flex-1 relative">
-                  <input
-                    type="text"
-                    value={boothIdParam || activeTab === 'product' ? productId : boothId}
-                    onChange={(e) => {
-                      if (boothIdParam || activeTab === 'product') {
-                        setProductId(e.target.value);
-                      } else {
-                        setBoothId(e.target.value);
-                      }
-                    }}
-                    placeholder={
-                      boothIdParam
-                        ? '请输入商品ID'
-                        : (activeTab === 'product' ? '请输入商品ID' : '请输入档口ID')
-                    }
-                    className="w-full bg-white border border-gray-200 rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all outline-none"
-                  />
-                </div>
-                <button
-                  onClick={
-                    boothIdParam || activeTab === 'product'
-                      ? handleProductIdSearch
-                      : handleBoothIdSearch
-                  }
-                  className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2.5 rounded-full text-sm font-medium transition-all shadow-sm hover:shadow-md active:scale-95"
-                >
-                  查询
-                </button>
-              </div>
-            </div>
-          </div>
 
           {/* 搜索历史 */}
           {searchHistory.length > 0 && (

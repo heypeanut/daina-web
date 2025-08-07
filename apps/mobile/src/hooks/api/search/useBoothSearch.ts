@@ -88,30 +88,14 @@ export function useInfiniteBoothSearch(
       const pageSize = lastPage.pageSize || 20;
       const totalPages = lastPage.totalPages || Math.ceil(lastPage.total / pageSize);
       
-      console.log('🏪 [档口搜索调试] getNextPageParam 修复后:', {
-        currentPageNumber, // 当前已加载页数
-        nextPageNumber,    // 下一页页码
-        totalPages,
-        total: lastPage.total,
-        pageSize,
-        pagesLength: pages.length,
-        maxPages: PERFORMANCE_CONFIG.MAX_PAGES,
-        lastPageData: {
-          rowsCount: lastPage.rows?.length || 0,
-          apiPage: lastPage.page, // API返回的页码
-          apiTotalPages: lastPage.totalPages
-        }
-      });
       
       // 限制最大页数，防止内存泄漏
       if (pages.length >= PERFORMANCE_CONFIG.MAX_PAGES) {
-        console.log('⚠️ [档口搜索调试] 达到最大页数限制');
         return undefined;
       }
       
       // 检查是否还有下一页
       const hasNextPage = nextPageNumber <= totalPages;
-      console.log('🔄 [档口搜索调试] hasNextPage:', hasNextPage, 'nextPage:', hasNextPage ? nextPageNumber : undefined);
       
       return hasNextPage ? nextPageNumber : undefined;
     },
