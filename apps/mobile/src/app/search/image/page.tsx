@@ -1,20 +1,24 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { Camera, ArrowLeft, Upload, ImageIcon, X } from "lucide-react";
-import { useImageSearch } from "@/hooks/useApi";
 import { toast } from "sonner";
 import { UnifiedSearchBar } from "@/components/common/UnifiedSearchBar";
+import {
+  searchProductsByImage,
+  searchBoothsByImage,
+} from "@/lib/api/upload-search";
 
 export default function ImageSearchPage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const { searching, searchResult, error, searchBooths, clearResults } =
-    useImageSearch();
+  const [searchType, setSearchType] = useState<"booth" | "product">("booth");
+  const [isSearching, setIsSearching] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -46,24 +50,24 @@ export default function ImageSearchPage() {
 
   const handleCameraClick = () => {
     // 创建一个隐藏的文件input专门用于相机
-    const cameraInput = document.createElement('input');
-    cameraInput.type = 'file';
-    cameraInput.accept = 'image/*';
-    cameraInput.capture = 'environment'; // 调用后置摄像头
-    cameraInput.style.display = 'none';
-    
+    const cameraInput = document.createElement("input");
+    cameraInput.type = "file";
+    cameraInput.accept = "image/*";
+    cameraInput.capture = "environment"; // 调用后置摄像头
+    cameraInput.style.display = "none";
+
     cameraInput.onchange = (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
         // 使用相同的处理逻辑
-        handleFileSelect({ 
-          target: { files: [file] } 
+        handleFileSelect({
+          target: { files: [file] },
         } as React.ChangeEvent<HTMLInputElement>);
       }
       // 清理临时元素
       document.body.removeChild(cameraInput);
     };
-    
+
     document.body.appendChild(cameraInput);
     cameraInput.click();
   };
@@ -71,20 +75,44 @@ export default function ImageSearchPage() {
   const handleSearch = async () => {
     if (selectedFile) {
       try {
-        const result = await searchBooths({
-          image: selectedFile,
-          limit: 20,
-          minSimilarity: 0.3,
-        });
+        setIsSearching(true);
+        setError(null);
+        let result;
 
-        if (result && result.success) {
+        if (searchType === "product") {
+          result = await searchProductsByImage(selectedFile, {
+            limit: 20,
+            minSimilarity: 0.75,
+          });
+        } else {
+          result = await searchBoothsByImage(selectedFile, {
+            limit: 20,
+            minSimilarity: 0.75,
+          });
+        }
+
+        // API返回标准格式：{rows: [...], total: n}
+        if (result && result.rows && result.rows.length > 0) {
           // 将搜索结果保存到sessionStorage，传递给结果页面
           sessionStorage.setItem("imageSearchResults", JSON.stringify(result));
           sessionStorage.setItem("searchImage", selectedImage || "");
-          router.push("/search/results?type=image-booth");
+
+          // 根据搜索类型设置URL
+          const urlType =
+            searchType === "product" ? "image-product" : "image-booth";
+          router.push(`/search/results?type=${urlType}`);
+        } else {
+          // 无搜索结果
+          toast.error("未找到相似的结果，请尝试其他图片");
         }
       } catch (error) {
         console.error("搜索失败:", error);
+        const errorMessage =
+          error instanceof Error ? error.message : "搜索失败";
+        setError(errorMessage);
+        toast.error("搜索失败，请重试");
+      } finally {
+        setIsSearching(false);
       }
     }
   };
@@ -92,8 +120,26 @@ export default function ImageSearchPage() {
   const clearImage = () => {
     setSelectedImage(null);
     setSelectedFile(null);
-    clearResults();
+    setError(null);
   };
+
+  // 从URL参数检测搜索类型
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const type = urlParams.get("searchType");
+    if (type === "product") {
+      setSearchType("product");
+    }
+  }, []);
+
+  // 动态生成页面标题和按钮文本
+  const pageTitle = searchType === "product" ? "以图搜商品" : "以图搜档口";
+  const searchButtonText =
+    searchType === "product" ? "开始搜索商品" : "开始搜索档口";
+  const descriptionText =
+    searchType === "product"
+      ? "上传商品图片，快速找到相似的商品信息"
+      : "上传商品图片，快速找到相似的档口信息";
 
   return (
     <MobileLayout showTabBar={false}>
@@ -107,7 +153,7 @@ export default function ImageSearchPage() {
             >
               <ArrowLeft size={20} className="text-white" />
             </button>
-            <h1 className="text-white font-medium text-lg">以图搜图</h1>
+            <h1 className="text-white font-medium text-lg">{pageTitle}</h1>
             <div className="w-8"></div>
           </div>
         </div>
@@ -122,11 +168,9 @@ export default function ImageSearchPage() {
               </div>
               <div className="flex-1">
                 <h3 className="text-base font-medium text-gray-900 mb-2">
-                  拍照搜索档口
+                  拍照搜索{searchType === "product" ? "商品" : "档口"}
                 </h3>
-                <p className="text-sm text-gray-600">
-                  上传商品图片，快速找到相似的档口信息
-                </p>
+                <p className="text-sm text-gray-600">{descriptionText}</p>
               </div>
             </div>
           </div>
@@ -212,20 +256,20 @@ export default function ImageSearchPage() {
               {/* 搜索按钮 */}
               <button
                 onClick={handleSearch}
-                disabled={searching || !selectedFile}
+                disabled={isSearching || !selectedFile}
                 className={`w-full py-4 rounded-2xl font-medium text-white transition-all shadow-sm ${
-                  searching || !selectedFile
+                  isSearching || !selectedFile
                     ? "bg-gray-400 cursor-not-allowed"
                     : "bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 active:scale-95 hover:shadow-md"
                 }`}
               >
-                {searching ? (
+                {isSearching ? (
                   <div className="flex items-center justify-center">
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
                     搜索中...
                   </div>
                 ) : (
-                  "开始搜索档口"
+                  searchButtonText
                 )}
               </button>
 

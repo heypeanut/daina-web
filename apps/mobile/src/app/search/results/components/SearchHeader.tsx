@@ -6,9 +6,11 @@ import { Search, ArrowLeft } from 'lucide-react';
 
 interface SearchHeaderProps {
   keyword: string;
+  isImageSearch?: boolean;
+  searchType?: 'booth' | 'product';
 }
 
-export function SearchHeader({ keyword }: SearchHeaderProps) {
+export function SearchHeader({ keyword, isImageSearch, searchType }: SearchHeaderProps) {
   const router = useRouter();
 
   return (
@@ -21,15 +23,21 @@ export function SearchHeader({ keyword }: SearchHeaderProps) {
           <ArrowLeft size={20} className="text-white" />
         </button>
         
-        <div 
-          onClick={() => router.push('/search')}
-          className="flex-1 flex items-center bg-white/95 backdrop-blur-sm rounded-full px-4 py-2.5 cursor-pointer transition-all duration-300 shadow-sm hover:bg-white active:bg-white/90"
-        >
-          <Search size={16} className="text-gray-400 mr-3" />
-          <span className="flex-1 text-sm text-gray-700 truncate">
-            {keyword || '搜索商品关键字或货号'}
-          </span>
-        </div>
+        {isImageSearch ? (
+          <h1 className="flex-1 text-white font-medium text-lg text-center">
+            {searchType === 'product' ? '以图搜商品' : '以图搜档口'}
+          </h1>
+        ) : (
+          <div 
+            onClick={() => router.push('/search')}
+            className="flex-1 flex items-center bg-white/95 backdrop-blur-sm rounded-full px-4 py-2.5 cursor-pointer transition-all duration-300 shadow-sm hover:bg-white active:bg-white/90"
+          >
+            <Search size={16} className="text-gray-400 mr-3" />
+            <span className="flex-1 text-sm text-gray-700 truncate">
+              {keyword || '搜索商品关键字或货号'}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

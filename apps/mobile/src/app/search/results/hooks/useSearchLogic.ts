@@ -1,8 +1,10 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useInfiniteProductSearch, useInfiniteBoothSearch } from '@/hooks/api/search';
+import { useInfiniteImageProductSearch, useInfiniteImageBoothSearch } from '@/hooks/api/search/useImageSearch';
 import type { ImageSearchResponse } from '@/types/api';
 import type { Booth } from '@/types/booth';
+import type { ImageSearchResponse as UploadImageSearchResponse } from '@/lib/api/upload-search';
 
 type SortOption = 'relevance' | 'price' | 'sales';
 type ActiveTab = 'product' | 'booth';
@@ -52,15 +54,31 @@ export function useSearchLogic() {
     }
   );
 
+  // 图片搜索商品Hook - 虚拟无限滚动版本
+  const imageProductInfiniteSearch = useInfiniteImageProductSearch(
+    isImageSearch && activeTab === "product"
+  );
+
+  // 图片搜索档口Hook - 虚拟无限滚动版本
+  const imageBoothInfiniteSearch = useInfiniteImageBoothSearch(
+    isImageSearch && activeTab === "booth"
+  );
+
   // 扁平化商品数据
   const flattenedProducts = useMemo(() => {
+    if (isImageSearch && activeTab === "product" && imageProductInfiniteSearch.data) {
+      return imageProductInfiniteSearch.data.pages.flatMap(page => page.rows) || [];
+    }
     return productInfiniteSearch.data?.pages.flatMap(page => page.rows) || [];
-  }, [productInfiniteSearch.data]);
+  }, [productInfiniteSearch.data, imageProductInfiniteSearch.data, isImageSearch, activeTab]);
 
   // 扁平化档口数据
   const flattenedBooths = useMemo(() => {
+    if (isImageSearch && activeTab === "booth" && imageBoothInfiniteSearch.data) {
+      return imageBoothInfiniteSearch.data.pages.flatMap(page => page.rows) || [];
+    }
     return boothInfiniteSearch.data?.pages.flatMap(page => page.rows) || [];
-  }, [boothInfiniteSearch.data]);
+  }, [boothInfiniteSearch.data, imageBoothInfiniteSearch.data, isImageSearch, activeTab]);
 
   // 获取总数量
   const getTotalCount = (infiniteData: any) => {
@@ -69,6 +87,21 @@ export function useSearchLogic() {
 
   // 创建兼容的搜索数据结构（为了保持与现有组件的兼容性）
   const productSearchData = useMemo(() => {
+    // 如果是图片搜索，使用图片搜索hooks的数据
+    if (isImageSearch && activeTab === 'product') {
+      if (!imageProductInfiniteSearch.data || !imageProductInfiniteSearch.data.pages.length) return undefined;
+      
+      return {
+        rows: flattenedProducts,
+        total: getTotalCount(imageProductInfiniteSearch.data),
+        page: imageProductInfiniteSearch.data.pages.length,
+        pageSize: 20,
+        totalPages: Math.ceil(getTotalCount(imageProductInfiniteSearch.data) / 20),
+        searchTime: imageProductInfiniteSearch.data.pages[0]?.searchTime,
+      };
+    }
+    
+    // 普通搜索
     if (!productInfiniteSearch.data || !productInfiniteSearch.data.pages.length) return undefined;
     
     return {
@@ -79,9 +112,24 @@ export function useSearchLogic() {
       totalPages: Math.ceil(getTotalCount(productInfiniteSearch.data) / 20),
       searchTime: productInfiniteSearch.data.pages[0]?.searchTime,
     };
-  }, [flattenedProducts, productInfiniteSearch.data]);
+  }, [flattenedProducts, productInfiniteSearch.data, imageProductInfiniteSearch.data, isImageSearch, activeTab]);
 
   const boothSearchData = useMemo(() => {
+    // 如果是图片搜索，使用图片搜索hooks的数据
+    if (isImageSearch && activeTab === 'booth') {
+      if (!imageBoothInfiniteSearch.data || !imageBoothInfiniteSearch.data.pages.length) return undefined;
+      
+      return {
+        rows: flattenedBooths,
+        total: getTotalCount(imageBoothInfiniteSearch.data),
+        page: imageBoothInfiniteSearch.data.pages.length,
+        pageSize: 20,
+        totalPages: Math.ceil(getTotalCount(imageBoothInfiniteSearch.data) / 20),
+        searchTime: imageBoothInfiniteSearch.data.pages[0]?.searchTime,
+      };
+    }
+    
+    // 普通搜索
     if (!boothInfiniteSearch.data || !boothInfiniteSearch.data.pages.length) return undefined;
     
     return {
@@ -92,7 +140,7 @@ export function useSearchLogic() {
       totalPages: Math.ceil(getTotalCount(boothInfiniteSearch.data) / 20),
       searchTime: boothInfiniteSearch.data.pages[0]?.searchTime,
     };
-  }, [flattenedBooths, boothInfiniteSearch.data]);
+  }, [flattenedBooths, boothInfiniteSearch.data, imageBoothInfiniteSearch.data, isImageSearch, activeTab]);
 
   // 处理URL参数变化
   useEffect(() => {
@@ -109,30 +157,25 @@ export function useSearchLogic() {
     }
 
     if (type === "image-booth") {
-      handleImageSearchSetup();
+      handleImageSearchSetup('booth');
+    } else if (type === "image-product") {
+      handleImageSearchSetup('product');
     } else {
       handleNormalSearchSetup();
     }
   };
 
   // 图片搜索设置
-  const handleImageSearchSetup = () => {
-    setKeyword("以图搜档口");
-    setActiveTab("booth");
+  const handleImageSearchSetup = (searchType?: 'booth' | 'product') => {
+    // 如果没有指定类型，从URL参数推断
+    const type = searchType || (searchParams.get("type")?.includes('product') ? 'product' : 'booth');
+    
+    setKeyword(type === 'product' ? "以图搜商品" : "以图搜档口");
+    setActiveTab(type); // 保持用户选择的标签页
     setIsImageSearch(true);
 
-    // 从sessionStorage获取搜索结果
-    const results = sessionStorage.getItem("imageSearchResults");
+    // 从sessionStorage获取搜索图片（用于显示）
     const image = sessionStorage.getItem("searchImage");
-
-    if (results) {
-      try {
-        const parsedResults = JSON.parse(results);
-        setImageSearchResults(parsedResults);
-      } catch (error) {
-        console.error("解析搜索结果失败:", error);
-      }
-    }
 
     if (image) {
       setSearchImage(image);
@@ -142,6 +185,9 @@ export function useSearchLogic() {
   // 普通搜索设置
   const handleNormalSearchSetup = () => {
     setIsImageSearch(false);
+    // 清理图片搜索结果
+    setImageSearchResults(null);
+    setSearchImage(null);
     
     // 根据URL参数设置tab
     if (searchParams.get("type") === "booth") {
@@ -153,6 +199,7 @@ export function useSearchLogic() {
   const handleTabChange = (tab: ActiveTab) => {
     setActiveTab(tab);
   };
+
 
   // 防抖定时器
   const sortChangeTimer = useRef<NodeJS.Timeout>(null);
@@ -212,39 +259,55 @@ export function useSearchLogic() {
       lastLoadMoreTime.current = Date.now();
       
       if (activeTab === "product") {
-        if (productInfiniteSearch.hasNextPage && !productInfiniteSearch.isFetchingNextPage) {
-          productInfiniteSearch.fetchNextPage();
+        if (isImageSearch) {
+          // 图片搜索：使用图片搜索hooks
+          if (imageProductInfiniteSearch.hasNextPage && !imageProductInfiniteSearch.isFetchingNextPage) {
+            imageProductInfiniteSearch.fetchNextPage();
+          }
+        } else {
+          // 普通搜索
+          if (productInfiniteSearch.hasNextPage && !productInfiniteSearch.isFetchingNextPage) {
+            productInfiniteSearch.fetchNextPage();
+          }
         }
       } else {
-        if (boothInfiniteSearch.hasNextPage && !boothInfiniteSearch.isFetchingNextPage) {
-          boothInfiniteSearch.fetchNextPage();
+        if (isImageSearch) {
+          // 图片搜索：使用图片搜索hooks
+          if (imageBoothInfiniteSearch.hasNextPage && !imageBoothInfiniteSearch.isFetchingNextPage) {
+            imageBoothInfiniteSearch.fetchNextPage();
+          }
+        } else {
+          // 普通搜索
+          if (boothInfiniteSearch.hasNextPage && !boothInfiniteSearch.isFetchingNextPage) {
+            boothInfiniteSearch.fetchNextPage();
+          }
         }
       }
     }, 100); // 100ms 延迟执行，给React时间更新状态
-  }, [activeTab, productInfiniteSearch, boothInfiniteSearch]);
+  }, [activeTab, productInfiniteSearch, boothInfiniteSearch, isImageSearch, imageProductInfiniteSearch, imageBoothInfiniteSearch]);
 
   // 创建兼容的产品搜索对象
   const productSearch = {
     data: productSearchData,
-    isLoading: productInfiniteSearch.isLoading,
-    error: productInfiniteSearch.error,
-    refetch: productInfiniteSearch.refetch,
+    isLoading: (isImageSearch && activeTab === "product") ? imageProductInfiniteSearch.isLoading : productInfiniteSearch.isLoading,
+    error: (isImageSearch && activeTab === "product") ? imageProductInfiniteSearch.error : productInfiniteSearch.error,
+    refetch: (isImageSearch && activeTab === "product") ? imageProductInfiniteSearch.refetch : productInfiniteSearch.refetch,
     // 新增无限滚动相关状态
-    hasNextPage: productInfiniteSearch.hasNextPage,
-    isFetchingNextPage: productInfiniteSearch.isFetchingNextPage,
-    fetchNextPage: productInfiniteSearch.fetchNextPage,
+    hasNextPage: (isImageSearch && activeTab === "product") ? imageProductInfiniteSearch.hasNextPage : productInfiniteSearch.hasNextPage,
+    isFetchingNextPage: (isImageSearch && activeTab === "product") ? imageProductInfiniteSearch.isFetchingNextPage : productInfiniteSearch.isFetchingNextPage,
+    fetchNextPage: (isImageSearch && activeTab === "product") ? imageProductInfiniteSearch.fetchNextPage : productInfiniteSearch.fetchNextPage,
   };
 
   // 创建兼容的档口搜索对象
   const boothSearch = {
     data: boothSearchData,
-    isLoading: boothInfiniteSearch.isLoading,
-    error: boothInfiniteSearch.error,
-    refetch: boothInfiniteSearch.refetch,
+    isLoading: (isImageSearch && activeTab === "booth") ? imageBoothInfiniteSearch.isLoading : boothInfiniteSearch.isLoading,
+    error: (isImageSearch && activeTab === "booth") ? imageBoothInfiniteSearch.error : boothInfiniteSearch.error,
+    refetch: (isImageSearch && activeTab === "booth") ? imageBoothInfiniteSearch.refetch : boothInfiniteSearch.refetch,
     // 新增无限滚动相关状态
-    hasNextPage: boothInfiniteSearch.hasNextPage,
-    isFetchingNextPage: boothInfiniteSearch.isFetchingNextPage,
-    fetchNextPage: boothInfiniteSearch.fetchNextPage,
+    hasNextPage: (isImageSearch && activeTab === "booth") ? imageBoothInfiniteSearch.hasNextPage : boothInfiniteSearch.hasNextPage,
+    isFetchingNextPage: (isImageSearch && activeTab === "booth") ? imageBoothInfiniteSearch.isFetchingNextPage : boothInfiniteSearch.isFetchingNextPage,
+    fetchNextPage: (isImageSearch && activeTab === "booth") ? imageBoothInfiniteSearch.fetchNextPage : boothInfiniteSearch.fetchNextPage,
   };
 
   return {
@@ -252,7 +315,7 @@ export function useSearchLogic() {
     keyword,
     activeTab,
     sortBy,
-    imageSearchResults,
+    imageSearchResults, // 保持兼容性
     searchImage,
     isImageSearch,
     searchKeyword,
@@ -266,7 +329,7 @@ export function useSearchLogic() {
     flattenedBooths,
     
     // 事件处理
-    handleTabChange,
+    handleTabChange: isImageSearch ? () => {} : handleTabChange, // 图片搜索时禁用标签切换
     handleSortChange,
     handleLoadMore, // 新增加载更多处理
     

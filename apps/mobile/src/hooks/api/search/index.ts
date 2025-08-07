@@ -11,6 +11,11 @@ export {
   BOOTH_SEARCH_QUERY_KEYS,
 } from "./useBoothSearch";
 
+export {
+  useInfiniteImageProductSearch,
+  useInfiniteImageBoothSearch,
+} from "./useImageSearch";
+
 // 搜索相关类型重导出
 export type {
   ProductSearchParams,

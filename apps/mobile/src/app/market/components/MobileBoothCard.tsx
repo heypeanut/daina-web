@@ -4,6 +4,7 @@ import React from "react";
 import { Heart, MapPin } from "lucide-react";
 import { Booth } from "@/types/booth";
 import { ImageLazyLoader } from "@/components/common/ImageLazyLoader";
+import { hasImageSearchData, getSimilarityScore } from "@/lib/utils/imageSearchAdapter";
 
 interface MobileBoothCardProps {
   booth: Booth;
@@ -43,7 +44,7 @@ export function MobileBoothCard({
       {/* 档口头像 */}
       <div className="relative">
         <ImageLazyLoader
-          src={booth.imageUrl}
+          src={booth.imageUrl || booth.avatar || booth.coverImg}
           alt={booth.boothName || ''}
           width={200}
           height={200}
@@ -55,7 +56,9 @@ export function MobileBoothCard({
         <button
           data-favorite-btn
           onClick={handleFavoriteClick}
-          className="absolute top-1.5 right-1.5 size-6 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md hover:bg-white hover:scale-110 transition-all duration-200"
+          className={`absolute top-1.5 size-6 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md hover:bg-white hover:scale-110 transition-all duration-200 ${
+            hasImageSearchData(booth) ? 'right-10' : 'right-1.5'
+          }`}
         >
           <Heart
             size={16}
@@ -64,6 +67,13 @@ export function MobileBoothCard({
             }
           />
         </button>
+
+        {/* 相似度标签 - 图片搜索特有 */}
+        {hasImageSearchData(booth) && (
+          <div className="absolute top-1.5 right-1.5 bg-green-500 text-white text-xs px-2 py-1 rounded-full font-bold shadow-md">
+            {Math.round(getSimilarityScore(booth) * 100)}%
+          </div>
+        )}
 
         {/* 排名标识 */}
         {/* {booth.rank && (

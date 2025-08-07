@@ -31,6 +31,7 @@ interface Product {
   name: string;
   description?: string;
   price: number;
+  image?: string; // For image search results
   images: {
     id: string;
     url: string;

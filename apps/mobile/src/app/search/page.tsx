@@ -107,7 +107,9 @@ export default function SearchPage() {
   };
 
   const handleImageSearch = () => {
-    router.push('/search/image');
+    // 获取当前选中的标签页类型
+    const searchType = (boothIdParam || activeTab === 'product') ? 'product' : 'booth';
+    router.push(`/search/image?searchType=${searchType}`);
   };
 
   const handleProductIdSearch = () => {
@@ -255,7 +257,9 @@ export default function SearchPage() {
                 <Camera size={24} className="text-orange-500" />
               </div>
               <h3 className="text-base font-medium text-gray-900 mb-2">拍照搜索</h3>
-              <p className="text-sm text-gray-600 mb-4">上传商品图片，快速找到同款</p>
+              <p className="text-sm text-gray-600 mb-4">
+                上传商品图片，快速找到{(boothIdParam || activeTab === 'product') ? '相似商品' : '相似档口'}
+              </p>
               <button
                 onClick={handleImageSearch}
                 className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-full font-medium transition-all shadow-sm hover:shadow-md active:scale-95"

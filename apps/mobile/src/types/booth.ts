@@ -3,6 +3,7 @@ export interface Booth {
   boothName: string;
   avatar?: string;
   coverImg: string;
+  imageUrl?: string;
   description?: string;
   location?: string;
   category?: string;

@@ -58,9 +58,9 @@ export default function SearchResultsPage() {
 
   // 渲染搜索结果内容
   const renderSearchResults = () => {
-    // 图片搜索结果
-    if (isImageSearch && imageSearchResults) {
-      return <ImageSearchResults imageSearchResults={imageSearchResults} />;
+    // 图片搜索使用现有的搜索结果组件（数据已在useSearchLogic中转换）
+    if (isImageSearch) {
+      // 不需要特殊处理，直接使用现有逻辑
     }
 
     // 商品搜索结果
@@ -103,7 +103,11 @@ export default function SearchResultsPage() {
     <MobileLayout showTabBar={false}>
       <div className="min-h-screen bg-gray-50">
         {/* 搜索头部 */}
-        <SearchHeader keyword={keyword} />
+        <SearchHeader 
+          keyword={keyword} 
+          isImageSearch={isImageSearch}
+          searchType={activeTab}
+        />
 
         {/* 搜索统计 */}
         <SearchStats
@@ -125,6 +129,9 @@ export default function SearchResultsPage() {
           isImageSearch={isImageSearch}
           searchKeyword={searchKeyword}
           isBoothInternalSearch={isBoothInternalSearch}
+          // 图片搜索结果计数直接使用现有数据
+          imageProductCount={productSearch.data?.total}
+          imageBoothCount={boothSearch.data?.total}
         />
 
         {/* 筛选栏 */}

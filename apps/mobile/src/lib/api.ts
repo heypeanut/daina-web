@@ -45,7 +45,7 @@ class ApiClient {
 
   private getAuthHeaders(): HeadersInit {
     if (typeof window !== "undefined") {
-      const token = localStorage.getItem("authToken");
+      const token = localStorage.getItem("auth_token");
       if (token) {
         return {
           ...this.defaultHeaders,
@@ -268,7 +268,7 @@ class ApiClient {
       scrollPosition?: number;
     };
   }): Promise<ApiResponse<void>> {
-    return this.request("/api/behavior/record", {
+    return this.authenticatedRequest("/api/behavior/record", {
       method: "POST",
       body: JSON.stringify(behaviorData),
     });
@@ -325,7 +325,7 @@ class ApiClient {
     // 构建请求头，如果有token就添加，没有就用空对象
     const headers: HeadersInit = {};
     if (typeof window !== "undefined") {
-      const token = localStorage.getItem("authToken");
+      const token = localStorage.getItem("auth_token");
       if (token) {
         headers["Authorization"] = `Bearer ${token}`;
       }
@@ -362,7 +362,7 @@ class ApiClient {
     // 构建请求头，如果有token就添加，没有就用空对象
     const headers: HeadersInit = {};
     if (typeof window !== "undefined") {
-      const token = localStorage.getItem("authToken");
+      const token = localStorage.getItem("auth_token");
       if (token) {
         headers["Authorization"] = `Bearer ${token}`;
       }

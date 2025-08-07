@@ -5,6 +5,7 @@ import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { LoadingState, ErrorState, EmptyState } from './SearchStates';
 import type { ProductSearchResponse, Product } from '@/types/api';
+import { hasImageSearchData, getSimilarityScore } from '@/lib/utils/imageSearchAdapter';
 
 interface ProductSearchResultsProps {
   productSearchData?: ProductSearchResponse;
@@ -83,7 +84,7 @@ export function ProductSearchResults({
                 {/* 商品图片 */}
                 <div className="relative aspect-square">
                   <Image
-                    src={product.images?.[0]?.url || '/placeholder-product.png'}
+                    src={product.image || product.images?.[0]?.url || '/placeholder-product.png'}
                     alt={product.name}
                     fill
                     sizes="(max-width: 768px) 50vw, 33vw"
@@ -94,6 +95,12 @@ export function ProductSearchResults({
                     <span className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">
                       热销
                     </span>
+                  )}
+                  {/* 相似度标签 - 图片搜索特有 */}
+                  {hasImageSearchData(product) && (
+                    <div className="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                      {Math.round(getSimilarityScore(product) * 100)}%
+                    </div>
                   )}
                 </div>
 

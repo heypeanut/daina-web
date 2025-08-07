@@ -1,15 +1,19 @@
 "use client";
 
 import React from 'react';
+import { ImageIcon } from 'lucide-react';
 
 interface SearchTabsProps {
   activeTab: 'product' | 'booth';
   onTabChange: (tab: 'product' | 'booth') => void;
-  productCount: number;
-  boothCount: number;
-  isImageSearch: boolean;
-  searchKeyword: string;
-  isBoothInternalSearch?: boolean; // 新增：是否为档口内搜索
+  productCount?: number;
+  boothCount?: number;
+  isImageSearch?: boolean;
+  searchKeyword?: string;
+  isBoothInternalSearch?: boolean; // 是否为档口内搜索
+  // 新增：图片搜索结果计数
+  imageProductCount?: number;
+  imageBoothCount?: number;
 }
 
 export function SearchTabs({
@@ -20,12 +24,16 @@ export function SearchTabs({
   isImageSearch,
   searchKeyword,
   isBoothInternalSearch = false,
+  imageProductCount,
+  imageBoothCount,
 }: SearchTabsProps) {
-  // 图片搜索、没有关键词或档口内搜索时不显示Tab
-  if (isImageSearch || !searchKeyword || isBoothInternalSearch) {
+  // 档口内搜索、图片搜索或非图片搜索且无关键词时隐藏标签页
+  if (isBoothInternalSearch || isImageSearch || (!isImageSearch && !searchKeyword)) {
     return null;
   }
 
+
+  // 普通关键词搜索的标签页（保持原有逻辑）
   return (
     <div className="bg-white border-b border-gray-100 sticky top-16 z-40">
       <div className="flex">
@@ -37,7 +45,7 @@ export function SearchTabs({
               : 'text-gray-600 hover:text-gray-800'
           }`}
         >
-          商品 ({productCount})
+          商品 ({productCount || 0})
         </button>
         <button
           onClick={() => onTabChange('booth')}
@@ -47,7 +55,7 @@ export function SearchTabs({
               : 'text-gray-600 hover:text-gray-800'
           }`}
         >
-          档口 ({boothCount})
+          档口 ({boothCount || 0})
         </button>
       </div>
     </div>
