@@ -4,6 +4,7 @@ import { tenantApi, PaginatedResponse } from "./config";
 import { isLoggedIn } from "@/lib/auth";
 import { ProductDetail } from "@/app/product/[id]/types";
 import { searchBooths as searchBoothsAPI } from "./search";
+import { uploadImage } from ".";
 
 export interface BoothProduct {
   id: string;
@@ -18,6 +19,24 @@ export interface BoothProduct {
   stock?: number;
   createdAt: string;
   updatedAt?: string;
+}
+
+// 前端表单数据接口
+export interface BoothApplicationForm {
+  boothNumber: string;
+  boothName: string;
+  market: string;
+  mainBusiness: string;
+  address: string;
+  phone: string;
+  coverImage: File | null;
+  wx?: string;
+  qq?: string;
+  maxProducts: number;
+  sortOrder: number;
+  wxQrCode?: File | null;
+  qqQrCode?: File | null;
+  description?: string;
 }
 
 export interface BoothCategory {
@@ -47,6 +66,63 @@ export interface GetBoothProductsParams {
   keyword?: string;
   categoryId?: string;
   sortBy?: "latest" | "popular" | "price" | "sales";
+}
+
+export interface BoothApplicationResponse {
+  success: boolean;
+  message: string;
+  applicationId?: string;
+}
+
+// 后端API请求接口（匹配后端字段）
+export interface BoothApplicationRequest {
+  boothName: string;
+  boothNumber: string;
+  wxQrcode?: string; // 文件上传后的URL
+  qqQrcode?: string; // 文件上传后的URL
+  wx?: string;
+  qq?: string;
+  address: string;
+  market: string;
+  phone: string;
+  rank: string; // 对应前端的 sortOrder
+  mainBusiness: string;
+  maxProducts: number;
+  coverImg: string; // 文件上传后的URL
+  profile?: string; // 对应前端的 description
+}
+
+// 后端审核状态接口响应
+export interface BoothApplyStatusItem {
+  id: string;
+  boothName: string;
+  status: string; // "0"=待审核, "1"=通过审核, "2"=审核拒绝
+  statusText: string; // "待审核", "审核通过", "审核拒绝"
+  auditTime: string;
+  rejectReason: string;
+  lastSubmitTime: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BoothApplyStatusResponse {
+  rows: BoothApplyStatusItem[];
+  total: number;
+}
+
+// 前端使用的用户档口状态
+export interface UserBoothStatus {
+  hasBooths: boolean;
+  booths: {
+    id: string;
+    boothName: string;
+    status: "active" | "pending" | "rejected";
+    statusText: string;
+    market?: string;
+    rejectReason?: string;
+    auditTime?: string;
+  }[];
+  totalBooths: number;
 }
 
 // ==================== 档口列表相关API ====================
@@ -87,7 +163,7 @@ export async function searchBooths(
     pageNum,
     pageSize: size,
   });
-  
+
   // 转换响应格式以保持兼容性
   return {
     rows: searchResponse.rows,
@@ -236,5 +312,145 @@ export async function trackProductShare(productId: string): Promise<void> {
     });
   } catch (error) {
     console.warn("Failed to track product share:", error);
+  }
+}
+
+/**
+ * 提交档口入驻申请
+ */
+export async function submitBoothApplication(
+  formData: BoothApplicationForm
+): Promise<BoothApplicationResponse> {
+  try {
+    // 1. 先上传所有文件
+    const coverImageUrl = await uploadFileIfExists(formData.coverImage);
+    if (!coverImageUrl) {
+      throw new Error("封面图片为必填项");
+    }
+
+    const wxQrCodeUrl = await uploadFileIfExists(formData.wxQrCode ?? null);
+    const qqQrCodeUrl = await uploadFileIfExists(formData.qqQrCode ?? null);
+
+    // 2. 构建API请求数据，映射字段名
+    const requestData: BoothApplicationRequest = {
+      boothName: formData.boothName,
+      boothNumber: formData.boothNumber,
+      market: formData.market,
+      mainBusiness: formData.mainBusiness,
+      address: formData.address,
+      phone: formData.phone,
+      rank: formData.sortOrder.toString(), // 前端sortOrder -> 后端rank
+      maxProducts: formData.maxProducts,
+      coverImg: coverImageUrl, // 前端coverImage -> 后端coverImg
+      wx: formData.wx,
+      qq: formData.qq,
+      wxQrcode: wxQrCodeUrl, // 前端wxQrCode -> 后端wxQrcode
+      qqQrcode: qqQrCodeUrl, // 前端qqQrCode -> 后端qqQrcode
+      profile: formData.description, // 前端description -> 后端profile
+    };
+
+    // 3. 调用后端API
+    const response = await tenantApi.post<BoothApplicationResponse>(
+      "/booth/apply",
+      requestData
+    );
+
+    return {
+      success: true,
+      message:
+        response.data.message ||
+        "档口入驻申请提交成功！我们将在3-5个工作日内审核。",
+      applicationId: response.data.applicationId,
+    };
+  } catch (error: any) {
+    console.error("Error submitting booth application:", error);
+
+    // 处理不同类型的错误
+    if (error.message?.includes("文件上传失败")) {
+      throw error; // 直接抛出文件上传错误
+    }
+
+    if (error.response?.data?.message) {
+      throw new Error(error.response.data.message);
+    }
+
+    throw new Error("提交申请失败，请重试");
+  }
+}
+
+/**
+ * 上传文件并返回URL（如果文件存在）
+ */
+async function uploadFileIfExists(
+  file: File | null
+): Promise<string | undefined> {
+  if (!file) return undefined;
+
+  try {
+    const uploadResult = await uploadImage(file);
+    return uploadResult.url;
+  } catch (error) {
+    console.error("文件上传失败:", error);
+    throw new Error("文件上传失败，请重试");
+  }
+}
+
+/**
+ * 映射后端状态码为前端状态
+ */
+function mapBoothStatus(
+  backendStatus: string
+): "active" | "pending" | "rejected" {
+  switch (backendStatus) {
+    case "0":
+      return "pending"; // 待审核
+    case "1":
+      return "active"; // 审核通过
+    case "2":
+      return "rejected"; // 审核拒绝
+    default:
+      return "pending"; // 默认为待审核
+  }
+}
+
+/**
+ * 获取用户档口申请状态
+ */
+export async function getBoothApplyStatus(): Promise<BoothApplyStatusResponse> {
+  const response = await tenantApi.get<BoothApplyStatusResponse>(
+    "/booth/apply/status"
+  );
+  console.log("response.data", response.data);
+  return response.data;
+}
+
+/**
+ * 获取用户档口状态（前端格式化）
+ */
+export async function getUserBoothStatus(): Promise<UserBoothStatus> {
+  try {
+    const statusResponse = await getBoothApplyStatus();
+    const { rows, total } = statusResponse;
+
+    // 将后端状态映射为前端状态
+    const booths = rows.map((item) => ({
+      id: item.id,
+      boothName: item.boothName,
+      status: mapBoothStatus(item.status),
+      statusText: item.statusText,
+      rejectReason: item.rejectReason,
+      auditTime: item.auditTime,
+    }));
+
+    // 判断是否有已通过审核的档口
+    const hasActiveBooths = booths.some((booth) => booth.status === "active");
+    return {
+      hasBooths: hasActiveBooths,
+      booths,
+      totalBooths: total,
+    };
+  } catch (error) {
+    console.error("Error fetching user booth status:", error);
+    throw new Error("获取档口状态失败");
   }
 }

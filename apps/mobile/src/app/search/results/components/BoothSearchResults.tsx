@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState } from 'react';
-import { BoothGrid } from '@/app/market/components/BoothGrid';
-import { LoadingState, ErrorState, EmptyState } from './SearchStates';
-import type { BoothSearchResponse } from '@/hooks/api/search';
-import type { Booth } from '@/types/booth';
+import React, { useState } from "react";
+import { BoothGrid } from "@/app/market/components/BoothGrid";
+import { LoadingState, ErrorState, EmptyState } from "./SearchStates";
+import type { BoothSearchResponse } from "@/hooks/api/search";
+import type { Booth } from "@/types/booth";
 
 interface BoothSearchResultsProps {
   boothSearchData?: BoothSearchResponse;
@@ -55,14 +55,13 @@ export function BoothSearchResults({
   // 适配onBoothClick函数签名
   const handleBoothClick = (booth: Booth) => {
     // 找到booth在数组中的索引
-    const index = boothSearchData?.rows?.findIndex(b => b.id === booth.id) ?? 0;
+    const index =
+      boothSearchData?.rows?.findIndex((b) => b.id === booth.id) ?? 0;
     onBoothClick(booth, index);
   };
 
-  // 加载更多的占位符函数
-  const handleLoadMore = () => {
-    // 此功能由父组件的无限滚动处理
-  };
+  // 直接透传父组件的加载更多回调
+  const handleLoadMore = onLoadMore || (() => {});
   // 初始加载状态
   if (boothLoading && !boothSearchData?.rows?.length) {
     return <LoadingState />;

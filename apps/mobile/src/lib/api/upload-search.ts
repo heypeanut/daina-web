@@ -5,6 +5,7 @@ import { tenantApi } from './config';
 
 export interface ImageSearchOptions {
   limit?: number;
+  pageNum?: number;
   minSimilarity?: number;
   boothId?: string;
   minPrice?: number;
@@ -32,10 +33,13 @@ export interface ProductSearchResult {
 }
 
 export interface ImageSearchResponse<T> {
-  results: T[];
+  results?: T[]; // 兼容原有结构
+  rows?: T[];    // 实际API返回的字段
   total: number;
-  searchTime: number;
-  algorithm: string;
+  searchTime?: number;
+  algorithm?: string;
+  pageNum?: number;
+  pageSize?: number;
 }
 
 // ==================== 上传相关类型 ====================
@@ -71,6 +75,10 @@ export async function searchBoothsByImage(
   formData.append('limit', (options.limit || 20).toString());
   formData.append('minSimilarity', (options.minSimilarity || 0.3).toString());
   
+  if (options.pageNum) {
+    formData.append('pageNum', options.pageNum.toString());
+  }
+  
   const response = await tenantApi.postFormData('/search/image/booth', formData);
   
   return response.data;
@@ -90,6 +98,9 @@ export async function searchProductsByImage(
   formData.append('limit', (options.limit || 20).toString());
   formData.append('minSimilarity', (options.minSimilarity || 0.3).toString());
   
+  if (options.pageNum) {
+    formData.append('pageNum', options.pageNum.toString());
+  }
   if (options.boothId) formData.append('boothId', options.boothId);
   if (options.minPrice) formData.append('minPrice', options.minPrice.toString());
   if (options.maxPrice) formData.append('maxPrice', options.maxPrice.toString());

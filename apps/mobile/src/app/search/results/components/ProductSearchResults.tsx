@@ -1,11 +1,14 @@
 "use client";
 
-import React, { useRef, useEffect } from 'react';
-import { Loader2 } from 'lucide-react';
-import Image from 'next/image';
-import { LoadingState, ErrorState, EmptyState } from './SearchStates';
-import type { ProductSearchResponse, Product } from '@/types/api';
-import { hasImageSearchData, getSimilarityScore } from '@/lib/utils/imageSearchAdapter';
+import React, { useRef, useEffect } from "react";
+import { Loader2 } from "lucide-react";
+import Image from "next/image";
+import { LoadingState, ErrorState, EmptyState } from "./SearchStates";
+import type { ProductSearchResponse, Product } from "@/types/api";
+import {
+  hasImageSearchData,
+  getSimilarityScore,
+} from "@/lib/utils/imageSearchAdapter";
 
 interface ProductSearchResultsProps {
   productSearchData?: ProductSearchResponse;
@@ -42,13 +45,18 @@ export function ProductSearchResults({
     const observer = new IntersectionObserver(
       (entries) => {
         const target = entries[0];
-        if (target.isIntersecting && hasNextPage && !isFetchingNextPage && onLoadMore) {
+        if (
+          target.isIntersecting &&
+          hasNextPage &&
+          !isFetchingNextPage &&
+          onLoadMore
+        ) {
           onLoadMore();
         }
       },
       {
         threshold: 0.1,
-        rootMargin: '100px',
+        rootMargin: "100px",
       }
     );
 
@@ -67,7 +75,6 @@ export function ProductSearchResults({
   if (productError) {
     return <ErrorState error={productError} onRetry={onRefetch} />;
   }
-
   // 有数据时显示商品列表
   if (productSearchData?.rows?.length) {
     return (
@@ -84,7 +91,7 @@ export function ProductSearchResults({
                 {/* 商品图片 */}
                 <div className="relative aspect-square">
                   <Image
-                    src={product.image || product.images?.[0]?.url || '/placeholder-product.png'}
+                    src={product.images?.[0]?.url}
                     alt={product.name}
                     fill
                     sizes="(max-width: 768px) 50vw, 33vw"
@@ -113,7 +120,7 @@ export function ProductSearchResults({
                   {/* 价格 */}
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-red-500 font-bold text-lg">
-                      ¥{product.price?.toFixed(2) || '0.00'}
+                      ¥{product.price?.toFixed(2) || "0.00"}
                     </span>
                   </div>
 
@@ -131,7 +138,10 @@ export function ProductSearchResults({
           {/* 加载更多区域 */}
           <>
             {/* 无限滚动触发区域 */}
-            <div ref={loadMoreRef} className="h-6 flex items-center justify-center">
+            <div
+              ref={loadMoreRef}
+              className="h-6 flex items-center justify-center  my-4"
+            >
               {isFetchingNextPage && (
                 <div className="flex items-center gap-2 text-gray-500">
                   <Loader2 size={16} className="animate-spin" />
