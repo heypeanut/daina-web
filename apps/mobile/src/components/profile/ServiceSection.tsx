@@ -34,7 +34,10 @@ export const ServiceSection: React.FC = () => {
 
   const handleBoothRegistration = async () => {
     console.log("boothStatus", boothStatus);
-    if (boothStatus?.booths[0].status === "pending") {
+    if (
+      boothStatus?.booths.length > 0 &&
+      boothStatus?.booths[0].status === "pending"
+    ) {
       return toast.error("档口正在审核中");
     }
     if (!isLoggedIn()) {

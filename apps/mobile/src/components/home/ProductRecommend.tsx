@@ -9,6 +9,7 @@ interface ProductItem {
   id: string;
   name: string;
   description?: string;
+  images: { url: string }[];
   price: number;
   imageUrl: string;
   boothId?: string;
