@@ -17,7 +17,7 @@ import {
 
 // Hooks and types
 import { useBoothDetail } from "./hooks/useBoothDetail";
-import { BoothProduct } from "@/lib/api/booth";
+import { BoothProduct } from "@/types/booth";
 
 export default function RefactoredBoothDetailPage() {
   const params = useParams();

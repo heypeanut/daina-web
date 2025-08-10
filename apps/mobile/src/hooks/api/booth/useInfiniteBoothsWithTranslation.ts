@@ -1,7 +1,7 @@
 import { useInfiniteBooths } from "./useBooths";
 import { useDictMap } from "../useDictionary";
 import { DictType } from "@/types/dictionary";
-import { GetBoothsParams } from "@/lib/api/booth";
+import { GetBoothsParams } from "@/types/booth-api";
 import { translateDictValue } from "@/utils/dictionary";
 
 interface UseInfiniteBoothsWithTranslationOptions {

@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback } from "react";
 import { useInfiniteBoothsWithTranslation } from "@/hooks/api/booth/useInfiniteBoothsWithTranslation";
-import { GetBoothsParams } from "@/lib/api/booth";
+import { GetBoothsParams } from "@/types/booth-api";
 
 export function useMarketData() {
   // 状态管理

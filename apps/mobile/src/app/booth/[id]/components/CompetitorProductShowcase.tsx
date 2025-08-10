@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import Masonry from "react-masonry-css";
-import { BoothProduct } from "@/lib/api/booth";
+import { BoothProduct } from "@/types/booth";
 import { Grid, List, ChevronDown, Package, Loader2 } from "lucide-react";
 import { ProductShowcaseSkeleton } from "./BoothDetailSkeleton";
 
@@ -71,11 +71,6 @@ export function CompetitorProductShowcase({
     return () => observer.disconnect();
   }, [hasMore, isLoadingMore, onLoadMore]);
 
-  const handleLoadMoreClick = useCallback(() => {
-    if (hasMore && !isLoadingMore && onLoadMore) {
-      onLoadMore();
-    }
-  }, [hasMore, isLoadingMore, onLoadMore]);
 
   // Sort products based on selected option
   const sortedProducts = React.useMemo(() => {

@@ -8,8 +8,8 @@ import {
   trackBoothView,
   trackBoothContact,
   trackBoothShare,
-  GetBoothProductsParams,
 } from "@/lib/api/booth";
+import { GetBoothProductsParams } from "@/types/booth-api";
 import {
   useFollowBooth,
   useUnfollowBooth,

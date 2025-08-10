@@ -1,18 +1,22 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { ArrowLeft, Plus } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ArrowLeft, Plus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useDictionary } from "@/hooks/api/useDictionary";
 import { DictType } from "@/types/dictionary";
-import { submitBoothApplication } from "@/lib/api/booth";
-import { BoothApplicationForm } from "@/types/booth";
-import { useUserInfo } from "@/hooks/api/auth/useUserInfo";
+import { getBoothEditInfo, updateBoothInfo } from "@/lib/api/booth";
+import { BoothEditForm, BoothEditInfo } from "@/types/booth";
 
-export default function BoothApplyPage() {
+export default function BoothEditPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const boothId = searchParams.get("id");
+
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [boothInfo, setBoothInfo] = useState<BoothEditInfo | null>(null);
 
   // 获取市场字典数据
   const {
@@ -21,11 +25,7 @@ export default function BoothApplyPage() {
     error: marketError,
   } = useDictionary(DictType.MARKET);
 
-  // 获取用户信息
-  const { data: userInfo } = useUserInfo();
-
-  const [formData, setFormData] = useState<BoothApplicationForm>({
-    boothNumber: "",
+  const [formData, setFormData] = useState<BoothEditForm>({
     boothName: "",
     market: "",
     mainBusiness: "",
@@ -37,22 +37,51 @@ export default function BoothApplyPage() {
     wxQrCode: null,
     qqQrCode: null,
     description: "",
-    categoryIds: [],
   });
 
-  // 当用户信息加载完成时，自动填入手机号码
+  // 加载档口信息并预填充表单
   useEffect(() => {
-    if (userInfo?.phone && !formData.phone) {
-      setFormData((prev) => ({
-        ...prev,
-        phone: userInfo.phone,
-      }));
-    }
-  }, [userInfo?.phone, formData.phone]);
+    const loadBoothInfo = async () => {
+      if (!boothId) {
+        toast.error("未提供档口ID");
+        router.back();
+        return;
+      }
+
+      try {
+        setInitialLoading(true);
+        const info = await getBoothEditInfo(boothId);
+        setBoothInfo(info);
+
+        // 预填充表单数据
+        setFormData({
+          boothName: info.boothName,
+          market: info.market,
+          mainBusiness: info.mainBusiness,
+          address: info.address,
+          phone: info.phone,
+          coverImage: info.coverImg, // 使用现有图片URL
+          wx: info.wx || "",
+          qq: info.qq || "",
+          wxQrCode: info.wxQrcode || null,
+          qqQrCode: info.qqQrcode || null,
+          description: info.profile || "",
+        });
+      } catch (error) {
+        console.error("加载档口信息失败:", error);
+        toast.error(error instanceof Error ? error.message : "加载档口信息失败");
+        router.back();
+      } finally {
+        setInitialLoading(false);
+      }
+    };
+
+    loadBoothInfo();
+  }, [boothId, router]);
 
   const handleInputChange = (
-    field: keyof BoothApplicationForm,
-    value: string | number | File | null
+    field: keyof BoothEditForm,
+    value: string | File | null
   ) => {
     setFormData((prev) => ({
       ...prev,
@@ -80,10 +109,6 @@ export default function BoothApplyPage() {
     };
 
   const validateForm = () => {
-    if (!formData.boothNumber.trim()) {
-      toast.error("请输入档口号");
-      return false;
-    }
     if (!formData.boothName.trim()) {
       toast.error("请输入档口名称");
       return false;
@@ -115,28 +140,28 @@ export default function BoothApplyPage() {
     return true;
   };
 
-  const handleSubmit = async () => {
-    if (!validateForm()) return;
+  const handleSave = async () => {
+    if (!validateForm() || !boothId) return;
 
     try {
       setLoading(true);
 
-      // 调用真实API提交申请
-      const result = await submitBoothApplication(formData);
+      // 调用更新API
+      const result = await updateBoothInfo(boothId, formData);
 
       if (result.success) {
         toast.success(result.message, {
           duration: 4000,
         });
 
-        // 跳转到成功页面或返回
-        router.push("/profile");
+        // 返回管理页面
+        router.push(`/booth/management?id=${boothId}`);
       } else {
-        toast.error(result.message || "提交失败，请重试");
+        toast.error(result.message || "保存失败，请重试");
       }
     } catch (error: unknown) {
-      console.error("档口申请提交失败:", error);
-      toast.error(error instanceof Error ? error.message : "提交失败，请重试");
+      console.error("档口信息保存失败:", error);
+      toast.error(error instanceof Error ? error.message : "保存失败，请重试");
     } finally {
       setLoading(false);
     }
@@ -145,6 +170,38 @@ export default function BoothApplyPage() {
   const handleBack = () => {
     router.back();
   };
+
+  // 渲染图片预览
+  const renderImagePreview = (
+    imageData: File | string | null,
+    altText: string
+  ) => {
+    if (!imageData) return null;
+
+    const imageUrl = imageData instanceof File 
+      ? URL.createObjectURL(imageData)
+      : imageData;
+
+    return (
+      <img
+        src={imageUrl}
+        alt={altText}
+        className="w-full h-48 object-cover rounded-lg mx-auto"
+      />
+    );
+  };
+
+  // 初始加载状态
+  if (initialLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 text-orange-500 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">加载档口信息中...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -157,30 +214,30 @@ export default function BoothApplyPage() {
           >
             <ArrowLeft className="w-5 h-5 text-gray-600" />
           </button>
-          <h1 className="text-lg font-semibold text-gray-900">档口入驻</h1>
+          <h1 className="text-lg font-semibold text-gray-900">编辑档口信息</h1>
           <button
-            onClick={handleSubmit}
+            onClick={handleSave}
             disabled={loading}
             className="px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "提交中..." : "提交"}
+            {loading ? "保存中..." : "保存"}
           </button>
         </div>
       </div>
 
       {/* 表单内容 */}
       <div className="p-4 space-y-4">
-        {/* 档口号 */}
+        {/* 档口号（只读） */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            <span className="text-red-500">*</span> 档口号
+            档口号
           </label>
           <input
             type="text"
-            value={formData.boothNumber}
-            onChange={(e) => handleInputChange("boothNumber", e.target.value)}
-            className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
-            placeholder="请输入档口号"
+            value={boothInfo?.boothNumber || ""}
+            readOnly
+            className="block w-full px-3 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
+            placeholder="档口号"
           />
         </div>
 
@@ -226,7 +283,7 @@ export default function BoothApplyPage() {
             {marketData &&
               Array.isArray(marketData) &&
               marketData
-                .sort((a, b) => a.sort - b.sort) // 按 sort 字段排序
+                .sort((a, b) => a.sort - b.sort)
                 .map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
@@ -273,7 +330,7 @@ export default function BoothApplyPage() {
             value={formData.phone}
             onChange={(e) => handleInputChange("phone", e.target.value)}
             className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
-            placeholder={userInfo?.phone ? userInfo.phone : "请输入联系电话"}
+            placeholder="请输入联系电话"
             maxLength={11}
           />
         </div>
@@ -287,14 +344,12 @@ export default function BoothApplyPage() {
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-3 text-center hover:border-orange-400 transition-colors cursor-pointer">
               {formData.coverImage ? (
                 <div className="space-y-3">
-                  <img
-                    src={URL.createObjectURL(formData.coverImage)}
-                    alt="封面预览"
-                    className="w-full h-48 object-cover rounded-lg mx-auto"
-                  />
+                  {renderImagePreview(formData.coverImage, "封面预览")}
                   <div className="flex items-center justify-center space-x-4 flex-wrap">
                     <span className="text-sm text-gray-600">
-                      {formData.coverImage.name}
+                      {formData.coverImage instanceof File
+                        ? formData.coverImage.name
+                        : "当前封面图片"}
                     </span>
                     <button
                       type="button"
@@ -354,40 +409,6 @@ export default function BoothApplyPage() {
           />
         </div>
 
-        {/* 最大商品数 */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            最大商品数
-          </label>
-          <input
-            type="number"
-            value={formData.maxProducts}
-            onChange={(e) =>
-              handleInputChange("maxProducts", parseInt(e.target.value) || 100)
-            }
-            className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
-            placeholder="100"
-            min="1"
-          />
-        </div>
-
-        {/* 排序 */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            排序
-          </label>
-          <input
-            type="number"
-            value={formData.sortOrder}
-            onChange={(e) =>
-              handleInputChange("sortOrder", parseInt(e.target.value) || 0)
-            }
-            className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
-            placeholder="0"
-            min="0"
-          />
-        </div>
-
         {/* 二维码上传 */}
         <div className="grid grid-cols-2 gap-4">
           {/* 微信二维码 */}
@@ -400,7 +421,9 @@ export default function BoothApplyPage() {
                 {formData.wxQrCode ? (
                   <div className="space-y-2">
                     <img
-                      src={URL.createObjectURL(formData.wxQrCode)}
+                      src={formData.wxQrCode instanceof File 
+                        ? URL.createObjectURL(formData.wxQrCode)
+                        : formData.wxQrCode}
                       alt="微信二维码"
                       className="w-full h-20 object-cover rounded mx-auto"
                     />
@@ -440,7 +463,9 @@ export default function BoothApplyPage() {
                 {formData.qqQrCode ? (
                   <div className="space-y-2">
                     <img
-                      src={URL.createObjectURL(formData.qqQrCode)}
+                      src={formData.qqQrCode instanceof File
+                        ? URL.createObjectURL(formData.qqQrCode)
+                        : formData.qqQrCode}
                       alt="QQ二维码"
                       className="w-full h-20 object-cover rounded mx-auto"
                     />
@@ -483,14 +508,6 @@ export default function BoothApplyPage() {
             className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none resize-none"
             placeholder="请详细描述您的档口经营范围、优势等信息"
           />
-        </div>
-
-        {/* 温馨提示 */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h4 className="text-sm font-medium text-blue-800 mb-2">*详细描述</h4>
-          <p className="text-sm text-blue-700">
-            请详细介绍您的档口信息，包括经营范围、产品特色、服务优势等，有助于审核通过。
-          </p>
         </div>
 
         {/* 市场数据加载错误提示 */}
