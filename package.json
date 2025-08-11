@@ -11,7 +11,9 @@
     "dev:mobile": "turbo run dev --filter=mobile",
     "dev": "turbo run dev",
     "build": "turbo run build",
+    "build:mobile": "turbo run build --filter=mobile",
     "start": "turbo run start",
+    "start:mobile": "turbo run start --filter=mobile",
     "lint": "turbo run lint"
   },
   "dependencies": {

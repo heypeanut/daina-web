@@ -2,10 +2,12 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, Plus, X, Loader2, Image as ImageIcon } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-import { createBoothProduct, getProductCategories } from "@/lib/api/booth";
-import { ProductCreateForm, ProductCategory } from "@/types/booth";
+import { createBoothProduct } from "@/lib/api/booth";
+import { ProductCreateForm } from "@/types/booth";
+import { useProductStatusDict } from "@/lib/react-query/hooks/dictionary";
+import { DraggableImageList } from "./components/DraggableImageList";
 
 export default function AddProductPage() {
   const router = useRouter();
@@ -14,38 +16,42 @@ export default function AddProductPage() {
 
   // 状态管理
   const [loading, setLoading] = useState(false);
-  const [categoriesLoading, setCategoriesLoading] = useState(true);
-  const [categories, setCategories] = useState<ProductCategory[]>([]);
+  
+  const { 
+    data: productStatusOptions, 
+    isLoading: statusLoading, 
+    error: statusError 
+  } = useProductStatusDict();
+
 
   const [formData, setFormData] = useState<ProductCreateForm>({
     name: "",
-    price: 0,
+    price: undefined,
     originalPrice: undefined,
-    coverImage: null,
-    additionalImages: [],
+    images: [], // 合并后的图片数组
     description: "",
     categoryId: "",
     stock: undefined,
-    status: 'active'
+    status: "1",
+    // 规格参数（可选）
+    style: "",
+    phoneModel: "",
+    productType: "",
+    trend: "",
+    imageType: "",
+    copyright: "",
+    biodegradable: "",
+    ecoMaterial: ""
   });
 
-  // 加载商品分类
-  useEffect(() => {
-    const loadCategories = async () => {
-      try {
-        setCategoriesLoading(true);
-        const categoryData = await getProductCategories();
-        setCategories(categoryData);
-      } catch (error) {
-        console.error("加载商品分类失败:", error);
-        toast.error("加载商品分类失败");
-      } finally {
-        setCategoriesLoading(false);
-      }
-    };
 
-    loadCategories();
-  }, []);
+  // React Query错误处理
+  useEffect(() => {
+    if (statusError) {
+      console.error("加载商品状态字典失败:", statusError);
+      toast.error("加载商品状态选项失败，使用默认选项");
+    }
+  }, [statusError]);
 
   // 检查档口ID
   useEffect(() => {
@@ -56,7 +62,7 @@ export default function AddProductPage() {
   }, [boothId, router]);
 
   const handleInputChange = (
-    field: keyof ProductCreateForm,
+    field: string,
     value: string | number | File | File[] | null
   ) => {
     setFormData((prev) => ({
@@ -65,60 +71,6 @@ export default function AddProductPage() {
     }));
   };
 
-  // 处理封面图片上传
-  const handleCoverImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      if (!file.type.startsWith("image/")) {
-        toast.error("请选择图片文件");
-        return;
-      }
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error("图片大小不能超过5MB");
-        return;
-      }
-      handleInputChange("coverImage", file);
-    }
-  };
-
-  // 处理附加图片上传
-  const handleAdditionalImagesUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files || []);
-    
-    // 验证文件
-    const validFiles = files.filter(file => {
-      if (!file.type.startsWith("image/")) {
-        toast.error(`${file.name} 不是有效的图片文件`);
-        return false;
-      }
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error(`${file.name} 大小不能超过5MB`);
-        return false;
-      }
-      return true;
-    });
-
-    // 检查总数量限制
-    const currentCount = (formData.additionalImages?.length || 0);
-    const maxAllowed = 5; // 最多5张附加图片
-    const availableSlots = maxAllowed - currentCount;
-    
-    if (validFiles.length > availableSlots) {
-      toast.error(`最多只能添加${availableSlots}张图片`);
-      return;
-    }
-
-    if (validFiles.length > 0) {
-      const newImages = [...(formData.additionalImages || []), ...validFiles];
-      handleInputChange("additionalImages", newImages);
-    }
-  };
-
-  // 删除附加图片
-  const removeAdditionalImage = (index: number) => {
-    const newImages = (formData.additionalImages || []).filter((_, i) => i !== index);
-    handleInputChange("additionalImages", newImages);
-  };
 
   // 表单验证
   const validateForm = () => {
@@ -126,16 +78,17 @@ export default function AddProductPage() {
       toast.error("请输入商品名称");
       return false;
     }
-    if (formData.price <= 0) {
-      toast.error("请输入有效的商品价格");
+    if (!formData.images || formData.images.length === 0) {
+      toast.error("请上传至少一张商品图片");
       return false;
     }
-    if (formData.originalPrice && formData.originalPrice < formData.price) {
+    if (!formData.status) {
+      toast.error("请选择商品状态");
+      return false;
+    }
+    // 可选字段验证
+    if (formData.originalPrice && formData.price && formData.originalPrice < formData.price) {
       toast.error("原价不能低于现价");
-      return false;
-    }
-    if (!formData.coverImage) {
-      toast.error("请上传商品封面图片");
       return false;
     }
     return true;
@@ -146,7 +99,8 @@ export default function AddProductPage() {
     if (!validateForm() || !boothId) return;
 
     try {
-      setLoading(true);
+      // setLoading(true);
+      // 直接传递File对象给createBoothProduct，由它处理图片上传
       const result = await createBoothProduct(boothId, formData);
 
       if (result.success) {
@@ -168,18 +122,6 @@ export default function AddProductPage() {
 
   const handleBack = () => {
     router.back();
-  };
-
-  // 渲染图片预览
-  const renderImagePreview = (file: File, altText: string) => {
-    const imageUrl = URL.createObjectURL(file);
-    return (
-      <img
-        src={imageUrl}
-        alt={altText}
-        className="w-full h-full object-cover"
-      />
-    );
   };
 
   return (
@@ -229,7 +171,7 @@ export default function AddProductPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                <span className="text-red-500">*</span> 现价 (元)
+                现价 (元)
               </label>
               <input
                 type="number"
@@ -248,7 +190,10 @@ export default function AddProductPage() {
               <input
                 type="number"
                 value={formData.originalPrice || ''}
-                onChange={(e) => handleInputChange("originalPrice", parseFloat(e.target.value) || undefined)}
+                onChange={(e) => {
+                  const value = parseFloat(e.target.value);
+                  handleInputChange("originalPrice", isNaN(value) ? null : value);
+                }}
                 className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
                 placeholder="0.00"
                 min="0"
@@ -257,8 +202,26 @@ export default function AddProductPage() {
             </div>
           </div>
 
-          {/* 商品分类 */}
+          {/* 库存数量 */}
           <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              库存数量
+            </label>
+            <input
+              type="number"
+              value={formData.stock || ''}
+              onChange={(e) => {
+                const value = parseInt(e.target.value);
+                handleInputChange("stock", isNaN(value) ? null : value);
+              }}
+              className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
+              placeholder="不限制"
+              min="0"
+            />
+          </div>
+
+          {/* 商品分类 */}
+          {/* <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               商品分类
             </label>
@@ -284,31 +247,20 @@ export default function AddProductPage() {
                 </option>
               ))}
             </select>
-          </div>
+          </div> */}
 
           {/* 库存和状态 */}
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                库存数量
-              </label>
-              <input
-                type="number"
-                value={formData.stock || ''}
-                onChange={(e) => handleInputChange("stock", parseInt(e.target.value) || undefined)}
-                className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
-                placeholder="不限制"
-                min="0"
-              />
-            </div>
+            
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 商品状态
               </label>
               <select
                 value={formData.status}
-                onChange={(e) => handleInputChange("status", e.target.value as 'active' | 'inactive')}
-                className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none bg-white appearance-none"
+                onChange={(e) => handleInputChange("status", e.target.value)}
+                disabled={statusLoading}
+                className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none bg-white appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{
                   backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
                   backgroundPosition: "right 0.5rem center",
@@ -317,8 +269,14 @@ export default function AddProductPage() {
                   paddingRight: "2.5rem",
                 }}
               >
-                <option value="active">上架</option>
-                <option value="inactive">下架</option>
+                {/* <option value="">
+                  {statusLoading ? "加载中..." : "请选择商品状态"}
+                </option> */}
+                {(productStatusOptions || []).map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -326,100 +284,20 @@ export default function AddProductPage() {
 
         {/* 商品图片 */}
         <div className="bg-white rounded-lg p-4 space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900">商品图片</h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-gray-900">
+              商品图片 <span className="text-red-500">*</span>
+            </h3>
+            <span className="text-sm text-gray-500">
+              第一张为封面图，可拖拽调整顺序
+            </span>
+          </div>
           
-          {/* 封面图片 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <span className="text-red-500">*</span> 封面图片
-            </label>
-            <div className="relative">
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-orange-400 transition-colors cursor-pointer">
-                {formData.coverImage ? (
-                  <div className="space-y-3">
-                    <div className="w-full h-48 rounded-lg overflow-hidden">
-                      {renderImagePreview(formData.coverImage, "封面预览")}
-                    </div>
-                    <div className="flex items-center justify-center space-x-4">
-                      <span className="text-sm text-gray-600">
-                        {formData.coverImage.name}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => handleInputChange("coverImage", null)}
-                        className="text-orange-500 text-sm hover:text-orange-600"
-                      >
-                        重新选择
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div>
-                    <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center rounded-full bg-gray-100">
-                      <ImageIcon className="w-8 h-8 text-gray-400" />
-                    </div>
-                    <p className="text-gray-600 mb-1">点击上传封面图片</p>
-                    <p className="text-xs text-gray-500">
-                      支持 JPG、PNG 格式，不超过5MB
-                    </p>
-                  </div>
-                )}
-              </div>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleCoverImageUpload}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              />
-            </div>
-          </div>
-
-          {/* 附加图片 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              附加图片 <span className="text-xs text-gray-500">(最多5张)</span>
-            </label>
-            
-            {/* 已上传的附加图片 */}
-            {formData.additionalImages && formData.additionalImages.length > 0 && (
-              <div className="grid grid-cols-3 gap-3 mb-3">
-                {formData.additionalImages.map((file, index) => (
-                  <div key={index} className="relative aspect-square rounded-lg overflow-hidden border border-gray-200">
-                    {renderImagePreview(file, `附加图片${index + 1}`)}
-                    <button
-                      type="button"
-                      onClick={() => removeAdditionalImage(index)}
-                      className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* 添加更多图片 */}
-            {(!formData.additionalImages || formData.additionalImages.length < 5) && (
-              <div className="relative">
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-orange-400 transition-colors cursor-pointer">
-                  <div className="w-12 h-12 mx-auto mb-2 flex items-center justify-center rounded-full bg-gray-100">
-                    <Plus className="w-6 h-6 text-gray-400" />
-                  </div>
-                  <p className="text-sm text-gray-600">添加更多图片</p>
-                  <p className="text-xs text-gray-500">
-                    还可添加 {5 - (formData.additionalImages?.length || 0)} 张
-                  </p>
-                </div>
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={handleAdditionalImagesUpload}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                />
-              </div>
-            )}
-          </div>
+          <DraggableImageList
+            images={formData.images}
+            onChange={(newImages) => setFormData(prev => ({ ...prev, images: newImages }))}
+            maxImages={10}
+          />
         </div>
 
         {/* 商品描述 */}
@@ -440,6 +318,143 @@ export default function AddProductPage() {
             />
             <div className="text-right text-xs text-gray-400 mt-1">
               {formData.description?.length || 0}/1000
+            </div>
+          </div>
+        </div>
+
+        {/* 规格参数 */}
+        <div className="bg-white rounded-lg p-4 space-y-4">
+          <h3 className="text-lg font-semibold text-gray-900">规格参数</h3>
+          <p className="text-sm text-gray-500 mb-4">以下规格参数均为可选，有助于买家更好地了解商品</p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* 风格 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                风格
+              </label>
+              <input
+                type="text"
+                value={formData.style || ""}
+                onChange={(e) => handleInputChange("style", e.target.value)}
+                className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
+                placeholder="如：简约、复古、时尚等"
+                maxLength={50}
+              />
+            </div>
+
+            {/* 适用机型 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                适用机型
+              </label>
+              <input
+                type="text"
+                value={formData.phoneModel || ""}
+                onChange={(e) => handleInputChange("phoneModel", e.target.value)}
+                className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
+                placeholder="如：iPhone 15、小米14等"
+                maxLength={100}
+              />
+            </div>
+
+            {/* 产品类型 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                产品类型
+              </label>
+              <input
+                type="text"
+                value={formData.productType || ""}
+                onChange={(e) => handleInputChange("productType", e.target.value)}
+                className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
+                placeholder="如：手机壳、保护套、配件等"
+                maxLength={50}
+              />
+            </div>
+
+            {/* 流行元素 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                流行元素
+              </label>
+              <input
+                type="text"
+                value={formData.trend || ""}
+                onChange={(e) => handleInputChange("trend", e.target.value)}
+                className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
+                placeholder="如：卡通、动漫、潮流等"
+                maxLength={50}
+              />
+            </div>
+
+            {/* 图片类型 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                图片类型
+              </label>
+              <input
+                type="text"
+                value={formData.imageType || ""}
+                onChange={(e) => handleInputChange("imageType", e.target.value)}
+                className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
+                placeholder="如：原创、定制、印刷等"
+                maxLength={50}
+              />
+            </div>
+
+            {/* 版权 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                版权
+              </label>
+              <input
+                type="text"
+                value={formData.copyright || ""}
+                onChange={(e) => handleInputChange("copyright", e.target.value)}
+                className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
+                placeholder="如：原创设计、授权使用等"
+                maxLength={50}
+              />
+            </div>
+
+            {/* 生物降解 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                生物降解
+              </label>
+              <select
+                value={formData.biodegradable || ""}
+                onChange={(e) => handleInputChange("biodegradable", e.target.value)}
+                className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none bg-white appearance-none"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+                  backgroundPosition: "right 0.5rem center",
+                  backgroundRepeat: "no-repeat",
+                  backgroundSize: "1.5em 1.5em",
+                  paddingRight: "2.5rem",
+                }}
+              >
+                <option value="">请选择</option>
+                <option value="是">是</option>
+                <option value="否">否</option>
+                <option value="部分">部分</option>
+              </select>
+            </div>
+
+            {/* 环保材料 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                环保材料
+              </label>
+              <input
+                type="text"
+                value={formData.ecoMaterial || ""}
+                onChange={(e) => handleInputChange("ecoMaterial", e.target.value)}
+                className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
+                placeholder="如：可回收塑料、天然材料等"
+                maxLength={50}
+              />
             </div>
           </div>
         </div>

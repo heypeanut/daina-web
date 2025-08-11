@@ -12,6 +12,7 @@ export interface DictResponse {
 
 export enum DictType {
   MARKET = 'market',
+  PRODUCT_STATUS = 'product_status',
 }
 
 export type DictMap = Record<string, string>;

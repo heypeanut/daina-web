@@ -28,6 +28,7 @@ import {
   ProductListItem,
   ProductManagementFilter
 } from "@/types/booth";
+import { useProductStatusDict } from "@/lib/react-query/hooks/dictionary";
 
 export default function BoothProductsPage() {
   const router = useRouter();
@@ -42,7 +43,9 @@ export default function BoothProductsPage() {
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [bulkMode, setBulkMode] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
-
+  const { 
+    data: productStatusOptions, 
+  } = useProductStatusDict();
   // 筛选和排序状态
   const [filter, setFilter] = useState<ProductManagementFilter>({
     status: 'all',
@@ -55,7 +58,6 @@ export default function BoothProductsPage() {
     pageNum: 1,
     pageSize: 12,
     total: 0,
-    hasNext: false
   });
 
   // 加载商品列表
@@ -82,10 +84,9 @@ export default function BoothProductsPage() {
       }
 
       setPagination({
-        pageNum: response.page,
-        pageSize: response.size,
-        total: response.total,
-        hasNext: response.hasNext
+        pageNum: response.page || 1,
+        pageSize: response.pageSize || 10,
+        total: response.total,  
       });
     } catch (error) {
       console.error("加载商品列表失败:", error);
@@ -118,23 +119,22 @@ export default function BoothProductsPage() {
   };
 
   // 切换商品状态
-  const handleToggleStatus = async (productId: string, currentStatus: 'active' | 'inactive') => {
-    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+  const handleToggleStatus = async (productId: string, currentStatus: string) => {
     
     try {
       setActionLoading(productId);
-      await toggleProductStatus(productId, newStatus);
+      // await toggleProductStatus(productId, currentStatus);
       
       // 更新本地状态
       setProducts(prev => 
         prev.map(product => 
           product.id === productId 
-            ? { ...product, status: newStatus }
+            ? { ...product, status: currentStatus }
             : product
         )
       );
       
-      toast.success(`商品已${newStatus === 'active' ? '上架' : '下架'}`);
+      toast.success(`商品已${currentStatus === '0' ? '上架' : '下架'}`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "操作失败");
     } finally {
@@ -266,11 +266,15 @@ export default function BoothProductsPage() {
         {/* 商品图片 */}
         <div className="relative aspect-square">
           <img
-            src={product.coverImage}
+            src={product.images[0].url}
             alt={product.name}
             className="w-full h-full object-cover"
             loading="lazy"
           />
+           <div className="flex items-center text-white text-xs mb-3 absolute -bottom-1 right-2">
+              <Eye className="w-3 h-3 mr-1" />
+              <span>{product.views} 浏览</span>
+            </div>
           
           {/* 选择框 */}
           {bulkMode && (
@@ -289,11 +293,11 @@ export default function BoothProductsPage() {
           {/* 状态标签 */}
           <div className="absolute top-2 right-2">
             <span className={`px-2 py-1 text-xs font-medium rounded ${
-              product.status === 'active' 
+              product.status === '1' 
                 ? 'bg-green-100 text-green-800' 
                 : 'bg-gray-100 text-gray-800'
             }`}>
-              {product.status === 'active' ? '已上架' : '已下架'}
+              {product.status === '1' ? '已上架' : '已下架'}
             </span>
           </div>
         </div>
@@ -305,7 +309,7 @@ export default function BoothProductsPage() {
           </h3>
           
           {/* 价格 */}
-          <div className="flex items-center space-x-2 mb-2">
+          {/* <div className="flex items-center space-x-2 mb-2">
             <span className="text-orange-500 font-bold text-lg">
               ¥{product.price}
             </span>
@@ -314,13 +318,7 @@ export default function BoothProductsPage() {
                 ¥{product.originalPrice}
               </span>
             )}
-          </div>
-
-          {/* 浏览量 */}
-          <div className="flex items-center text-gray-500 text-xs mb-3">
-            <Eye className="w-3 h-3 mr-1" />
-            <span>{product.views} 浏览</span>
-          </div>
+          </div> */}
 
           {/* 操作按钮 */}
           {!bulkMode && (
@@ -329,11 +327,10 @@ export default function BoothProductsPage() {
                 onClick={() => handleEditProduct(product.id)}
                 className="flex items-center px-2 py-1 text-xs text-gray-600 hover:text-orange-500"
               >
-                <Edit3 className="w-3 h-3 mr-1" />
                 编辑
               </button>
               
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-1">
                 <button
                   onClick={() => handleToggleStatus(product.id, product.status)}
                   disabled={isLoading}
@@ -347,8 +344,7 @@ export default function BoothProductsPage() {
                     <Loader2 className="w-3 h-3 animate-spin" />
                   ) : (
                     <>
-                      <Power className="w-3 h-3 mr-1" />
-                      {product.status === 'active' ? '下架' : '上架'}
+                      {product.status === '1' ? '下架' : '上架'}
                     </>
                   )}
                 </button>
@@ -423,9 +419,11 @@ export default function BoothProductsPage() {
               onChange={(e) => handleFilterChange({ status: e.target.value as any })}
               className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none bg-white"
             >
-              <option value="all">全部商品</option>
-              <option value="active">已上架</option>
-              <option value="inactive">已下架</option>
+              {(productStatusOptions || []).map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
             </select>
 
             {/* 排序 */}
@@ -552,7 +550,7 @@ export default function BoothProductsPage() {
         )}
 
         {/* 加载更多 */}
-        {pagination.hasNext && (
+        {pagination.pageNum < pagination.total / pagination.pageSize && (
           <div className="text-center mt-8">
             <button
               onClick={() => {

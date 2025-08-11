@@ -264,7 +264,7 @@ export default function BoothManagementPage() {
               </div>
               <div className="text-right">
                 <p className="text-lg font-bold text-gray-900">
-                  {boothInfo.stats.totalProducts}
+                  {boothInfo.productsCount}
                 </p>
                 <p className="text-sm text-gray-500">件商品</p>
               </div>

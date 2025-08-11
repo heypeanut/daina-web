@@ -104,6 +104,7 @@ export interface BoothManagementInfo {
     followers: number;
   };
   createdAt: string;
+  productsCount: number;
 }
 
 // ==================== 档口申请相关类型 ====================
@@ -168,6 +169,9 @@ export interface MyBoothItem {
   qq: "string";
   wxQrcode: "string";
   qqQrcode: "string";
+  _count: {
+    products: number;
+  }
 }
 
 export interface MyBoothResponse {
@@ -271,7 +275,7 @@ export interface BoothEditInfo {
 // ==================== 产品管理相关类型 ====================
 
 export interface ProductManagementFilter {
-  status: 'all' | 'active' | 'inactive';
+  status: 'all' | '0' | '1';
   sortBy: 'created_time' | 'price' | 'views';
   sortOrder: 'asc' | 'desc';
 }
@@ -287,8 +291,10 @@ export interface ProductListItem {
   name: string;
   price: number;
   originalPrice?: number;
-  coverImage: string;
-  status: 'active' | 'inactive'; // 商品状态：上架/下架
+  images: {
+    url: string;
+  }[];
+  status: string; // 商品状态：上架/下架
   views: number;
   stock?: number;
   createdAt: string;
@@ -299,27 +305,43 @@ export interface ProductListItem {
 
 export interface ProductCreateForm {
   name: string;
-  price: number;
+  price?: number;
   originalPrice?: number;
-  coverImage: File | null; // 封面图片（必填）
-  additionalImages?: File[]; // 附加图片
+  images: File[]; // 商品图片数组，第一张为封面图
   description?: string;
   categoryId?: string;
   stock?: number;
-  status: 'active' | 'inactive'; // 商品状态，默认上架
+  status?: string; // 商品状态
+  // 规格参数（可选）
+  style?: string;           // 风格
+  phoneModel?: string;      // 适用机型  
+  productType?: string;     // 产品类型
+  trend?: string;          // 流行元素
+  imageType?: string;      // 图片类型
+  copyright?: string;      // 版权
+  biodegradable?: string;  // 生物降解
+  ecoMaterial?: string;    // 环保材料
 }
 
 export interface ProductCreateRequest {
   name: string;
-  price: number;
+  price?: number;
   originalPrice?: number;
-  coverImage: string; // 上传后的图片URL
-  additionalImages?: string[]; // 附加图片URLs
+  images: string[]; // 上传后的图片URLs数组，第一张为封面图
   description?: string;
   categoryId?: string;
   stock?: number;
-  status: 'active' | 'inactive';
+  status?: string;
   boothId: string;
+  // 规格参数（可选）
+  style?: string;           // 风格
+  phoneModel?: string;      // 适用机型  
+  productType?: string;     // 产品类型
+  trend?: string;          // 流行元素
+  imageType?: string;      // 图片类型
+  copyright?: string;      // 版权
+  biodegradable?: string;  // 生物降解
+  ecoMaterial?: string;    // 环保材料
 }
 
 export interface ProductCreateResponse {

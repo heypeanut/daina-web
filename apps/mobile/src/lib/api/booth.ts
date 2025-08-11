@@ -428,7 +428,8 @@ export async function getBoothManagementInfo(id: string): Promise<BoothManagemen
       status: mapBoothStatus(boothItem.status) as "active" | "pending" | "rejected",
       statusText: boothItem.statusText,
       stats,
-      createdAt: boothItem.createdAt
+      createdAt: boothItem.createdAt,
+      productsCount: boothItem._count.products
     };
   } catch (error) {
     console.error(`Error fetching booth management info for id ${id}:`, error);
@@ -575,7 +576,7 @@ export async function updateBoothInfo(
  */
 export async function toggleProductStatus(
   productId: string, 
-  status: 'active' | 'inactive'
+  status: string
 ): Promise<ProductActionResponse> {
   try {
     const response = await tenantApi.put<ProductActionResponse>(
@@ -725,22 +726,17 @@ export async function createBoothProduct(
   formData: ProductCreateForm
 ): Promise<ProductCreateResponse> {
   try {
-    // 1. 上传封面图片（必填）
-    if (!formData.coverImage) {
-      throw new Error("请上传商品封面图片");
+    // 1. 上传图片（第一张为封面图片，必填）
+    if (!formData.images || formData.images.length === 0) {
+      throw new Error("请上传商品图片");
     }
-
-    const coverImageUrl = await uploadFileIfExists(formData.coverImage);
-    if (!coverImageUrl) {
-      throw new Error("封面图片上传失败");
-    }
-
-    // 2. 上传附加图片（可选）
+    console.log('formData.images', formData.images);
+    // 2. 上传图片
     let additionalImageUrls: string[] = [];
-    if (formData.additionalImages && formData.additionalImages.length > 0) {
+    if (formData.images.length > 0) {
       try {
         additionalImageUrls = await Promise.all(
-          formData.additionalImages.map(async (file) => {
+          formData.images.map(async (file) => {
             const url = await uploadFileIfExists(file);
             return url || '';
           })
@@ -752,19 +748,27 @@ export async function createBoothProduct(
         // 附加图片上传失败不阻断创建流程
       }
     }
-
+    console.log('additionalImageUrls', additionalImageUrls);
     // 3. 构建 API 请求数据
     const requestData: ProductCreateRequest = {
       name: formData.name,
       price: formData.price,
       originalPrice: formData.originalPrice,
-      coverImage: coverImageUrl,
-      additionalImages: additionalImageUrls.length > 0 ? additionalImageUrls : undefined,
+      images: additionalImageUrls,
       description: formData.description,
       categoryId: formData.categoryId,
       stock: formData.stock,
       status: formData.status,
-      boothId: boothId
+      boothId: boothId,
+      // 规格参数
+      style: formData.style,
+      phoneModel: formData.phoneModel,
+      productType: formData.productType,
+      trend: formData.trend,
+      imageType: formData.imageType,
+      copyright: formData.copyright,
+      biodegradable: formData.biodegradable,
+      ecoMaterial: formData.ecoMaterial
     };
 
     // 4. 调用后端 API
