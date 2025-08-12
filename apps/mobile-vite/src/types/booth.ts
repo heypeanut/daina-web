@@ -367,6 +367,7 @@ export interface ProductImage {
 export interface ProductBooth {
   id: string;
   boothName: string;
+  mainBusiness: string;
   marketLabel: string;
   followers: number;
   view: number;

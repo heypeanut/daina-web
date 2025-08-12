@@ -126,10 +126,6 @@ export function useProductDetail({
         // 设置商品数据
         setProduct(mockProductDetail);
 
-        // 自动记录浏览行为
-        if (autoTrackView) {
-          console.log(`追踪商品浏览: ${productId}`);
-        }
 
       } catch (err) {
         if (cancelled) return;

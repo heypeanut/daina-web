@@ -10,7 +10,7 @@ import {
   ProductSpecs,
   BoothInfoCard
 } from './components';
-import { useProductDetail } from './hooks/use-product-detail';
+import { useGetProductDetail } from './hooks';
 
 export default function ProductDetailPage() {
   const { id: productId } = useParams<{ id: string }>();
@@ -20,23 +20,7 @@ export default function ProductDetailPage() {
   const [isAgentModalOpen, setIsAgentModalOpen] = useState(false);
 
   // 使用产品详情Hook
-  const {
-    product,
-    isLoading,
-    isError,
-    error,
-    handleShareClick,
-    handleRefresh
-  } = useProductDetail({
-    productId: productId || '',
-    autoTrackView: true,
-    onShareSuccess: () => {
-      console.log('产品分享成功');
-    },
-    onError: (error) => {
-      console.error('产品详情加载失败:', error);
-    }
-  });
+  const { data: product, isLoading, isError, error, refetch: handleRefresh } = useGetProductDetail(productId || '');
 
   const handleBack = () => {
     if (window.history.length > 1) {
@@ -45,16 +29,6 @@ export default function ProductDetailPage() {
       navigate('/');
     }
   };
-
-  const handleCart = () => {
-    // TODO: 实现购物车功能
-    console.log('添加到购物车:', productId);
-  };
-
-  const handleBoothClick = (boothId: string) => {
-    navigate(`/booth/${boothId}`);
-  };
-
   const handleFollowClick = (boothId: string) => {
     // TODO: 实现关注功能
     console.log('关注档口:', boothId);
@@ -74,7 +48,7 @@ export default function ProductDetailPage() {
                 {error?.message || "产品信息加载失败，请稍后重试"}
               </p>
               <button
-                onClick={handleRefresh}
+                onClick={() => handleRefresh()}
                 className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
               >
                 重试
@@ -140,8 +114,8 @@ export default function ProductDetailPage() {
         <ProductHeader
           title="商品详情"
           onBackClick={handleBack}
-          onShareClick={handleShareClick}
-          onCartClick={handleCart}
+          // onShareClick={handleShareClick}
+          // onCartClick={handleCart}
           className="fixed top-0 left-0 right-0 z-40"
         />
 
@@ -183,7 +157,6 @@ export default function ProductDetailPage() {
             {/* 档口信息 */}
             <BoothInfoCard
               booth={product.booth}
-              onBoothClick={handleBoothClick}
               onFollowClick={handleFollowClick}
             />
           </div>
