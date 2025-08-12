@@ -1,5 +1,5 @@
 import React from 'react';
-import { TabBar } from './TabBar';
+import { TabBar } from './tab-bar';
 
 interface MobileLayoutProps {
   children: React.ReactNode;

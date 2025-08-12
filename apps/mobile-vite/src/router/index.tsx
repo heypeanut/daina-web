@@ -1,34 +1,35 @@
 import { createBrowserRouter } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
-import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { LoadingSpinner } from '@/components/common';
 
 // 懒加载页面组件
-const HomePage = lazy(() => import('@/pages/HomePage'));
+const HomePage = lazy(() => import('@/pages/home/home-page'));
 const MarketPage = lazy(() => import('@/pages/MarketPage'));
 const CooperationPage = lazy(() => import('@/pages/CooperationPage'));
 const ProfilePage = lazy(() => import('@/pages/ProfilePage'));
+const BoothDetailPage = lazy(() => import('@/pages/booth/booth-detail-page'));
+const ProductDetailPage = lazy(() => import('@/pages/product/product-detail-page'));
+const LoginPage = lazy(() => import('@/pages/auth/login-page'));
+const RegisterPage = lazy(() => import('@/pages/auth/register-page'));
 
-// 导入占位页面
-import {
-  LoginPage,
-  RegisterPage,
-  SearchPage,
-  SearchResultsPage,
-  ImageSearchPage,
-  BoothDetailPage,
-  ProductDetailPage,
-  BoothApplyPage,
-  BoothEditPage,
-  BoothManagementPage,
-  BoothSelectPage,
-  BoothProductsPage,
-  BoothProductAddPage,
-  FavoritesProductsPage,
-  FavoritesBoothsPage,
-  HistoryPage,
-  PrivacyPolicyPage,
-  UserAgreementPage,
-} from '@/pages/stub-pages';
+// Profile子页面
+const FavoritesPage = lazy(() => import('@/pages/profile/favorites/favorites-page'));
+const FollowedBoothsPage = lazy(() => import('@/pages/profile/favorites/followed-booths-page'));
+const HistoryPage = lazy(() => import('@/pages/profile/history/history-page'));
+const SettingsPage = lazy(() => import('@/pages/profile/settings/settings-page'));
+
+// 档口管理页面
+const BoothApplyPage = lazy(() => import('@/pages/booth-management/apply/booth-apply-page'));
+const BoothManagementPage = lazy(() => import('@/pages/booth-management/management/booth-management-page'));
+const ProductsManagementPage = lazy(() => import('@/pages/booth-management/products/products-management-page'));
+const AddProductPage = lazy(() => import('@/pages/booth-management/products/add-product-page'));
+const BoothEditPage = lazy(() => import('@/pages/booth-management/edit/booth-edit-page'));
+const SearchPage = lazy(() => import('@/pages/search/search-page'));
+const ImageSearchPage = lazy(() => import('@/pages/search/image-search-page'));
+const SearchResultsPage = lazy(() => import('@/pages/search/search-results-page'));
+const BoothSelectPage = lazy(() => import('@/pages/booth-management/select/booth-select-page'));
+const PrivacyPolicyPage = lazy(() => import('@/pages/legal/privacy-policy-page'));
+const UserAgreementPage = lazy(() => import('@/pages/legal/user-agreement-page'));
 
 // 加载组件包装器
 const SuspenseWrapper = ({ children }: { children: React.ReactNode }) => (
@@ -72,74 +73,162 @@ export const router = createBrowserRouter([
   },
   {
     path: '/login',
-    element: <LoginPage />,
+    element: (
+      <SuspenseWrapper>
+        <LoginPage />
+      </SuspenseWrapper>
+    ),
   },
   {
     path: '/register',
-    element: <RegisterPage />,
+    element: (
+      <SuspenseWrapper>
+        <RegisterPage />
+      </SuspenseWrapper>
+    ),
   },
   {
     path: '/search',
-    element: <SearchPage />,
+    element: (
+      <SuspenseWrapper>
+        <SearchPage />
+      </SuspenseWrapper>
+    ),
   },
   {
     path: '/search/results',
-    element: <SearchResultsPage />,
+    element: (
+      <SuspenseWrapper>
+        <SearchResultsPage />
+      </SuspenseWrapper>
+    ),
   },
   {
     path: '/search/image',
-    element: <ImageSearchPage />,
+    element: (
+      <SuspenseWrapper>
+        <ImageSearchPage />
+      </SuspenseWrapper>
+    ),
   },
   {
     path: '/booth/:id',
-    element: <BoothDetailPage />,
+    element: (
+      <SuspenseWrapper>
+        <BoothDetailPage />
+      </SuspenseWrapper>
+    ),
   },
   {
     path: '/product/:id',
-    element: <ProductDetailPage />,
+    element: (
+      <SuspenseWrapper>
+        <ProductDetailPage />
+      </SuspenseWrapper>
+    ),
   },
   {
     path: '/booth/apply',
-    element: <BoothApplyPage />,
+    element: (
+      <SuspenseWrapper>
+        <BoothApplyPage />
+      </SuspenseWrapper>
+    ),
   },
   {
     path: '/booth/edit',
-    element: <BoothEditPage />,
+    element: (
+      <SuspenseWrapper>
+        <BoothEditPage />
+      </SuspenseWrapper>
+    ),
   },
   {
     path: '/booth/management',
-    element: <BoothManagementPage />,
+    element: (
+      <SuspenseWrapper>
+        <BoothManagementPage />
+      </SuspenseWrapper>
+    ),
   },
   {
     path: '/booth/select',
-    element: <BoothSelectPage />,
+    element: (
+      <SuspenseWrapper>
+        <BoothSelectPage />
+      </SuspenseWrapper>
+    ),
   },
   {
     path: '/booth/products',
-    element: <BoothProductsPage />,
+    element: (
+      <SuspenseWrapper>
+        <ProductsManagementPage />
+      </SuspenseWrapper>
+    ),
   },
   {
     path: '/booth/products/add',
-    element: <BoothProductAddPage />,
+    element: (
+      <SuspenseWrapper>
+        <AddProductPage />
+      </SuspenseWrapper>
+    ),
+  },
+  {
+    path: '/profile/favorites',
+    element: (
+      <SuspenseWrapper>
+        <FavoritesPage />
+      </SuspenseWrapper>
+    ),
   },
   {
     path: '/profile/favorites/products',
-    element: <FavoritesProductsPage />,
+    element: (
+      <SuspenseWrapper>
+        <FavoritesPage />
+      </SuspenseWrapper>
+    ),
   },
   {
     path: '/profile/favorites/booths',
-    element: <FavoritesBoothsPage />,
+    element: (
+      <SuspenseWrapper>
+        <FollowedBoothsPage />
+      </SuspenseWrapper>
+    ),
   },
   {
     path: '/profile/history',
-    element: <HistoryPage />,
+    element: (
+      <SuspenseWrapper>
+        <HistoryPage />
+      </SuspenseWrapper>
+    ),
+  },
+  {
+    path: '/profile/settings',
+    element: (
+      <SuspenseWrapper>
+        <SettingsPage />
+      </SuspenseWrapper>
+    ),
   },
   {
     path: '/privacy-policy',
-    element: <PrivacyPolicyPage />,
+    element: (
+      <SuspenseWrapper>
+        <PrivacyPolicyPage />
+      </SuspenseWrapper>
+    ),
   },
   {
     path: '/user-agreement',
-    element: <UserAgreementPage />,
+    element: (
+      <SuspenseWrapper>
+        <UserAgreementPage />
+      </SuspenseWrapper>
+    ),
   },
 ]);

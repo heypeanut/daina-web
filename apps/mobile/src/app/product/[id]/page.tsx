@@ -99,13 +99,13 @@ export default function ProductDetailPage() {
   }
 
   // 加载状态
-  if (isLoading) {
-    return (
-      <MobileLayout showTabBar={false}>
-        <ProductDetailSkeleton />
-      </MobileLayout>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <MobileLayout showTabBar={false}>
+  //       <ProductDetailSkeleton />
+  //     </MobileLayout>
+  //   );
+  // }
 
   // 如果没有产品数据，返回null
   if (!product) {
