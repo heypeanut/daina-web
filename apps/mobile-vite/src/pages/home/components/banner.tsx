@@ -61,7 +61,7 @@ export function Banner({
     [emblaApi]
   );
 
-  if (banners.length === 0) {
+  if (!banners || banners.length === 0) {
     return (
       <div className="w-full h-40 bg-gray-200 flex items-center justify-center">
         <span className="text-gray-500">暂无轮播图</span>
@@ -89,7 +89,7 @@ export function Banner({
                 className="w-full h-full object-cover"
               />
               {/* 图片上的渐变遮罩 */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent rounded-lg" />
+              <div className="absolute inset-0 from-black/30 via-transparent rounded-lg" />
             </div>
           ))}
         </div>

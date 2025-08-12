@@ -1,4 +1,4 @@
-import {
+import type {
   Banner,
   HomepageData,
   MixedRecommendation,
@@ -7,11 +7,11 @@ import {
   ImageSearchResponse,
   ImageSearchParams,
 } from "@/types/api";
-import { Booth } from "@/types/booth";
+import type { Booth } from "@/types/booth";
 
 // API 服务端地址，仅使用环境变量或默认值，不依赖 window
 const BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
 console.log("API Base URL:", BASE_URL);
 

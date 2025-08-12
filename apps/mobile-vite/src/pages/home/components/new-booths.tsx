@@ -1,36 +1,29 @@
 import { useCallback } from "react";
-import { useBoothRecommendations, useBehaviorTracking } from "@/hooks/use-api";
+import { useGetNewBooth } from "../hooks";
 import type { Booth } from "@/types/api";
 
-interface StaticBoothsProps {
+interface NewBoothsProps {
   title: string;
   subtitle?: string;
   type: "booth_hot" | "booth_new";
   limit?: number;
 }
 
-export function StaticBooths({
+export function NewBooths({
   title,
   subtitle,
   type,
   limit = 10,
-}: StaticBoothsProps) {
-  const { items, loading, error } = useBoothRecommendations(type, limit);
-  const { recordBehavior } = useBehaviorTracking();
-
+}: NewBoothsProps) {
+  const { data = [], isLoading, error } = useGetNewBooth(type, limit);
   // 只取前limit个项目，不使用无限滚动
-  const displayItems = items.slice(0, limit);
+  const displayItems = Array.isArray(data) ? data.slice(0, limit) : data?.rows?.slice(0, limit) || [];
 
   const handleBoothClick = useCallback(
-    (booth: Booth, index: number) => {
-      recordBehavior("click", "booth", booth.id, {
-        source: "homepage",
-        section: "hot_booths",
-        position: index,
-        algorithm: "hot",
-      });
+    () => {
+     
     },
-    [recordBehavior]
+    []
   );
 
   if (error) {
@@ -58,7 +51,7 @@ export function StaticBooths({
     );
   }
 
-  if (displayItems.length === 0 && !loading) {
+  if (displayItems.length === 0 && !isLoading) {
     return (
       <div className="px-4 pt-0 pb-2">
         <div className="bg-gradient-to-r from-orange-500 to-orange-400 rounded-2xl p-4 shadow-lg">
@@ -102,14 +95,14 @@ export function StaticBooths({
           </button>
         </div>
 
-        {loading ? (
+        {isLoading ? (
           <div className="flex justify-center py-8">
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
           </div>
         ) : (
           /* 商品展示区域 */
           <div className="bg-white/95 backdrop-blur-sm rounded-xl p-1">
-            <div className="flex items-start">
+            <div className="flex items-start overflow-hidden">
               {/* 左侧促销信息 */}
               <div className="flex-shrink-0 w-24 mr-2 text-center">
                 <div className="bg-gradient-to-b from-orange-500 to-red-500 text-white h-[5.2rem] flex flex-col justify-center rounded-lg shadow-sm">
@@ -119,15 +112,22 @@ export function StaticBooths({
               </div>
 
               {/* 右侧商品滚动列表 */}
-              <div className="flex-1 overflow-x-auto scrollbar-hide">
+              <div 
+                className="flex-1 overflow-x-auto overflow-y-hidden scrollbar-hide"
+                style={{ 
+                  minWidth: 0, 
+                  maxWidth: "calc(100vw - 120px)",
+                  WebkitOverflowScrolling: 'touch',
+                  scrollBehavior: 'smooth'
+                }}
+              >
                 <div
-                  className="flex space-x-2"
-                  style={{ width: "max-content" }}
+                  className="flex space-x-2 pb-1 w-max"
                 >
-                  {displayItems.map((booth, index) => (
+                  {displayItems?.map((booth: Booth) => (
                     <div
                       key={booth.id}
-                      onClick={() => handleBoothClick(booth, index)}
+                      onClick={() => handleBoothClick()}
                       className="flex-shrink-0 cursor-pointer transition-all hover:scale-105 active:scale-95"
                     >
                       {/* 商品卡片 */}

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
-import { useBoothRanking, useBehaviorTracking } from "@/hooks/use-api";
-import type { Booth } from "@/types/api";
+import { useBoothRanking } from "../hooks";
+// import type { Booth } from "@/types/api";
 
 interface RankingBoothsProps {
   title: string;
@@ -96,19 +96,19 @@ export function RankingBooths({
   title = "排行榜",
   limit = 25,
 }: RankingBoothsProps) {
-  const { items, loading, error } = useBoothRanking(limit);
-  const { recordBehavior } = useBehaviorTracking();
+  const { data = [], isLoading: loading, error } = useBoothRanking(limit);
+  // const { recordBehavior } = useBehaviorTracking();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [scrollSnaps, setScrollSnaps] = useState<number[]>([]);
 
   // 将数据按每5个为一组分组
   const groupedItems = React.useMemo(() => {
     const groups = [];
-    for (let i = 0; i < items.length; i += 5) {
-      groups.push(items.slice(i, i + 5));
+    for (let i = 0; i < data?.length; i += 5) {
+      groups.push(data.slice(i, i + 5));
     }
     return groups;
-  }, [items]);
+  }, [data]);
 
   // 轮播配置：轮播分组而不是单个项目
   const [emblaRef, emblaApi] = useEmblaCarousel({
@@ -143,18 +143,18 @@ export function RankingBooths({
     };
   }, [emblaApi, onSelect]);
 
-  const handleBoothClick = useCallback(
-    (booth: Booth, groupIndex: number, itemIndex: number) => {
-      const overallIndex = groupIndex * 5 + itemIndex;
-      recordBehavior("click", "booth", booth.id, {
-        source: "homepage",
-        section: "ranking",
-        position: overallIndex,
-        algorithm: "ranking",
-      });
-    },
-    [recordBehavior]
-  );
+  // const handleBoothClick = useCallback(
+  //   (booth: Booth, groupIndex: number, itemIndex: number) => {
+  //     const overallIndex = groupIndex * 5 + itemIndex;
+  //     recordBehavior("click", "booth", booth.id, {
+  //       source: "homepage",
+  //       section: "ranking",
+  //       position: overallIndex,
+  //       algorithm: "ranking",
+  //     });
+  //   },
+  //   [recordBehavior]
+  // );
 
   const scrollTo = useCallback(
     (index: number) => {
@@ -221,16 +221,13 @@ export function RankingBooths({
                       return (
                         <div key={booth.id} className="flex-1">
                           <div
-                            onClick={() =>
-                              handleBoothClick(booth, groupIndex, itemIndex)
-                            }
+                            // onClick={() => {
+                              // handleBoothClick(booth, groupIndex, itemIndex)
+                            // }
                             className="cursor-pointer transition-all active:scale-95"
                           >
-                            {/* 档口头像容器 */}
                             <div className="mb-1">
-                              {/* 相对定位容器，不裁剪皇冠 */}
                               <div className="relative w-16 h-16 mx-auto">
-                                {/* 皇冠图标 - 只显示前4名 */}
                                 {overallIndex < 4 && (
                                   <CrownIcon rank={overallIndex + 1} />
                                 )}

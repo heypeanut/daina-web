@@ -2,6 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 隐藏滚动条但保持滚动功能 */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+  scroll-behavior: smooth;
+  overscroll-behavior-x: contain;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Safari and Chrome */
+}
+
 /* 全局样式 */
 body {
   margin: 0;

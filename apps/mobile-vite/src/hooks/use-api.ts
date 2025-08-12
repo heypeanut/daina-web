@@ -1,34 +1,13 @@
-// 临时模拟hooks
-export function useBanners(limit: number) {
-  // 模拟banner数据
-  const mockBanners = [
-    {
-      id: 1,
-      title: '代拿网优质商品推荐',
-      imageUrl: 'https://via.placeholder.com/800x400/4F46E5/FFFFFF?text=Banner+1',
-      linkUrl: '/market',
-      linkType: 'internal' as const
-    },
-    {
-      id: 2,
-      title: '档口批发代发服务',
-      imageUrl: 'https://via.placeholder.com/800x400/EF4444/FFFFFF?text=Banner+2',
-      linkUrl: '/cooperation',
-      linkType: 'internal' as const
-    },
-    {
-      id: 3,
-      title: '新品上市活动',
-      imageUrl: 'https://via.placeholder.com/800x400/10B981/FFFFFF?text=Banner+3',
-      linkUrl: '/search',
-      linkType: 'internal' as const
-    }
-  ];
+import { useQuery } from "@tanstack/react-query";
+import { apiClient } from "@/lib/api";
 
-  return {
-    banners: mockBanners.slice(0, limit),
-    loading: false
-  };
+export function useBanners(limit: number) {
+  const data = useQuery({
+    queryKey: ['banners', limit],
+    queryFn: () => apiClient.getBanners(limit),
+    select: (data) => data.data
+  });
+  return data
 }
 
 export function useBehaviorTracking() {

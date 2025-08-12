@@ -20,3 +20,65 @@ export interface Booth {
   imageUrl?: string;
   market?: string;
 }
+
+export interface Product {
+  id: string;
+  name: string;
+  price: number;
+  originalPrice?: number;
+  coverImage: string;
+  description?: string;
+  category?: string;
+  views?: number;
+  rating?: number;
+  stock?: number;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface HomepageData {
+  banners: Banner[];
+  boothRecommendations: Booth[];
+  productRecommendations: Product[];
+  latestBooths: Booth[];
+  personalizedBooths?: PersonalizedRecommendation<Booth>[];
+  personalizedProducts?: PersonalizedRecommendation<Product>[];
+}
+
+export interface PersonalizedRecommendation<T> {
+  item: T;
+  score: number;
+  reason: string;
+  algorithm: string;
+}
+
+export interface MixedRecommendation {
+  id: string;
+  type: 'booth' | 'product';
+  item: Booth | Product;
+  score: number;
+  reason: string;
+  algorithm: string;
+}
+
+export interface ImageSearchParams {
+  image: File;
+  limit?: number;
+  minSimilarity?: number;
+  boothId?: string;
+  minPrice?: number;
+  maxPrice?: number;
+}
+
+export interface ImageSearchResponse {
+  code: number;
+  message: string;
+  data: {
+    results: Array<{
+      id: string;
+      similarity: number;
+      item: Booth | Product;
+    }>;
+    total: number;
+  };
+}

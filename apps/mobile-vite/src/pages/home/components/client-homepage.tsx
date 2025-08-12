@@ -1,14 +1,12 @@
 import { ClientSearchBar } from "./client-search-bar";
-// import { ClientQuickActions } from "./ClientQuickActions";
 import { HybridBanner } from "./hybrid-banner";
 import { RankingBooths } from "./ranking-booths";
-import { StaticBooths } from "./static-booths";
-import { InfiniteBoothsWithNewProducts } from "./infinite-booths-with-new-products";
-import { useBanners, useBehaviorTracking } from "@/hooks/use-api";
+import { NewBooths } from "./new-booths";
+import { BoothsWithNewProducts } from "./booths-with-new-products";
+import { useBehaviorTracking } from "@/hooks/use-api";
 import type { Banner } from "@/types/api";
 
 export function ClientHomepage() {
-  const { banners, loading: bannersLoading } = useBanners(5);
   const { recordBehavior } = useBehaviorTracking();
 
   const handleBannerClick = (banner: Banner) => {
@@ -36,13 +34,7 @@ export function ClientHomepage() {
 
         {/* 主要内容区域 - 为固定搜索栏留出空间 */}
         <div className="pt-14 relative z-10">
-          {/* 轮播图 - 混合渲染 */}
-          {!bannersLoading && banners.length > 0 && (
-            <HybridBanner banners={banners} onBannerClick={handleBannerClick} />
-          )}
-
-          {/* 快捷功能入口 - 客户端组件 */}
-          {/* <ClientQuickActions /> */}
+          <HybridBanner onBannerClick={handleBannerClick} />
         </div>
       </div>
 
@@ -52,10 +44,10 @@ export function ClientHomepage() {
         <RankingBooths title="优质商家" limit={25} />
 
         {/* 最新档口 - 静态显示，不滚动加载 */}
-        <StaticBooths title="最新档口" type="booth_new" limit={10} />
+        <NewBooths title="最新档口" type="booth_new" limit={10} />
 
         {/* 近期上新 - 无限滚动 */}
-        <InfiniteBoothsWithNewProducts title="近期上新" />
+        <BoothsWithNewProducts title="近期上新" />
       </div>
     </div>
   );
