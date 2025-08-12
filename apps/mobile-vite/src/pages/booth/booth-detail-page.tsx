@@ -3,8 +3,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Phone, QrCode } from "lucide-react";
 import { MobileLayout } from "@/components/layout";
 import { UnifiedSearchBar } from "@/components/common";
-import { BoothHeader, ProductShowcase, ContactSheet, AgentContactSheet } from "./components";
-import { useBoothDetail } from "./hooks/use-booth-detail";
+import {
+  BoothHeader,
+  ProductShowcase,
+  ContactSheet,
+  AgentContactSheet,
+} from "./components";
 import { useGetDetail } from "./hooks";
 
 export default function BoothDetailPage() {
@@ -13,7 +17,13 @@ export default function BoothDetailPage() {
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [isAgentModalOpen, setIsAgentModalOpen] = useState(false);
 
-  const { data: booth, isLoading, isError, error, refetch: handleRefresh } = useGetDetail(boothId || '');
+  const {
+    data: booth,
+    isLoading,
+    isError,
+    error,
+    refetch: handleRefresh,
+  } = useGetDetail(boothId || "");
 
   // Handle search click - jump to search page with booth context
   const handleSearchClick = () => {
@@ -87,7 +97,10 @@ export default function BoothDetailPage() {
                 <div className="h-6 bg-gray-200 rounded w-24 mb-4"></div>
                 <div className="grid grid-cols-2 gap-3">
                   {[...Array(6)].map((_, i) => (
-                    <div key={i} className="border border-gray-200 rounded-lg overflow-hidden">
+                    <div
+                      key={i}
+                      className="border border-gray-200 rounded-lg overflow-hidden"
+                    >
                       <div className="aspect-square bg-gray-200"></div>
                       <div className="p-3">
                         <div className="h-4 bg-gray-200 rounded mb-2"></div>
@@ -126,9 +139,7 @@ export default function BoothDetailPage() {
               onShareClick={() => {}}
             />
 
-            <ProductShowcase
-              onProductClick={handleProductClick}
-            />
+            <ProductShowcase onProductClick={handleProductClick} />
 
             <div className="h-4" />
           </div>

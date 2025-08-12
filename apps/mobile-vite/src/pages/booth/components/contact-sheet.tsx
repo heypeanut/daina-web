@@ -1,5 +1,5 @@
-import { useState } from "react";
 import { Phone, MessageCircle, Copy, X, QrCode } from "lucide-react";
+import { Sheet } from "@tamagui/sheet";
 import { ImageLazyLoader } from "@/components/common";
 import type { Booth } from "@/types/api";
 
@@ -17,41 +17,40 @@ interface AgentContactSheetProps {
 // 联系商家抽屉组件
 export function ContactSheet({ booth, isOpen, onClose }: ContactSheetProps) {
   const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text).then(() => {
-      console.log(`已复制: ${text}`);
-      // 实际项目中使用toast提示
-    }).catch(() => {
-      console.error('复制失败');
-    });
+    navigator.clipboard.writeText(text);
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50">
-      {/* 背景遮罩 */}
-      <div 
-        className="absolute inset-0 bg-black/50"
-        onClick={onClose}
-      />
-      
-      {/* 抽屉内容 */}
-      <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl">
-        {/* 头部 */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-900">联系商家</h3>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
-          >
-            <X size={18} />
-          </button>
-        </div>
+    <Sheet
+      open={isOpen}
+      onOpenChange={(open: boolean) => !open && onClose()}
+      snapPointsMode="percent"
+      snapPoints={[85]}
+      dismissOnSnapToBottom
+      position={0}
+      modal
+      animation="medium"
+    >
+      <Sheet.Overlay backgroundColor="rgba(0,0,0,0.5)" />
+      <Sheet.Frame
+        backgroundColor="white"
+        borderTopLeftRadius={20}
+        borderTopRightRadius={20}
+      >
+        <div className="p-4 space-y-4">
+          {/* 头部 */}
+          <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+            <h3 className="text-lg font-semibold text-gray-900">联系商家</h3>
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
+            >
+              <X size={18} />
+            </button>
+          </div>
 
-        {/* 内容 */}
-        <div className="p-4">
           {/* 档口信息 */}
-          <div className="flex items-center gap-3 mb-6 p-3 bg-gray-50 rounded-lg">
+          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
             <ImageLazyLoader
               src={booth.coverImg || "/logo.png"}
               alt={booth.boothName}
@@ -118,47 +117,46 @@ export function ContactSheet({ booth, isOpen, onClose }: ContactSheetProps) {
             </p>
           </div>
         </div>
-      </div>
-    </div>
+      </Sheet.Frame>
+    </Sheet>
   );
 }
 
 // 代拿服务抽屉组件
 export function AgentContactSheet({ isOpen, onClose }: AgentContactSheetProps) {
   const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text).then(() => {
-      console.log(`已复制: ${text}`);
-      // 实际项目中使用toast提示
-    }).catch(() => {
-      console.error('复制失败');
-    });
+    navigator.clipboard.writeText(text);
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50">
-      {/* 背景遮罩 */}
-      <div 
-        className="absolute inset-0 bg-black/50"
-        onClick={onClose}
-      />
-      
-      {/* 抽屉内容 */}
-      <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl">
-        {/* 头部 */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-900">联系代拿</h3>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
-          >
-            <X size={18} />
-          </button>
-        </div>
+    <Sheet
+      open={isOpen}
+      onOpenChange={(open: boolean) => !open && onClose()}
+      snapPointsMode="percent"
+      snapPoints={[65]}
+      dismissOnSnapToBottom
+      position={0}
+      modal
+      animation="medium"
+    >
+      <Sheet.Overlay backgroundColor="rgba(0,0,0,0.5)" />
+      <Sheet.Frame
+        backgroundColor="white"
+        borderTopLeftRadius={20}
+        borderTopRightRadius={20}
+      >
+        <div className="p-4 space-y-4">
+          {/* 头部 */}
+          <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+            <h3 className="text-lg font-semibold text-gray-900">联系代拿</h3>
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
+            >
+              <X size={18} />
+            </button>
+          </div>
 
-        {/* 内容 */}
-        <div className="p-4">
           {/* 服务说明 */}
           <div className="mb-6 p-4 bg-gradient-to-r from-orange-50 to-red-50 rounded-lg border border-orange-200">
             <div className="flex items-center gap-2 mb-2">
@@ -211,7 +209,7 @@ export function AgentContactSheet({ isOpen, onClose }: AgentContactSheetProps) {
             </p>
           </div>
         </div>
-      </div>
-    </div>
+      </Sheet.Frame>
+    </Sheet>
   );
 }
