@@ -54,18 +54,7 @@ export function TabBar() {
 
   return (
     <div 
-      className="fixed bottom-0 left-0 right-0 bg-white  z-50 h-12 shadow-lg"
-      style={{
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        backgroundColor: 'white',
-        borderTop: '2px solid #f97316',
-        zIndex: 50,
-        height: '48px',
-        boxShadow: '0 -1px 3px 0 rgba(0, 0, 0, 0.1), 0 -1px 2px 0 rgba(0, 0, 0, 0.06)'
-      }}
+      className="fixed bottom-0 left-0 right-0 bg-white z-50 h-14 shadow-lg"
     >
       <div 
         className="flex items-center justify-around h-full"
