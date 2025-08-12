@@ -7,7 +7,7 @@ const API_BASE_URLS = {
 };
 
 const BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
+  import.meta.env.API_BASE_URL || "http://localhost:3000";
 
 // 获取认证token
 function getAuthToken(): string | null {

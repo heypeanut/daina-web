@@ -3,6 +3,7 @@ import Masonry from "react-masonry-css";
 import { Loader2 } from "lucide-react";
 import type { Booth } from "@/types/api";
 import { MobileBoothCard } from "./mobile-booth-card";
+import { useInfiniteScroll } from "@/hooks/useIntersectionObserver";
 
 interface BoothGridProps {
   booths: Booth[];
@@ -57,6 +58,16 @@ export function BoothGrid({
   layout = "grid",
   className = "",
 }: BoothGridProps) {
+  // 使用通用的无限滚动hook
+  const { triggerRef, shouldShowTrigger } = useInfiniteScroll(
+    onLoadMore,
+    {
+      hasMore: hasNextPage,
+      isLoading,
+    }
+  );
+
+
   // 初始加载状态：正在加载且暂无数据
   const isInitialLoading = isLoading && booths.length === 0;
   
@@ -158,31 +169,27 @@ export function BoothGrid({
         ))}
       </Masonry>
 
-      {/* 无限滚动触发器和加载状态 */}
-      {hasNextPage && (
-        <div 
-          className="text-center py-4"
-          ref={(el) => {
-            if (el && !isLoading) {
-              const observer = new IntersectionObserver(
-                (entries) => {
-                  if (entries[0].isIntersecting) {
-                    onLoadMore();
-                  }
-                },
-                { threshold: 0.1, rootMargin: '50px' }
-              );
-              observer.observe(el);
-              return () => observer.disconnect();
-            }
-          }}
-        >
-          {isLoading && (
-            <div className="flex items-center justify-center">
-              <Loader2 className="w-4 h-4 animate-spin mr-2" />
-              <span className="text-sm text-gray-600">加载更多...</span>
-            </div>
-          )}
+      {/* 无限滚动触发器 */}
+      {shouldShowTrigger && (
+        <div ref={triggerRef} className="py-2" />
+      )}
+
+      {/* 加载状态提示 */}
+      {isLoading && hasNextPage && (
+        <div className="text-center py-4">
+          <div className="flex items-center justify-center">
+            <Loader2 className="w-4 h-4 animate-spin mr-2" />
+            <span className="text-sm text-gray-600">加载更多...</span>
+          </div>
+        </div>
+      )}
+
+
+
+      {/* 已加载全部提示 */}
+      {!hasNextPage && booths.length > 0 && (
+        <div className="text-center py-4 text-gray-500 text-sm">
+          已加载全部档口
         </div>
       )}
     </div>

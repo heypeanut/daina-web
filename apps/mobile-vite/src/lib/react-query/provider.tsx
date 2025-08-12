@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { queryClient } from './client';
 
 interface QueryProviderProps {
@@ -13,14 +12,7 @@ export function QueryProvider({ children }: QueryProviderProps) {
   return (
     <QueryClientProvider client={queryClient}>
       {children}
-      {/* DevTools临时禁用以解决性能问题 */}
-      {false && process.env.NODE_ENV === 'development' && (
-        <ReactQueryDevtools
-          initialIsOpen={false}
-          position="bottom-right"
-          buttonPosition="bottom-right"
-        />
-      )}
+      {/* DevTools已移除，如需使用请安装 @tanstack/react-query-devtools 包 */}
     </QueryClientProvider>
   );
 }

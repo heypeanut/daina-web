@@ -54,7 +54,7 @@ export function TabBar() {
 
   return (
     <div 
-      className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-orange-500 z-50 h-12 shadow-lg"
+      className="fixed bottom-0 left-0 right-0 bg-white  z-50 h-12 shadow-lg"
       style={{
         position: 'fixed',
         bottom: 0,

@@ -1,11 +1,11 @@
-import { 
-  MyBoothResponse, 
+import type {
+  MyBoothResponse,
   BoothApplicationResponse,
   UserBoothStatus,
   BoothDetail,
   BoothManagementInfo,
   BoothSelectItem,
-  BoothProduct 
+  BoothProduct
 } from "./booth";
 
 // ==================== 通用API响应类型 ====================
@@ -28,7 +28,7 @@ export interface PaginatedResponse<T> {
 
 export interface GetBoothsParams {
   pageNum: number;
-  size: number;
+  pageSize: number;
   categoryId?: string;
   keyword?: string;
   sortBy?: "latest" | "popular" | "rating";

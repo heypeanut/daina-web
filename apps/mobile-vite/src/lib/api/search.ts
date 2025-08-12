@@ -7,9 +7,9 @@
  * @author Claude Code  
  * @version 1.0.0
  */
-import { tenantApi, PaginatedResponse } from "./config";
-import { Product } from "@/types/api";
-import { Booth } from "@/types/booth";
+import { tenantApi } from "./config";
+import type { PaginatedResponse } from "./config";
+import type { Product, Booth } from "@/types/api";
 
 // 商品搜索参数接口
 export interface ProductSearchParams {

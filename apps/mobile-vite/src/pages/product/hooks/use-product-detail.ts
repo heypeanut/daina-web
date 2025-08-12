@@ -1,54 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-
-// 商品图片接口
-interface ProductImage {
-  id: number;
-  url: string;
-  alt?: string;
-}
-
-// 档口信息接口
-interface ProductBooth {
-  id: string;
-  boothName: string;
-  marketLabel: string;
-  followers: number;
-  view: number;
-  phone?: string;
-  wx?: string;
-  coverImg?: string;
-}
-
-// 商品详情接口
-interface ProductDetail {
-  id: number;
-  name: string;
-  price: number;
-  maxPrice?: number;
-  originalPrice?: number;
-  stock: number;
-  status: number;
-  features: string;
-  boothId: string;
-  video: string;
-  views: number;
-  collects: number;
-  itemNo: string;
-  imageType: string;
-  copyright: string;
-  category: string;
-  style: string;
-  phoneModel: string;
-  productType: string;
-  trend: string;
-  biodegradable: string;
-  ecoMaterial: string;
-  services: string;
-  createdAt: string;
-  updatedAt: string;
-  images: ProductImage[];
-  booth: ProductBooth;
-}
+import type { ProductDetail } from '@/types/booth';
 
 // Mock商品详情数据
 const mockProductDetail: ProductDetail = {

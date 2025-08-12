@@ -1,5 +1,7 @@
-import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
-import { apiClient } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
+import { apiClient, type PaginatedResponse } from "@/lib/api";
+import { useInfiniteData } from "@/hooks/api/useInfiniteData";
+import type { Booth } from "@/types/api";
 
 export function useBanners(limit: number) {
   const data = useQuery({
@@ -38,38 +40,28 @@ export function useGetLatestBoothsWithNewProducts(pageSize: number) {
 }
 
 export function useInfiniteLatestBoothsWithNewProducts(pageSize: number = 12) {
-  return useInfiniteQuery({
+  return useInfiniteData<Booth, { pageNum: number; pageSize: number }>({
     queryKey: ['infinite-latest-booth-with-new-products', pageSize],
-    queryFn: async ({ pageParam = 1 }) => {
-      const response = await apiClient.getLatestBoothsWithNewProducts({ 
-        pageNum: pageParam,
-        pageSize 
-      });
-      return response.data;
+    queryFn: async ({ pageNum, pageSize }) => {
+      const response = await apiClient.getLatestBoothsWithNewProducts({ pageNum, pageSize });
+      // 检查响应数据类型并标准化为分页格式
+      const data = response.data;
+      const paginatedData: PaginatedResponse<Booth> = Array.isArray(data) 
+        ? {
+            rows: data,
+            total: data.length,
+            pageNum,
+            pageSize,
+            hasMore: false
+          }
+        : data;
+
+      return {
+        ...response,
+        data: paginatedData
+      };
     },
-    getNextPageParam: (lastPage: any, allPages) => {
-      // 检查是否有更多数据
-      if (!lastPage || !lastPage.rows || lastPage.rows.length === 0) {
-        return undefined;
-      }
-      
-      // 如果当前页数据少于请求的pageSize，说明已经是最后一页
-      if (lastPage.rows.length < pageSize) {
-        return undefined;
-      }
-      
-      // 如果有total字段，检查是否已加载完所有数据
-      if (lastPage.total !== undefined) {
-        const loadedCount = allPages.reduce((count, page) => count + (page.rows?.length || 0), 0);
-        if (loadedCount >= lastPage.total) {
-          return undefined;
-        }
-      }
-      
-      // 返回下一页页码
-      return allPages.length + 1;
-    },
-    initialPageParam: 1,
+    baseParams: { pageSize },
     staleTime: 2 * 60 * 1000, // 2分钟
   });
 }

@@ -1,29 +1,52 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { MobileLayout } from "@/components/layout";
 
 import { BoothGrid } from "./components";
 import { UnifiedSearchBar } from "@/components/common";
 
-import { useMarketData } from "./hooks/use-market-data";
-import { useTrackBoothView } from "@/hooks/use-api";
+import { useInfiniteBooths } from "./hooks/use-api";
+import { useTrackBoothView } from "@/pages/home/hooks/use-api";
 
 import type { Booth } from "@/types/api";
+import type { GetBoothsParams } from "@/types/booth-api";
 
 export default function MarketPage() {
   const navigate = useNavigate();
 
-  // 主数据管理
+  // 搜索状态管理
+  const [searchKeyword] = useState("");
+
+  // 构建查询参数
+  const queryParams = useMemo((): Omit<GetBoothsParams, "pageNum"> => {
+    const trimmedKeyword = searchKeyword.trim();
+    const params: Omit<GetBoothsParams, "pageNum"> = {
+      pageSize: 20,
+    };
+
+    // 只有当关键词不为空时才添加 keyword 参数
+    if (trimmedKeyword) {
+      params.keyword = trimmedKeyword;
+    }
+
+    return params;
+  }, [searchKeyword]);
+
+  // 直接使用API hook
   const {
-    booths,
-    isLoading,
-    isError,
+    allData: booths,
+    isLoadingInitial,
+    isLoadingMore,
+    hasMore,
+    loadMore,
     error,
-    hasNextPage,
-    isFetchingNextPage,
-    handleLoadMore,
-    handleRefresh,
-  } = useMarketData();
+    isError,
+    refetch: handleRefresh,
+  } = useInfiniteBooths(queryParams);
+
+
+
+
 
   // 浏览埋点
   const trackViewMutation = useTrackBoothView();
@@ -68,7 +91,7 @@ export default function MarketPage() {
               {error?.message || "网络错误，请稍后重试"}
             </p>
             <button
-              onClick={handleRefresh}
+              onClick={() => handleRefresh()}
               className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
             >
               重试
@@ -92,7 +115,7 @@ export default function MarketPage() {
         />
 
         {/* 为固定搜索栏留出空间 */}
-        <div className="pt-16">
+        <div className="pt-[68px]">
           {/* 档口网格 */}
           <div className="pb-0">
             <BoothGrid
@@ -100,9 +123,9 @@ export default function MarketPage() {
               onBoothClick={handleBoothClick}
               onFavoriteToggle={handleFavoriteToggle}
               favoriteIds={favoriteIds}
-              onLoadMore={handleLoadMore}
-              hasNextPage={hasNextPage}
-              isLoading={isLoading || isFetchingNextPage}
+              onLoadMore={loadMore}
+              hasNextPage={hasMore}
+              isLoading={isLoadingMore}
               layout="grid"
               className="py-2"
             />

@@ -355,3 +355,52 @@ export interface ProductCategory {
   name: string;
   sort: number;
 }
+
+// ==================== 商品详情相关类型 ====================
+
+export interface ProductImage {
+  id: number;
+  url: string;
+  alt?: string;
+}
+
+export interface ProductBooth {
+  id: string;
+  boothName: string;
+  marketLabel: string;
+  followers: number;
+  view: number;
+  phone?: string;
+  wx?: string;
+  coverImg?: string;
+}
+
+export interface ProductDetail {
+  id: number;
+  name: string;
+  price: number;
+  maxPrice?: number;
+  originalPrice?: number;
+  stock: number;
+  status: number;
+  features: string;
+  boothId: string;
+  video: string;
+  views: number;
+  collects: number;
+  itemNo: string;
+  imageType: string;
+  copyright: string;
+  category: string;
+  style: string;
+  phoneModel: string;
+  productType: string;
+  trend: string;
+  biodegradable: string;
+  ecoMaterial: string;
+  services: string;
+  createdAt: string;
+  updatedAt: string;
+  images: ProductImage[];
+  booth: ProductBooth;
+}

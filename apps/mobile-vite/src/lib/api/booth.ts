@@ -1,12 +1,11 @@
 // 新版档口API - 使用tenant端接口
-import { tenantApi, PaginatedResponse } from "./config";
+import { tenantApi, type PaginatedResponse } from "./config";
 import { isLoggedIn } from "@/lib/auth";
-import { ProductDetail } from "@/app/product/[id]/types";
 import { searchBooths as searchBoothsAPI } from "./search";
-import { uploadImage } from ".";
+import { uploadImage } from "./upload-search";
 
 // 导入类型定义
-import {
+import type {
   Booth,
   BoothProduct,
   BoothApplicationForm,
@@ -15,21 +14,20 @@ import {
   BoothApplicationRequest,
   MyBoothResponse,
   UserBoothStatus,
-  BoothDetail,
   BoothManagementInfo,
   BoothEditForm,
   BoothEditInfo,
   MyBoothItem,
-  ProductManagementFilter,
   ProductActionResponse,
   ProductListItem,
   ProductCreateForm,
   ProductCreateRequest,
   ProductCreateResponse,
-  ProductCategory
+  ProductCategory,
+  ProductDetail
 } from "@/types/booth";
 
-import {
+import type {
   GetBoothsParams,
   GetBoothsResponse,
   GetBoothProductsParams
@@ -76,7 +74,7 @@ export async function searchBooths(
 
   // 转换响应格式以保持兼容性
   return {
-    rows: searchResponse.rows,
+    rows: searchResponse.rows as import("@/types/booth").Booth[],
     total: searchResponse.total,
     page: pageNum,
     size: size,

@@ -1,9 +1,10 @@
-import { useCallback, useRef, useEffect } from "react";
+import { useCallback } from "react";
 import Masonry from "react-masonry-css";
 import {
   useInfiniteLatestBoothsWithNewProducts,
 } from "../../hooks";
 import { BoothCard } from "./booth-card";
+import { useInfiniteScroll } from "@/hooks/useIntersectionObserver";
 
 interface BoothsWithNewProductsProps {
   title: string;
@@ -15,18 +16,22 @@ export function BoothsWithNewProducts({
   pageSize = 12,
 }: BoothsWithNewProductsProps) {
   const { 
-    data, 
-    isLoading, 
-    error, 
-    fetchNextPage, 
-    hasNextPage, 
-    isFetchingNextPage 
+    allData: allBooths,
+    isLoadingInitial,
+    isLoadingMore,
+    hasMore,
+    loadMore,
+    error,
   } = useInfiniteLatestBoothsWithNewProducts(pageSize);
   
-  const observerRef = useRef<HTMLDivElement>(null);
-  
-  // 合并所有页面的数据
-  const allBooths = data?.pages?.flatMap(page => page?.rows || []) || [];
+  // 无限滚动处理
+  const { triggerRef, shouldShowTrigger } = useInfiniteScroll(
+    loadMore,
+    {
+      hasMore,
+      isLoading: isLoadingMore,
+    }
+  );
 
   // 瀑布流列数配置 - 移动端固定2列
   const breakpointColumnsObj = {
@@ -52,25 +57,7 @@ export function BoothsWithNewProducts({
     []
   );
 
-  // 无限滚动处理
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-          fetchNextPage();
-        }
-      },
-      { threshold: 0.1, rootMargin: '50px' }
-    );
 
-    if (observerRef.current) {
-      observer.observe(observerRef.current);
-    }
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   if (error) {
     return (
@@ -84,7 +71,7 @@ export function BoothsWithNewProducts({
   }
 
   // 初始加载状态
-  if (allBooths.length === 0 && isLoading) {
+  if (allBooths.length === 0 && isLoadingInitial) {
     return (
       <div className="px-4 py-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">{title}</h2>
@@ -100,7 +87,7 @@ export function BoothsWithNewProducts({
     );
   }
 
-  if (allBooths.length === 0 && !isLoading) {
+  if (allBooths.length === 0 && !isLoadingInitial) {
     return (
       <div className="px-4 py-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">{title}</h2>
@@ -136,15 +123,15 @@ export function BoothsWithNewProducts({
       </div>
 
       {/* 无限滚动触发器 */}
-      {hasNextPage && (
+      {shouldShowTrigger && (
         <div 
-          ref={observerRef}
+          ref={triggerRef}
           className="py-2"
         />
       )}
 
       {/* 加载状态提示 */}
-      {isFetchingNextPage && (
+      {isLoadingMore && (
         <div className="w-full flex justify-center py-4">
           <div className="flex items-center space-x-3">
             <div className="w-4 h-4 border-2 border-gray-200 border-t-orange-500 rounded-full animate-spin" />
@@ -156,7 +143,7 @@ export function BoothsWithNewProducts({
       )}
 
       {/* 已加载全部提示 */}
-      {!hasNextPage && allBooths.length > 0 && (
+      {!hasMore && allBooths.length > 0 && (
         <div className="text-center py-4 text-gray-500 text-sm">
           已加载全部档口
         </div>

@@ -11,7 +11,7 @@ import type { Booth } from "@/types/booth";
 
 // API 服务端地址，仅使用环境变量或默认值，不依赖 window
 const BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+  import.meta.env.API_BASE_URL || "http://localhost:3000";
 
 console.log("API Base URL:", BASE_URL);
 
@@ -173,7 +173,7 @@ class ApiClient {
     pageNum?: number;
     pageSize?: number;
     userId?: number;
-  }): Promise<ApiResponse<PaginatedResponse<Booth> | Booth[]>> {
+  }): Promise<ApiResponse<PaginatedResponse<Booth>>> {
     const searchParams = new URLSearchParams();
 
     if (params.pageNum)
