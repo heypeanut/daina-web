@@ -2,10 +2,10 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { MobileLayout } from "@/components/layout";
 
-import { BoothGrid } from "../market/components";
+import { BoothGrid } from "./components";
 import { UnifiedSearchBar } from "@/components/common";
 
-import { useMarketData } from "../market/hooks/use-market-data";
+import { useMarketData } from "./hooks/use-market-data";
 import { useTrackBoothView } from "@/hooks/use-api";
 
 import type { Booth } from "@/types/api";

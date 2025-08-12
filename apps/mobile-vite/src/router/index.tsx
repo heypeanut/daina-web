@@ -4,9 +4,9 @@ import { LoadingSpinner } from '@/components/common';
 
 // 懒加载页面组件
 const HomePage = lazy(() => import('@/pages/home/home-page'));
-const MarketPage = lazy(() => import('@/pages/MarketPage'));
-const CooperationPage = lazy(() => import('@/pages/CooperationPage'));
-const ProfilePage = lazy(() => import('@/pages/ProfilePage'));
+const MarketPage = lazy(() => import('@/pages/market/market-page'));
+const CooperationPage = lazy(() => import('@/pages/cooperation/cooperation-page'));
+const ProfilePage = lazy(() => import('@/pages/profile/profile-page'));
 const BoothDetailPage = lazy(() => import('@/pages/booth/booth-detail-page'));
 const ProductDetailPage = lazy(() => import('@/pages/product/product-detail-page'));
 const LoginPage = lazy(() => import('@/pages/auth/login-page'));

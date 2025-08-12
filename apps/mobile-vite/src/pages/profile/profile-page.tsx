@@ -3,7 +3,7 @@ import {
   ProfileHeader,
   QuickActions,
   ServiceSection,
-} from './profile/components';
+} from './components';
 
 const ProfilePage: React.FC = () => {
   return (
