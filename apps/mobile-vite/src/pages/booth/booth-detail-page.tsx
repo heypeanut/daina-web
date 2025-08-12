@@ -5,6 +5,7 @@ import { MobileLayout } from "@/components/layout";
 import { UnifiedSearchBar } from "@/components/common";
 import { BoothHeader, ProductShowcase, ContactSheet, AgentContactSheet } from "./components";
 import { useBoothDetail } from "./hooks/use-booth-detail";
+import { useGetDetail } from "./hooks";
 
 export default function BoothDetailPage() {
   const { id: boothId } = useParams<{ id: string }>();
@@ -12,38 +13,7 @@ export default function BoothDetailPage() {
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [isAgentModalOpen, setIsAgentModalOpen] = useState(false);
 
-  // Booth detail data and operations
-  const {
-    booth,
-    products,
-    isFavorited,
-    isLoading,
-    isProductsLoading,
-    isLoadingMore,
-    hasMoreProducts,
-    isError,
-    error,
-    handleFavoriteToggle,
-    handleShareClick,
-    handleRefresh,
-    handleLoadMore,
-  } = useBoothDetail({
-    boothId: boothId || '',
-    autoTrackView: true,
-    onContactSuccess: (type, value) => {
-      console.log(`联系成功: ${type} - ${value}`);
-    },
-    onShareSuccess: () => {
-      console.log("分享成功");
-    },
-  });
-
-  // Get products array from API response
-  const productsArray = Array.isArray(products)
-    ? products
-    : products?.rows && Array.isArray(products.rows)
-    ? products.rows
-    : [];
+  const { data: booth, isLoading, isError, error, refetch: handleRefresh } = useGetDetail(boothId || '');
 
   // Handle search click - jump to search page with booth context
   const handleSearchClick = () => {
@@ -82,7 +52,7 @@ export default function BoothDetailPage() {
               {error?.message || "网络错误，请稍后重试"}
             </p>
             <button
-              onClick={handleRefresh}
+              onClick={() => handleRefresh()}
               className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
             >
               重试
@@ -144,7 +114,6 @@ export default function BoothDetailPage() {
           placeholder={`搜索 ${booth?.boothName} 的商品...`}
           onSearchClick={handleSearchClick}
           showShare={true}
-          onShareClick={handleShareClick}
           className="fixed top-0 left-0 right-0 z-50"
         />
 
@@ -152,19 +121,13 @@ export default function BoothDetailPage() {
           <div className="pb-24 space-y-2">
             <BoothHeader
               booth={booth}
-              isFavorited={isFavorited}
-              onFavoriteToggle={handleFavoriteToggle}
-              onShareClick={handleShareClick}
+              isFavorited={false}
+              onFavoriteToggle={() => {}}
+              onShareClick={() => {}}
             />
 
             <ProductShowcase
-              products={productsArray}
-              total={products?.total || 0}
               onProductClick={handleProductClick}
-              loading={isProductsLoading}
-              isLoadingMore={isLoadingMore}
-              hasMore={hasMoreProducts}
-              onLoadMore={handleLoadMore}
             />
 
             <div className="h-4" />

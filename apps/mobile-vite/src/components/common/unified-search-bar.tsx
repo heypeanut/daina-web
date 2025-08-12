@@ -242,14 +242,14 @@ export function UnifiedSearchBar({
           </div>
           
           {/* 分享按钮 */}
-          {showShare && (
+          {/* {showShare && (
             <button
               onClick={onShareClick}
               className="flex-shrink-0 w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
             >
               <Share2 size={20} className="text-white" />
             </button>
-          )}
+          )} */}
         </div>
       </div>
     );
