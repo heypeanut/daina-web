@@ -25,7 +25,7 @@ export function ContactSheet({ booth, isOpen, onClose }: ContactSheetProps) {
       open={isOpen}
       onOpenChange={(open: boolean) => !open && onClose()}
       snapPointsMode="percent"
-      snapPoints={[85]}
+      snapPoints={[65]}
       dismissOnSnapToBottom
       position={0}
       modal
@@ -34,8 +34,8 @@ export function ContactSheet({ booth, isOpen, onClose }: ContactSheetProps) {
       <Sheet.Overlay backgroundColor="rgba(0,0,0,0.5)" />
       <Sheet.Frame
         backgroundColor="white"
-        borderTopLeftRadius={20}
-        borderTopRightRadius={20}
+        // borderTopLeftRadius={20}
+        // borderTopRightRadius={20}
       >
         <div className="p-4 space-y-4">
           {/* 头部 */}
@@ -60,7 +60,6 @@ export function ContactSheet({ booth, isOpen, onClose }: ContactSheetProps) {
             />
             <div>
               <h4 className="font-medium text-gray-900">{booth.boothName}</h4>
-              <p className="text-sm text-gray-500">{booth.marketLabel}</p>
             </div>
           </div>
 
@@ -133,18 +132,14 @@ export function AgentContactSheet({ isOpen, onClose }: AgentContactSheetProps) {
       open={isOpen}
       onOpenChange={(open: boolean) => !open && onClose()}
       snapPointsMode="percent"
-      snapPoints={[65]}
+      snapPoints={[55]}
       dismissOnSnapToBottom
       position={0}
       modal
       animation="medium"
     >
       <Sheet.Overlay backgroundColor="rgba(0,0,0,0.5)" />
-      <Sheet.Frame
-        backgroundColor="white"
-        borderTopLeftRadius={20}
-        borderTopRightRadius={20}
-      >
+      <Sheet.Frame>
         <div className="p-4 space-y-4">
           {/* 头部 */}
           <div className="flex items-center justify-between pb-3 border-b border-gray-100">
@@ -157,15 +152,18 @@ export function AgentContactSheet({ isOpen, onClose }: AgentContactSheetProps) {
             </button>
           </div>
 
-          {/* 服务说明 */}
-          <div className="mb-6 p-4 bg-gradient-to-r from-orange-50 to-red-50 rounded-lg border border-orange-200">
-            <div className="flex items-center gap-2 mb-2">
-              <QrCode className="w-5 h-5 text-orange-600" />
-              <h4 className="font-medium text-gray-900">代拿服务</h4>
+          <div className="flex items-center py-3 px-4 bg-gray-50 rounded-xl">
+            <Phone className="w-5 h-5 text-red-500 mr-3" />
+            <div className="flex-1">
+              <div className="text-sm text-gray-500">电话</div>
+              <div className="font-medium">13148865179</div>
             </div>
-            <p className="text-sm text-gray-600">
-              专业代拿团队，为您提供安全、快捷的代购服务
-            </p>
+            <button
+              onClick={() => copyToClipboard("13148865179")}
+              className="w-8 h-8 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center transition-colors"
+            >
+              <Copy className="w-4 h-4" />
+            </button>
           </div>
 
           {/* 二维码 */}
@@ -179,35 +177,17 @@ export function AgentContactSheet({ isOpen, onClose }: AgentContactSheetProps) {
             />
           </div>
 
-          {/* 服务特色 */}
-          <div className="space-y-3">
-            <h5 className="font-medium text-gray-900">服务特色</h5>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-sm text-gray-600">专业团队</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-sm text-gray-600">安全保障</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-sm text-gray-600">快速响应</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-sm text-gray-600">价格透明</span>
-              </div>
+           {/* 服务说明 */}
+           <div className="mb-6 p-4 bg-gradient-to-r from-orange-50 to-red-50 rounded-lg border border-orange-200">
+            <div className="flex items-center gap-2 mb-2">
+              <QrCode className="w-5 h-5 text-orange-600" />
+              <h4 className="font-medium text-gray-900">代拿服务</h4>
             </div>
-          </div>
-
-          {/* 提示信息 */}
-          <div className="mt-4 p-3 bg-orange-50 rounded-lg">
-            <p className="text-sm text-orange-800">
-              扫描二维码联系代拿客服，享受专业代购服务
+            <p className="text-sm text-gray-600">
+              专业代拿团队，为您提供安全、快捷的代购服务
             </p>
           </div>
+
         </div>
       </Sheet.Frame>
     </Sheet>

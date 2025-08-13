@@ -146,11 +146,11 @@ export default function BoothDetailPage() {
         </div>
 
         {/* 底部操作栏 */}
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50">
+        <div className="fixed bottom-0 left-0 right-0 bg-white shadow-t-lg border-gray-200 p-2 z-50">
           <div className="flex gap-3">
             <button
               onClick={() => setIsContactModalOpen(true)}
-              className="flex-1 bg-white border-2 border-red-500 text-red-500 py-4 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-red-50 active:bg-red-100 transition-colors min-h-[48px] touch-manipulation"
+              className="flex-1 bg-white border-2 border-red-500 text-red-500 py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-red-50 active:bg-red-100 transition-colorsh-[32px] touch-manipulation"
             >
               <Phone size={20} />
               联系商家
@@ -158,7 +158,7 @@ export default function BoothDetailPage() {
 
             <button
               onClick={() => setIsAgentModalOpen(true)}
-              className="flex-1 bg-gradient-to-r from-red-500 to-orange-500 text-white py-4 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:from-red-600 hover:to-orange-600 active:from-red-700 active:to-orange-700 transition-all shadow-sm min-h-[48px] touch-manipulation"
+              className="flex-1 bg-gradient-to-r from-red-500 to-orange-500 text-white py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 hover:from-red-600 hover:to-orange-600 active:from-red-700 active:to-orange-700 transition-all shadow-sm touch-manipulation"
             >
               <QrCode size={20} />
               联系代拿

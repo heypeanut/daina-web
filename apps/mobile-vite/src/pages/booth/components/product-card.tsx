@@ -29,10 +29,10 @@ export function ProductCard({
       return (
         <div
           onClick={() => onProductClick(product)}
-          className="bg-white rounded-lg border border-gray-200 overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+          className="bg-white rounded-lg  shadow overflow-hidden cursor-pointer"
         >
           {/* Product image */}
-          <div className="relative aspect-square">
+          <div className="relative aspect-auto">
             <ImageLazyLoader
               src={product.coverImage || "/placeholder-product.png"}
               alt={product.name}

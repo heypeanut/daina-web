@@ -19,6 +19,13 @@ export interface Booth {
   category?: string;
   imageUrl?: string;
   market?: string;
+  mainBusiness?: string;
+  wx?: string;
+  wxQrCode?: string;
+  qq?: string;
+  qqQrCode?: string;
+  phone?: string;
+  address?: string;
 }
 
 export interface Product {
