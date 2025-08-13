@@ -51,9 +51,7 @@ export function useUserInfo(options?: UseUserInfoOptions) {
   const query = useQuery({
     queryKey: AUTH_QUERY_KEYS.user,
     queryFn: async () => {
-      console.log('🌐 Fetching user info from API');
       const userInfo = await getUserInfo();
-      console.log('✅ User info fetched:', userInfo);
       return userInfo;
     },
     enabled: isLoggedIn && (options?.enabled !== false),

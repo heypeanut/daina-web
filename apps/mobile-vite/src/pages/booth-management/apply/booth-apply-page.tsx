@@ -107,12 +107,13 @@ export default function BoothApplyPage() {
         phone: userInfo.phone,
       }));
     }
-  }, [userInfo?.phone, formData.phone]);
+  }, [userInfo?.phone]);
 
   const handleInputChange = (
     field: keyof BoothApplicationForm,
     value: string | number | File | null
   ) => {
+    console.log("handleInputChange", field, value);
     setFormData((prev) => ({
       ...prev,
       [field]: value,
@@ -179,7 +180,6 @@ export default function BoothApplyPage() {
 
     try {
       setLoading(true);
-
       // 调用真实API提交申请
       const result = await submitBoothApplication(formData);
 

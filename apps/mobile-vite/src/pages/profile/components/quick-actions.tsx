@@ -43,13 +43,13 @@ export function QuickActions() {
       color: "text-green-500",
       requireLogin: true,
     },
-    {
-      icon: Settings,
-      label: "设置",
-      route: "/profile/settings",
-      color: "text-gray-500",
-      requireLogin: false,
-    },
+    // {
+    //   icon: Settings,
+    //   label: "设置",
+    //   route: "/profile/settings",
+    //   color: "text-gray-500",
+    //   requireLogin: false,
+    // },
   ];
 
   const handleActionClick = (action: QuickAction) => {
