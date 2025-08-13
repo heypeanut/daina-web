@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   ArrowLeft, 
@@ -8,6 +8,7 @@ import {
   Package 
 } from "lucide-react";
 import { ImageLazyLoader } from "@/components/common";
+import { useGetFavoriteProducts } from "../hooks";
 
 // Mock收藏商品数据
 interface FavoriteProduct {
@@ -58,6 +59,8 @@ export default function FavoritesPage() {
   const navigate = useNavigate();
   const [products, setProducts] = useState(mockFavoriteProducts);
   const [removing, setRemoving] = useState<string | null>(null);
+  const { data: favoriteProducts, isLoading } = useGetFavoriteProducts();
+
 
   const handleBack = () => {
     navigate(-1);
@@ -123,7 +126,7 @@ export default function FavoritesPage() {
 
       {/* 内容区域 */}
       <div className="pb-6">
-        {products.length === 0 ? (
+        {favoriteProducts?.rows.length === 0 ? (
           /* 空状态 */
           <div className="flex flex-col items-center justify-center py-20">
             <Package className="w-16 h-16 text-gray-300 mb-4" />
@@ -142,7 +145,7 @@ export default function FavoritesPage() {
           /* 商品列表 */
           <div className="p-4">
             <div className="space-y-3">
-              {products.map((product) => (
+              {favoriteProducts?.rows.map((product) => (
                 <div
                   key={product.id}
                   className="bg-white rounded-lg border border-gray-200 overflow-hidden"

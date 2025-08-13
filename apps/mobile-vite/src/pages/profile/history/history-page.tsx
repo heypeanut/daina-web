@@ -2,107 +2,45 @@ import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Trash2, Package, Store, Eye, MapPin } from "lucide-react";
 import { ImageLazyLoader } from "@/components/common";
+import { useInfiniteHistory } from "../hooks";
+import { useInfiniteScroll } from "@/hooks/useIntersectionObserver";
+import { useQueryClient } from "@tanstack/react-query";
+import { removeFootprint, clearFootprints } from "@/lib/api/user-behavior";
 
 // 浏览记录类型
-type FootprintType = "all" | "product" | "booth";
+type FootprintType = "product" | "booth";
 
-// 浏览记录接口
-interface Footprint {
-  id: string;
-  type: "product" | "booth";
-  targetId: string;
-  viewedAt: string;
-  product?: {
-    id: string;
-    name: string;
-    price: number;
-    coverImage: string;
-    boothName: string;
-  };
-  booth?: {
-    id: string;
-    boothName: string;
-    marketLabel: string;
-    coverImg: string;
-    followers: number;
-  };
-}
-
-// Mock浏览记录数据
-const mockFootprints: Footprint[] = [
-  {
-    id: "1",
-    type: "product",
-    targetId: "1",
-    viewedAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), // 1小时前
-    product: {
-      id: "1",
-      name: "iPhone 15 Pro Max 透明保护壳",
-      price: 35.00,
-      coverImage: "/placeholder-product.jpg",
-      boothName: "潮流手机配件专营店"
-    }
-  },
-  {
-    id: "2",
-    type: "booth",
-    targetId: "1",
-    viewedAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), // 3小时前
-    booth: {
-      id: "1",
-      boothName: "潮流手机配件专营店",
-      marketLabel: "广州天河电脑城",
-      coverImg: "/placeholder-booth.jpg",
-      followers: 1250
-    }
-  },
-  {
-    id: "3",
-    type: "product",
-    targetId: "2",
-    viewedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // 1天前
-    product: {
-      id: "2",
-      name: "Type-C快充数据线 2米",
-      price: 15.80,
-      coverImage: "/placeholder-product.jpg",
-      boothName: "潮流手机配件专营店"
-    }
-  },
-  {
-    id: "4",
-    type: "booth",
-    targetId: "2",
-    viewedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2天前
-    booth: {
-      id: "2",
-      boothName: "数码科技专营店",
-      marketLabel: "深圳华强北电子市场",
-      coverImg: "/placeholder-booth.jpg",
-      followers: 2300
-    }
-  },
-  {
-    id: "5",
-    type: "product",
-    targetId: "3",
-    viewedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3天前
-    product: {
-      id: "3",
-      name: "无线蓝牙耳机 降噪版",
-      price: 128.00,
-      coverImage: "/placeholder-product.jpg",
-      boothName: "数码科技专营店"
-    }
-  }
-];
+// 使用API中定义的接口
+import type { Footprint } from "@/lib/api/user-behavior";
 
 export default function HistoryPage() {
   const navigate = useNavigate();
-  const [footprints, setFootprints] = useState(mockFootprints);
-  const [filter, setFilter] = useState<FootprintType>("all");
+  const queryClient = useQueryClient();
+  const [filter, setFilter] = useState<FootprintType>("product");
   const [removing, setRemoving] = useState<string | null>(null);
   const [clearing, setClearing] = useState(false);
+  
+  // 使用无限滚动 hook
+  const {
+    data,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+    error,
+  } = useInfiniteHistory(filter, 20);
+
+  // 合并所有页面的数据
+  const footprints = data?.pages?.flatMap(page => page.rows) || [];
+  
+  // 无限滚动触发器
+  const { triggerRef, shouldShowTrigger } = useInfiniteScroll(
+    fetchNextPage,
+    {
+      hasMore: hasNextPage,
+      isLoading: isFetchingNextPage,
+    }
+  );
 
   const handleBack = useCallback(() => {
     navigate(-1);
@@ -120,11 +58,21 @@ export default function HistoryPage() {
     setRemoving(footprintId);
     
     try {
-      // 模拟API延迟
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await removeFootprint(footprintId);
       
-      // 从列表中移除
-      setFootprints(prev => prev.filter(f => f.id !== footprintId));
+      // 更新缓存，从所有页面中移除该记录
+      queryClient.setQueryData(['trafficHistory', 'infinite', filter], (oldData: any) => {
+        if (!oldData) return oldData;
+        
+        return {
+          ...oldData,
+          pages: oldData.pages.map((page: any) => ({
+            ...page,
+            rows: page.rows.filter((item: any) => item.id !== footprintId),
+            total: Math.max(0, page.total - 1),
+          })),
+        };
+      });
       
       console.log(`已删除浏览记录: ${footprintId}`);
     } catch (error) {
@@ -139,17 +87,25 @@ export default function HistoryPage() {
     if (!confirm("确定要清空所有浏览记录吗？此操作不可恢复。")) {
       return;
     }
-
+    
     setClearing(true);
     
     try {
-      // 模拟API延迟
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await clearFootprints(filter);
       
-      // 清空所有记录
-      setFootprints([]);
+      // 清空缓存
+      queryClient.setQueryData(['trafficHistory', 'infinite', filter], {
+        pages: [{
+          rows: [],
+          total: 0,
+          page: 1,
+          pageSize: 20,
+          hasNext: false,
+        }],
+        pageParams: [1],
+      });
       
-      console.log("已清空所有浏览记录");
+      console.log(`已清空${filter === 'product' ? '商品' : '档口'}浏览记录`);
     } catch (error) {
       console.error("清空失败:", error);
       alert("清空失败，请重试");
@@ -173,10 +129,8 @@ export default function HistoryPage() {
     return date.toLocaleDateString();
   };
 
-  // 过滤数据
-  const filteredFootprints = filter === "all" 
-    ? footprints 
-    : footprints.filter(f => f.type === filter);
+  // 数据已经按类型过滤，无需再次过滤
+  const filteredFootprints = footprints;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -190,7 +144,7 @@ export default function HistoryPage() {
             <ArrowLeft className="w-5 h-5 text-gray-600" />
           </button>
           <h1 className="text-lg font-semibold text-gray-900">
-            浏览记录 ({filteredFootprints.length})
+            浏览记录 ({filteredFootprints?.length || 0})
           </h1>
           <button
             onClick={handleClearAll}
@@ -205,7 +159,6 @@ export default function HistoryPage() {
         <div className="flex items-center px-4 pb-3">
           <div className="flex space-x-1 bg-gray-100 rounded-lg p-1">
             {[
-              { key: "all", label: "全部" },
               { key: "product", label: "商品" },
               { key: "booth", label: "档口" }
             ].map((tab) => (
@@ -227,13 +180,18 @@ export default function HistoryPage() {
 
       {/* 内容区域 */}
       <div className="pb-6">
-        {filteredFootprints.length === 0 ? (
+        {isLoading && footprints.length === 0 ? (
+          /* 初始加载状态 */
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="w-8 h-8 border-2 border-gray-300 border-t-orange-500 rounded-full animate-spin mb-4" />
+            <p className="text-gray-500">加载中...</p>
+          </div>
+        ) : filteredFootprints?.length === 0 ? (
           /* 空状态 */
           <div className="flex flex-col items-center justify-center py-20">
             <Eye className="w-16 h-16 text-gray-300 mb-4" />
             <p className="text-gray-500 text-center mb-2">
-              {filter === "all" ? "暂无浏览记录" : 
-               filter === "product" ? "暂无商品浏览记录" : "暂无档口浏览记录"}
+              {filter === "product" ? "暂无商品浏览记录" : "暂无档口浏览记录"}
             </p>
             <p className="text-gray-400 text-sm text-center">
               去逛逛感兴趣的内容吧
@@ -249,7 +207,7 @@ export default function HistoryPage() {
           /* 记录列表 */
           <div className="p-4">
             <div className="space-y-3">
-              {filteredFootprints.map((footprint) => (
+              {filteredFootprints?.map((footprint) => (
                 <div
                   key={footprint.id}
                   className="bg-white rounded-lg border border-gray-200 overflow-hidden"
@@ -262,12 +220,12 @@ export default function HistoryPage() {
                     >
                       <ImageLazyLoader
                         src={footprint.type === "product" 
-                          ? footprint.product?.coverImage || "/placeholder-product.jpg"
-                          : footprint.booth?.coverImg || "/placeholder-booth.jpg"
+                          ? footprint.product?.image || "/placeholder-product.jpg"
+                          : footprint.booth?.coverImage || "/placeholder-booth.jpg"
                         }
                         alt={footprint.type === "product" 
                           ? footprint.product?.name || ""
-                          : footprint.booth?.boothName || ""
+                          : footprint.booth?.name || ""
                         }
                         width={64}
                         height={64}
@@ -304,11 +262,11 @@ export default function HistoryPage() {
                       ) : footprint.booth ? (
                         <>
                           <h3 className="text-sm font-medium text-gray-900 mb-1">
-                            {footprint.booth.boothName}
+                            {footprint.booth.name}
                           </h3>
                           <div className="flex items-center text-xs text-gray-500 mb-1">
                             <MapPin size={10} className="mr-1" />
-                            <span>{footprint.booth.marketLabel}</span>
+                            <span>{footprint.booth.location || '未知位置'}</span>
                           </div>
                           <div className="text-xs text-gray-500">
                             {footprint.booth.followers} 关注
@@ -317,7 +275,7 @@ export default function HistoryPage() {
                       ) : null}
                       
                       <div className="text-xs text-gray-400 mt-2">
-                        浏览时间：{formatDate(footprint.viewedAt)}
+                        浏览时间：{formatDate(footprint.visitedAt)}
                       </div>
                     </div>
 
@@ -342,6 +300,35 @@ export default function HistoryPage() {
                 </div>
               ))}
             </div>
+            
+            {/* 无限滚动触发器 */}
+            {shouldShowTrigger && (
+              <div ref={triggerRef} className="flex justify-center py-4">
+                {isFetchingNextPage ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="w-4 h-4 border-2 border-gray-300 border-t-orange-500 rounded-full animate-spin" />
+                    <span className="text-sm text-gray-500">加载更多...</span>
+                  </div>
+                ) : hasNextPage ? (
+                  <div className="text-sm text-gray-400">向上滑动加载更多</div>
+                ) : (
+                  <div className="text-sm text-gray-400">没有更多记录了</div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+        
+        {/* 错误状态 */}
+        {error && (
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="text-red-500 mb-2">加载失败</div>
+            <button
+              onClick={() => fetchNextPage()}
+              className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+            >
+              重试
+            </button>
           </div>
         )}
       </div>

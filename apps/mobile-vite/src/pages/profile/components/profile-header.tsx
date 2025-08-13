@@ -1,38 +1,12 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { User, Settings, LogOut } from "lucide-react";
-
-// Mock登录状态hook - 实际项目中替换为真实API
-function useLoginStatus() {
-  const [isLoggedIn] = useState(false); // 默认未登录状态，可以改为true测试已登录状态
-  const [userInfo] = useState({
-    nickname: "测试用户",
-    phone: "138****8888",
-    avatar: null
-  });
-  
-  return {
-    isLoggedIn,
-    userInfo: isLoggedIn ? userInfo : null,
-    isLoading: false
-  };
-}
-
-// Mock退出登录hook
-function useLogout() {
-  return {
-    mutate: () => {
-      console.log('退出登录');
-      // 实际项目中执行登录状态清除等操作
-    },
-    isPending: false
-  };
-}
+import { useLogout, useUserInfo } from "../hooks";
 
 export function ProfileHeader() {
   const navigate = useNavigate();
-  const { isLoggedIn, userInfo, isLoading } = useLoginStatus();
-  const logoutMutation = useLogout();
+  const { data: userInfo, isLoading } = useUserInfo();
+  const isLoggedIn = !!userInfo;
+  const { mutate: logout, isPending: isLoggingOut } = useLogout();
 
   const handleHeaderClick = () => {
     if (!isLoggedIn) {
@@ -41,7 +15,7 @@ export function ProfileHeader() {
   };
 
   const handleLogout = () => {
-    logoutMutation.mutate();
+    logout();
   };
 
   // 如果正在加载用户信息，显示加载状态
@@ -103,10 +77,10 @@ export function ProfileHeader() {
         {isLoggedIn ? (
           <button
             onClick={handleLogout}
-            disabled={logoutMutation.isPending}
+            disabled={isLoggingOut}
             className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 transition-colors disabled:opacity-50"
           >
-            {logoutMutation.isPending ? (
+            {isLoggingOut ? (
               <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
             ) : (
               <LogOut className="w-5 h-5 text-white/80" />
@@ -127,7 +101,7 @@ export function ProfileHeader() {
       ) : (
         <div className="mt-4 bg-white/10 rounded-lg p-3">
           <p className="text-white/90 text-sm">
-            欢迎回来！您有新的消息等待查看
+            欢迎回来！立即管理或寻找心仪的商品
           </p>
         </div>
       )}

@@ -59,7 +59,7 @@ export async function smsLogin(credentials: SmsLoginRequest): Promise<string> {
  * 获取用户信息
  */
 export async function getUserInfo(): Promise<UserInfo> {
-  const response = await tenantApi.get("/info");
+  const response = await tenantApi.get("/auth/getInfo");
   return response.data;
 }
 

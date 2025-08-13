@@ -30,9 +30,9 @@ class TenantApiClient {
     const url = `${this.baseURL}${endpoint}`;
 
     // 准备请求头
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       "Content-Type": "application/json",
-      ...options.headers,
+      ...(options.headers as Record<string, string>),
     };
 
     // 自动添加认证头
@@ -53,8 +53,8 @@ class TenantApiClient {
           // Token过期，清除本地存储
           localStorage.removeItem("auth_token");
           localStorage.removeItem("user_info");
-          // 跳转到登录页
-          window.location.href = "/login";
+          // 触发登录状态变化事件，让组件自行处理状态更新
+          window.dispatchEvent(new Event("loginStatusChange"));
           throw new Error("登录已过期，请重新登录");
         }
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -138,8 +138,8 @@ class TenantApiClient {
     const url = `${this.baseURL}${endpoint}`;
 
     // 准备请求头，不设置Content-Type让浏览器自动设置FormData边界
-    const headers: HeadersInit = {
-      ...options?.headers,
+    const headers: Record<string, string> = {
+      ...(options?.headers as Record<string, string>),
     };
 
     // 自动添加认证头

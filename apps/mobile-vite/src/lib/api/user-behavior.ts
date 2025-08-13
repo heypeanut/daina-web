@@ -1,5 +1,5 @@
 // 新版用户行为API - 收藏、历史记录等
-import { tenantApi, PaginatedResponse } from './config';
+import { tenantApi, type PaginatedResponse } from './config';
 import { isLoggedIn } from '@/lib/auth';
 
 // 接口类型定义
@@ -129,26 +129,6 @@ export async function getFavorites(
     params: { type, page, pageSize }
   });
   return response.data;
-}
-
-/**
- * 获取收藏的商品列表
- */
-export async function getFavoriteProducts(
-  page: number = 1,
-  pageSize: number = 20
-): Promise<PaginatedResponse<FavoriteProduct>> {
-  return getFavorites('product', page, pageSize) as Promise<PaginatedResponse<FavoriteProduct>>;
-}
-
-/**
- * 获取关注的档口列表
- */
-export async function getFavoriteBooths(
-  page: number = 1,
-  pageSize: number = 20
-): Promise<PaginatedResponse<FavoriteBooth>> {
-  return getFavorites('booth', page, pageSize) as Promise<PaginatedResponse<FavoriteBooth>>;
 }
 
 /**

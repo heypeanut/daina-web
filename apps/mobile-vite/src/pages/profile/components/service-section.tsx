@@ -69,15 +69,15 @@ export function ServiceSection() {
   const getButtonDescription = () => {
     switch (boothStatus) {
       case BoothStatus.NOT_APPLIED:
-        return "立即申请开通档口，开启您的生意之路";
+        return "立即申请开通档口，开启生意之路";
       case BoothStatus.PENDING:
         return "您的申请正在审核中，请耐心等待";
       case BoothStatus.APPROVED:
-        return "档口已开通，管理您的商品和订单";
+        return "档口已开通，管理商品和订单";
       case BoothStatus.REJECTED:
         return "申请未通过，请重新提交申请";
       default:
-        return "立即申请开通档口，开启您的生意之路";
+        return "立即申请开通档口，开启生意之路";
     }
   };
 

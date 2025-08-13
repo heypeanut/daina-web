@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Heart, Store, Clock, Settings } from "lucide-react";
+import { useLoginStatus } from "../hooks";
 
 interface QuickAction {
   icon: React.ComponentType<{ className?: string }>;
@@ -10,26 +11,15 @@ interface QuickAction {
   requireLogin?: boolean;
 }
 
-// Mock登录状态检查函数
-function isLoggedIn(): boolean {
-  // 实际项目中从localStorage或API获取登录状态
-  return false; // 默认未登录，可以改为true测试已登录状态
-}
-
-// Mock登录跳转函数
-function redirectToLogin(returnUrl?: string, navigate: any) {
+// 登录跳转函数
+function redirectToLogin(navigate: any, returnUrl?: string) {
   const loginUrl = returnUrl ? `/login?returnUrl=${encodeURIComponent(returnUrl)}` : '/login';
   navigate(loginUrl);
 }
 
 export function QuickActions() {
   const navigate = useNavigate();
-  const [loggedIn, setLoggedIn] = useState(false);
-
-  // 检查登录状态
-  useEffect(() => {
-    setLoggedIn(isLoggedIn());
-  }, []);
+  const { isLoggedIn } = useLoginStatus();
 
   const actions: QuickAction[] = [
     {
@@ -63,8 +53,8 @@ export function QuickActions() {
   ];
 
   const handleActionClick = (action: QuickAction) => {
-    if (action.requireLogin && !loggedIn) {
-      redirectToLogin(action.route, navigate);
+    if (action.requireLogin && !isLoggedIn) {
+      redirectToLogin(navigate, action.route);
       return;
     }
 

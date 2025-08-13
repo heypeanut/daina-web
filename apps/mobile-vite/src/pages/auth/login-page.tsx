@@ -243,15 +243,6 @@ export default function LoginPage() {
             </button>
           </div>
         </div>
-
-        {/* 开发提示 */}
-        <div className="mt-8 p-4 bg-blue-50 rounded-lg">
-          <p className="text-sm text-blue-800 text-center">
-            <strong>开发提示：</strong>
-            <br />
-            密码：123456 | 验证码：123456
-          </p>
-        </div>
       </div>
     </div>
   );

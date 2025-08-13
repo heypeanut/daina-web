@@ -34,7 +34,7 @@ export default function SettingsPage() {
       window.dispatchEvent(new Event("loginStatusChange"));
       
       console.log("已退出登录");
-      navigate("/profile");
+      // 不跳转，让用户留在当前页面
     }
   };
 

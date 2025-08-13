@@ -1,4 +1,4 @@
-import { UseMutationOptions, UseQueryOptions } from '@tanstack/react-query';
+import type { UseMutationOptions, UseQueryOptions } from '@tanstack/react-query';
 
 // API响应的标准格式
 export interface ApiResponse<T> {

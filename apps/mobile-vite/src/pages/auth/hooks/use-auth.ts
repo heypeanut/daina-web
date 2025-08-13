@@ -1,17 +1,5 @@
 import { useState, useCallback } from 'react';
-
-// 登录响应接口
-interface LoginResponse {
-  token: string;
-  user?: {
-    id: string;
-    phone: string;
-    nickname?: string;
-    avatar?: string;
-  };
-}
-
-// 注册响应接口
+import { login, type LoginRequest } from '@/lib/api/auth';
 interface RegisterResponse {
   token: string;
   user: {
@@ -22,14 +10,6 @@ interface RegisterResponse {
   };
 }
 
-// 登录参数
-interface LoginParams {
-  phone: string;
-  password?: string;
-  code?: string;
-}
-
-// 注册参数
 interface RegisterParams {
   phone: string;
   smsCode: string;
@@ -45,28 +25,13 @@ async function sendSms(phone: string): Promise<void> {
   console.log(`验证码已发送到 ${phone}`);
 }
 
-async function login(params: LoginParams): Promise<string> {
-  // 模拟API延迟
-  await new Promise(resolve => setTimeout(resolve, 1500));
-  
-  // 模拟登录验证
-  if (params.password) {
-    // 密码登录
-    if (params.password !== '123456') {
-      throw new Error('手机号或密码错误');
-    }
-  } else if (params.code) {
-    // 验证码登录
-    if (params.code !== '123456') {
-      throw new Error('验证码错误');
-    }
-  }
-  
-  return 'mock_auth_token_12345';
+async function authLogin(params: LoginRequest): Promise<string> {
+  const token = await login(params);
+  return token;
 }
 
 async function smsLogin(params: { phone: string; code: string }): Promise<string> {
-  return login({ phone: params.phone, code: params.code });
+  return smsLogin({ phone: params.phone, code: params.code });
 }
 
 async function register(params: RegisterParams): Promise<RegisterResponse> {
@@ -84,7 +49,7 @@ async function register(params: RegisterParams): Promise<RegisterResponse> {
       id: 'user_' + Date.now(),
       phone: params.phone,
       nickname: params.nickname || '新用户',
-      avatar: null
+      avatar: undefined
     }
   };
 }
@@ -139,7 +104,7 @@ export function useAuth() {
     setLoading(true);
 
     try {
-      const token = await login({ phone, password });
+      const token = await authLogin({ phone, password });
 
       // 存储认证信息
       localStorage.setItem("auth_token", token);

@@ -11,6 +11,7 @@ import {
   Eye
 } from "lucide-react";
 import { ImageLazyLoader } from "@/components/common";
+import { useGetFollowedBooths } from "../hooks";
 
 // Mock关注档口数据
 interface FavoriteBooth {
@@ -27,52 +28,10 @@ interface FavoriteBooth {
   mainBusiness: string;
 }
 
-const mockFavoriteBooths: FavoriteBooth[] = [
-  {
-    id: "1",
-    boothName: "潮流手机配件专营店",
-    marketLabel: "广州天河电脑城",
-    address: "天河区天河路208号天河电脑城2楼A201-A205",
-    coverImg: "/placeholder-booth.jpg",
-    followers: 1250,
-    view: 15600,
-    productCount: 156,
-    rating: 4.8,
-    followedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-    mainBusiness: "手机壳、数据线、无线耳机"
-  },
-  {
-    id: "2",
-    boothName: "数码科技专营店",
-    marketLabel: "深圳华强北电子市场",
-    address: "福田区华强北路1008号华强电子世界3楼B区",
-    coverImg: "/placeholder-booth.jpg",
-    followers: 2300,
-    view: 28900,
-    productCount: 298,
-    rating: 4.9,
-    followedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    mainBusiness: "电脑配件、数码产品、智能设备"
-  },
-  {
-    id: "3",
-    boothName: "时尚饰品工坊",
-    marketLabel: "广州十三行服装批发市场",
-    address: "荔湾区十三行路35号新中国大厦5楼",
-    coverImg: "/placeholder-booth.jpg",
-    followers: 890,
-    view: 12400,
-    productCount: 67,
-    rating: 4.6,
-    followedAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
-    mainBusiness: "项链、耳环、手镯、戒指"
-  }
-];
-
 export default function FollowedBoothsPage() {
   const navigate = useNavigate();
-  const [booths, setBooths] = useState(mockFavoriteBooths);
   const [unfollowing, setUnfollowing] = useState<string | null>(null);
+  const { data: followedBooths, isLoading } = useGetFollowedBooths();
 
   const handleBack = () => {
     navigate(-1);
@@ -83,22 +42,7 @@ export default function FollowedBoothsPage() {
   };
 
   const handleUnfollow = async (boothId: string) => {
-    setUnfollowing(boothId);
-    
-    try {
-      // 模拟API延迟
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // 从列表中移除
-      setBooths(prev => prev.filter(b => b.id !== boothId));
-      
-      console.log(`已取消关注档口: ${boothId}`);
-    } catch (error) {
-      console.error("取消关注失败:", error);
-      alert("取消关注失败，请重试");
-    } finally {
-      setUnfollowing(null);
-    }
+  
   };
 
   const formatDate = (dateString: string) => {
@@ -132,7 +76,7 @@ export default function FollowedBoothsPage() {
             <ArrowLeft className="w-5 h-5 text-gray-600" />
           </button>
           <h1 className="text-lg font-semibold text-gray-900">
-            关注档口 ({booths.length})
+            关注档口 ({followedBooths?.total || 0})
           </h1>
           <div className="w-10" />
         </div>
@@ -140,7 +84,7 @@ export default function FollowedBoothsPage() {
 
       {/* 内容区域 */}
       <div className="pb-6">
-        {booths.length === 0 ? (
+        {followedBooths?.rows.length === 0 ? (
           /* 空状态 */
           <div className="flex flex-col items-center justify-center py-20">
             <Store className="w-16 h-16 text-gray-300 mb-4" />
@@ -159,7 +103,7 @@ export default function FollowedBoothsPage() {
           /* 档口列表 */
           <div className="p-4">
             <div className="space-y-3">
-              {booths.map((booth) => (
+              {followedBooths?.rows.map((booth) => (
                 <div
                   key={booth.id}
                   className="bg-white rounded-lg border border-gray-200 overflow-hidden"
