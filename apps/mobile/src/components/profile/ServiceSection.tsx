@@ -237,7 +237,7 @@ export const ServiceSection: React.FC = () => {
 
         <button
           onClick={handleBoothRegistration}
-          disabled={loading}
+          disabled={loading || !isLoggedIn()}
           className="w-full flex items-center justify-between p-4 rounded-lg bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 hover:from-orange-100 hover:to-red-100 transition-all duration-200 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
         >
           <div className="flex items-center space-x-3">

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ShoppingBag, Loader2, ChevronRight } from "lucide-react";
+import { isLoggedIn, redirectToLogin } from "@/lib/auth";
 
 // Mock档口状态枚举
 enum BoothStatus {
@@ -27,6 +28,12 @@ export function ServiceSection() {
   const { boothStatus, loading } = useBoothStatus();
 
   const handleBoothRegistration = () => {
+    // 检查登录状态
+    if (!isLoggedIn()) {
+      redirectToLogin("/booth/apply");
+      return;
+    }
+
     if (loading) return;
 
     switch (boothStatus) {
@@ -52,6 +59,10 @@ export function ServiceSection() {
   };
 
   const getButtonText = () => {
+    if (!isLoggedIn()) {
+      return "开通档口";
+    }
+
     switch (boothStatus) {
       case BoothStatus.NOT_APPLIED:
         return "开通档口";
@@ -67,6 +78,10 @@ export function ServiceSection() {
   };
 
   const getButtonDescription = () => {
+    if (!isLoggedIn()) {
+      return "点击进入登录页面";
+    }
+
     switch (boothStatus) {
       case BoothStatus.NOT_APPLIED:
         return "立即申请开通档口，开启生意之路";
