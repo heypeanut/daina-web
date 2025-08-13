@@ -7,6 +7,7 @@ interface BoothHeaderProps {
   isFavorited: boolean;
   onFavoriteToggle: () => void;
   onShareClick?: () => void;
+  showFavoriteButton?: boolean;
   className?: string;
 }
 
@@ -14,6 +15,7 @@ export function BoothHeader({
   booth,
   isFavorited,
   onFavoriteToggle,
+  showFavoriteButton = true,
   // onShareClick,
   className = "",
 }: BoothHeaderProps) {
@@ -58,19 +60,21 @@ export function BoothHeader({
 
                 {/* Small favorite and share icons */}
                 <div className="flex items-center gap-2 ml-2">
-                  <button
-                    onClick={onFavoriteToggle}
-                    className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
-                      isFavorited
-                        ? "bg-pink-100 text-pink-600"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    }`}
-                  >
-                    <Heart
-                      size={16}
-                      className={isFavorited ? "fill-current" : ""}
-                    />
-                  </button>
+                  {showFavoriteButton && (
+                    <button
+                      onClick={onFavoriteToggle}
+                      className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
+                        isFavorited
+                          ? "bg-pink-100 text-pink-600"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      <Heart
+                        size={16}
+                        className={isFavorited ? "fill-current" : ""}
+                      />
+                    </button>
+                  )}
 
                   {/* <button
                     onClick={onShareClick}

@@ -10,6 +10,7 @@ import {
   AgentContactSheet,
 } from "./components";
 import { useGetDetail } from "./hooks";
+import { useLoginStatus, useBoothFollowStatus, useToggleBoothFollow } from "@/pages/profile/hooks/use-api";
 import type { Product } from "@/types/api";
 
 export default function BoothDetailPage() {
@@ -25,6 +26,18 @@ export default function BoothDetailPage() {
     error,
     refetch: handleRefresh,
   } = useGetDetail(boothId || "");
+
+  // 登录状态和收藏功能
+  const { isLoggedIn } = useLoginStatus();
+  const { data: isFavorited, isLoading: isFavoriteLoading } = useBoothFollowStatus(boothId || "", isLoggedIn);
+  const toggleFavoriteMutation = useToggleBoothFollow();
+
+  const handleFavoriteToggle = () => {
+    if (!isLoggedIn || !boothId) return;
+    
+    const action = isFavorited ? 'remove' : 'add';
+    toggleFavoriteMutation.mutate({ boothId, action });
+  };
 
   // Handle search click - jump to search page with booth context
   const handleSearchClick = () => {
@@ -135,9 +148,10 @@ export default function BoothDetailPage() {
           <div className="pb-24 space-y-2">
             <BoothHeader
               booth={booth}
-              isFavorited={false}
-              onFavoriteToggle={() => {}}
+              isFavorited={!!isFavorited}
+              onFavoriteToggle={handleFavoriteToggle}
               onShareClick={() => {}}
+              showFavoriteButton={isLoggedIn}
             />
 
             <ProductShowcase onProductClick={handleProductClick} />

@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Phone, MessageCircle, Copy, X, QrCode } from "lucide-react";
 import { Sheet } from "@tamagui/sheet";
 import { toast } from "sonner";
 import { ImageLazyLoader } from "@/components/common";
-import { QRCodeCarousel } from './qrcode-carousel';
+import { QRCodeCarousel } from "./qrcode-carousel";
 import type { Booth } from "@/types/api";
 
 interface ContactSheetProps {
@@ -37,7 +37,7 @@ export function ContactSheet({ booth, isOpen, onClose }: ContactSheetProps) {
     wx: boolean;
   }>({
     phone: false,
-    wx: false
+    wx: false,
   });
 
   // 降级复制方法
@@ -50,10 +50,10 @@ export function ContactSheet({ booth, isOpen, onClose }: ContactSheetProps) {
     document.body.appendChild(textArea);
     textArea.focus();
     textArea.select();
-    
+
     try {
-      const successful = document.execCommand('copy');
-      if (!successful) throw new Error('execCommand failed');
+      const successful = document.execCommand("copy");
+      if (!successful) throw new Error("execCommand failed");
     } finally {
       document.body.removeChild(textArea);
     }
@@ -61,13 +61,13 @@ export function ContactSheet({ booth, isOpen, onClose }: ContactSheetProps) {
 
   // 反馈函数
   const showCopySuccess = () => {
-    toast.success('已复制到剪切板', {
+    toast.success("已复制到剪切板", {
       duration: 2000,
     });
   };
 
   const showCopyError = () => {
-    toast.error('复制失败，请手动复制', {
+    toast.error("复制失败，请手动复制", {
       duration: 3000,
     });
   };
@@ -85,12 +85,12 @@ export function ContactSheet({ booth, isOpen, onClose }: ContactSheetProps) {
         showCopySuccess();
       }
     } catch (err) {
-      console.error('复制失败:', err);
+      console.error("复制失败:", err);
       // 尝试降级方法
       try {
         fallbackCopyTextToClipboard(text);
         showCopySuccess();
-      } catch (fallbackErr) {
+      } catch {
         showCopyError();
       }
     }
@@ -127,20 +127,6 @@ export function ContactSheet({ booth, isOpen, onClose }: ContactSheetProps) {
             </button>
           </div>
 
-          {/* 档口信息 */}
-          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-            <ImageLazyLoader
-              src={booth.coverImg || "/logo.png"}
-              alt={booth.boothName}
-              width={48}
-              height={48}
-              className="rounded-lg"
-            />
-            <div>
-              <h4 className="font-medium text-gray-900">{booth.boothName}</h4>
-            </div>
-          </div>
-
           {/* 联系方式 */}
           <div className="space-y-3">
             {booth.phone && (
@@ -152,13 +138,13 @@ export function ContactSheet({ booth, isOpen, onClose }: ContactSheetProps) {
                 </div>
                 <button
                   onClick={async () => {
-                    setCopyingStates(prev => ({ ...prev, phone: true }));
+                    setCopyingStates((prev) => ({ ...prev, phone: true }));
                     await copyToClipboard(booth.phone!);
-                    setCopyingStates(prev => ({ ...prev, phone: false }));
+                    setCopyingStates((prev) => ({ ...prev, phone: false }));
                   }}
                   disabled={copyingStates.phone}
                   className={`w-8 h-8 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center transition-colors ${
-                    copyingStates.phone ? 'opacity-50 cursor-not-allowed' : ''
+                    copyingStates.phone ? "opacity-50 cursor-not-allowed" : ""
                   }`}
                 >
                   <Copy className="w-4 h-4" />
@@ -175,13 +161,13 @@ export function ContactSheet({ booth, isOpen, onClose }: ContactSheetProps) {
                 </div>
                 <button
                   onClick={async () => {
-                    setCopyingStates(prev => ({ ...prev, wx: true }));
+                    setCopyingStates((prev) => ({ ...prev, wx: true }));
                     await copyToClipboard(booth.wx!);
-                    setCopyingStates(prev => ({ ...prev, wx: false }));
+                    setCopyingStates((prev) => ({ ...prev, wx: false }));
                   }}
                   disabled={copyingStates.wx}
                   className={`w-8 h-8 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center transition-colors ${
-                    copyingStates.wx ? 'opacity-50 cursor-not-allowed' : ''
+                    copyingStates.wx ? "opacity-50 cursor-not-allowed" : ""
                   }`}
                 >
                   <Copy className="w-4 h-4" />
@@ -194,12 +180,12 @@ export function ContactSheet({ booth, isOpen, onClose }: ContactSheetProps) {
           {hasQrCodes && (
             <>
               <div className="mt-6 bg-white p-4 rounded-2xl shadow-sm border flex justify-center items-center">
-                <QRCodeCarousel 
-                  wxQrCode={booth.wxQrCode} 
-                  qqQrCode={booth.qqQrCode} 
+                <QRCodeCarousel
+                  wxQrCode={booth.wxQrCode}
+                  qqQrCode={booth.qqQrCode}
                 />
               </div>
-              
+
               {/* 动态提示信息 */}
               <div className="mt-4 p-3 bg-blue-50 rounded-lg">
                 <p className="text-sm text-blue-800">
@@ -270,8 +256,8 @@ export function AgentContactSheet({ isOpen, onClose }: AgentContactSheetProps) {
             />
           </div>
 
-           {/* 服务说明 */}
-           <div className="mb-6 p-4 bg-gradient-to-r from-orange-50 to-red-50 rounded-lg border border-orange-200">
+          {/* 服务说明 */}
+          <div className="mb-6 p-4 bg-gradient-to-r from-orange-50 to-red-50 rounded-lg border border-orange-200">
             <div className="flex items-center gap-2 mb-2">
               <QrCode className="w-5 h-5 text-orange-600" />
               <h4 className="font-medium text-gray-900">代拿服务</h4>
@@ -280,7 +266,6 @@ export function AgentContactSheet({ isOpen, onClose }: AgentContactSheetProps) {
               专业代拿团队，为您提供安全、快捷的代购服务
             </p>
           </div>
-
         </div>
       </Sheet.Frame>
     </Sheet>
