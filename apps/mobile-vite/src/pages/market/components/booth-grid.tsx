@@ -59,24 +59,20 @@ export function BoothGrid({
   className = "",
 }: BoothGridProps) {
   // 使用通用的无限滚动hook
-  const { triggerRef, shouldShowTrigger } = useInfiniteScroll(
-    onLoadMore,
-    {
-      hasMore: hasNextPage,
-      isLoading,
-    }
-  );
-
+  const { triggerRef, shouldShowTrigger } = useInfiniteScroll(onLoadMore, {
+    hasMore: hasNextPage,
+    isLoading,
+  });
 
   // 初始加载状态：正在加载且暂无数据
   const isInitialLoading = isLoading && booths.length === 0;
-  
+
   // 瀑布流列数配置 - 移动端固定2列
   const breakpointColumnsObj = {
     default: 2,
     768: 2,
     640: 2,
-    480: 2
+    480: 2,
   };
 
   // 如果初始加载，显示骨架屏
@@ -85,7 +81,10 @@ export function BoothGrid({
       <div className={`px-2 ${className}`}>
         <div className="grid grid-cols-2 gap-2">
           {Array.from({ length: 6 }).map((_, index) => (
-            <div key={index} className="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div
+              key={index}
+              className="bg-white rounded-lg shadow-sm overflow-hidden"
+            >
               <div className="aspect-square bg-gray-200 animate-pulse" />
               <div className="p-3">
                 <div className="h-4 bg-gray-200 animate-pulse rounded mb-2" />
@@ -104,8 +103,12 @@ export function BoothGrid({
       <div className={`text-center py-12 ${className}`}>
         <div className="text-gray-500">
           <div className="text-4xl mb-4">🏪</div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">没有找到匹配的档口</h3>
-          <p className="text-sm text-gray-600">试试调整搜索关键词或浏览其他分类</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            没有找到匹配的档口
+          </h3>
+          <p className="text-sm text-gray-600">
+            试试调整搜索关键词或浏览其他分类
+          </p>
         </div>
       </div>
     );
@@ -125,7 +128,7 @@ export function BoothGrid({
             layout={layout}
           />
         ))}
-        
+
         {/* 加载更多按钮 */}
         {hasNextPage && (
           <div className="text-center py-4">
@@ -170,9 +173,7 @@ export function BoothGrid({
       </Masonry>
 
       {/* 无限滚动触发器 */}
-      {shouldShowTrigger && (
-        <div ref={triggerRef} className="py-2" />
-      )}
+      {shouldShowTrigger && <div ref={triggerRef} className="py-2" />}
 
       {/* 加载状态提示 */}
       {isLoading && hasNextPage && (
@@ -183,8 +184,6 @@ export function BoothGrid({
           </div>
         </div>
       )}
-
-
 
       {/* 已加载全部提示 */}
       {!hasNextPage && booths.length > 0 && (

@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { Heart, Share2, MapPin } from "lucide-react";
+import { Heart, MapPin } from "lucide-react";
 import { ImageLazyLoader } from "@/components/common";
 import type { Booth } from "@/types/api";
 
@@ -7,7 +6,7 @@ interface BoothHeaderProps {
   booth: Booth;
   isFavorited: boolean;
   onFavoriteToggle: () => void;
-  onShareClick: () => void;
+  onShareClick?: () => void;
   className?: string;
 }
 
@@ -15,14 +14,9 @@ export function BoothHeader({
   booth,
   isFavorited,
   onFavoriteToggle,
-  onShareClick,
+  // onShareClick,
   className = "",
 }: BoothHeaderProps) {
-  // 图片状态管理，处理类型安全和错误处理
-  const [imageSrc, setImageSrc] = useState<string>(
-    booth.coverImg || "/logo.png"
-  );
-
   const getBusinessTags = () => {
     const businesses = booth.mainBusiness?.split("、") || [];
     return businesses.slice(0, 3).map((business, index) => (
@@ -46,12 +40,12 @@ export function BoothHeader({
             {/* Avatar */}
             <div className="relative">
               <ImageLazyLoader
-                src={imageSrc}
+                src={booth.coverImg || "/logo.png"}
                 alt={booth?.boothName || ""}
                 width={96}
                 height={96}
                 className="rounded-lg border-2 border-gray-200 shadow-sm"
-                onError={() => setImageSrc("/logo.png")}
+                // onError={() => setImageSrc("/logo.png")}
               />
             </div>
 
@@ -78,12 +72,12 @@ export function BoothHeader({
                     />
                   </button>
 
-                  <button
+                  {/* <button
                     onClick={onShareClick}
                     className="w-8 h-8 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 flex items-center justify-center transition-colors"
                   >
                     <Share2 size={16} />
-                  </button>
+                  </button> */}
                 </div>
               </div>
 
@@ -96,7 +90,7 @@ export function BoothHeader({
                     className="mr-1.5 text-gray-500 flex-shrink-0"
                   />
                   <span className="font-semibold text-gray-800">
-                    {booth.marketLabel}
+                    {booth.market}
                   </span>
                 </div>
 

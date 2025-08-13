@@ -10,6 +10,7 @@ import {
   AgentContactSheet,
 } from "./components";
 import { useGetDetail } from "./hooks";
+import type { Product } from "@/types/api";
 
 export default function BoothDetailPage() {
   const { id: boothId } = useParams<{ id: string }>();
@@ -36,7 +37,7 @@ export default function BoothDetailPage() {
   };
 
   // Handle product click
-  const handleProductClick = (product: any) => {
+  const handleProductClick = (product: Product) => {
     navigate(`/product/${product.id}`);
   };
 

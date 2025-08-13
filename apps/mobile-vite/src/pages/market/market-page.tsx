@@ -35,7 +35,6 @@ export default function MarketPage() {
   // 直接使用API hook
   const {
     allData: booths,
-    isLoadingInitial,
     isLoadingMore,
     hasMore,
     loadMore,
@@ -43,10 +42,6 @@ export default function MarketPage() {
     isError,
     refetch: handleRefresh,
   } = useInfiniteBooths(queryParams);
-
-
-
-
 
   // 浏览埋点
   const trackViewMutation = useTrackBoothView();

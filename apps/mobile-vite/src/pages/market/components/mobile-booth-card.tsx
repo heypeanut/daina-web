@@ -39,7 +39,7 @@ export function MobileBoothCard({
           {/* 档口图片 */}
           <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-gray-100">
             <ImageLazyLoader
-              src={booth.imageUrl || booth.coverImg || ''}
+              src={booth.imageUrl || booth.coverImg || ""}
               alt={booth.boothName}
               className="w-full h-full object-cover"
               fallbackSrc="/placeholder.png"
@@ -58,12 +58,16 @@ export function MobileBoothCard({
                     {booth.description}
                   </p>
                 )}
-                
+
                 {/* 评分和位置 */}
                 <div className="flex items-center space-x-4 text-xs text-gray-500">
                   {booth.rating && (
                     <div className="flex items-center">
-                      <Star size={12} className="text-yellow-400 mr-1" fill="currentColor" />
+                      <Star
+                        size={12}
+                        className="text-yellow-400 mr-1"
+                        fill="currentColor"
+                      />
                       <span>{booth.rating}</span>
                     </div>
                   )}
@@ -83,7 +87,9 @@ export function MobileBoothCard({
               >
                 <Heart
                   size={18}
-                  className={isFavorited ? "text-red-500 fill-current" : "text-gray-400"}
+                  className={
+                    isFavorited ? "text-red-500 fill-current" : "text-gray-400"
+                  }
                 />
               </button>
             </div>
@@ -102,22 +108,24 @@ export function MobileBoothCard({
       {/* 档口图片 */}
       <div className="relative">
         <ImageLazyLoader
-          src={booth.imageUrl || booth.coverImg || ''}
+          src={booth.imageUrl || booth.coverImg || ""}
           alt={booth.boothName}
           className="w-full aspect-square object-cover transition-transform duration-200 group-hover:scale-105"
           fallbackSrc="/placeholder.png"
         />
 
         {/* 收藏按钮 */}
-        <button
+        {/* <button
           onClick={handleFavoriteClick}
           className="absolute top-2 right-2 w-7 h-7 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm hover:bg-white transition-all duration-200"
         >
           <Heart
             size={14}
-            className={isFavorited ? "text-red-500 fill-current" : "text-gray-400"}
+            className={
+              isFavorited ? "text-red-500 fill-current" : "text-gray-400"
+            }
           />
-        </button>
+        </button> */}
       </div>
 
       {/* 档口信息 */}
@@ -130,11 +138,15 @@ export function MobileBoothCard({
         <div className="flex items-center justify-between text-xs text-gray-500">
           {booth.rating && (
             <div className="flex items-center">
-              <Star size={11} className="text-yellow-400 mr-1" fill="currentColor" />
+              <Star
+                size={11}
+                className="text-yellow-400 mr-1"
+                fill="currentColor"
+              />
               <span>{booth.rating}</span>
             </div>
           )}
-          
+
           {booth.market && (
             <div className="flex items-center flex-1 min-w-0 ml-2">
               <MapPin size={11} className="mr-1 flex-shrink-0" />

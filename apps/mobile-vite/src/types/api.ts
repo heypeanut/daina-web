@@ -3,7 +3,7 @@ export interface Banner {
   title: string;
   imageUrl: string;
   linkUrl?: string;
-  linkType?: 'internal' | 'external';
+  linkType?: "internal" | "external";
   description?: string;
   sortOrder?: number;
   isActive?: boolean;
@@ -26,6 +26,8 @@ export interface Booth {
   qqQrCode?: string;
   phone?: string;
   address?: string;
+  followers?: number;
+  view?: number;
 }
 
 export interface Product {
@@ -61,7 +63,7 @@ export interface PersonalizedRecommendation<T> {
 
 export interface MixedRecommendation {
   id: string;
-  type: 'booth' | 'product';
+  type: "booth" | "product";
   item: Booth | Product;
   score: number;
   reason: string;
