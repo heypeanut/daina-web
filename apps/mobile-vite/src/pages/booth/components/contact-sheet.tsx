@@ -1,6 +1,9 @@
+import React, { useState } from "react";
 import { Phone, MessageCircle, Copy, X, QrCode } from "lucide-react";
 import { Sheet } from "@tamagui/sheet";
+import { toast } from "sonner";
 import { ImageLazyLoader } from "@/components/common";
+import { QRCodeCarousel } from './qrcode-carousel';
 import type { Booth } from "@/types/api";
 
 interface ContactSheetProps {
@@ -14,18 +17,93 @@ interface AgentContactSheetProps {
   onClose: () => void;
 }
 
+// 动态文案函数
+const getQrTipText = (wxQrCode?: string, qqQrCode?: string) => {
+  if (wxQrCode && qqQrCode) {
+    return "扫描二维码或复制联系方式添加商家微信/QQ，获取更多优惠信息";
+  } else if (wxQrCode) {
+    return "扫描二维码或复制联系方式添加商家微信，获取更多优惠信息";
+  } else if (qqQrCode) {
+    return "扫描二维码或复制联系方式添加商家QQ，获取更多优惠信息";
+  }
+  return "";
+};
+
 // 联系商家抽屉组件
 export function ContactSheet({ booth, isOpen, onClose }: ContactSheetProps) {
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
+  // 复制按钮状态
+  const [copyingStates, setCopyingStates] = useState<{
+    phone: boolean;
+    wx: boolean;
+  }>({
+    phone: false,
+    wx: false
+  });
+
+  // 降级复制方法
+  const fallbackCopyTextToClipboard = (text: string) => {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.position = "fixed";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+      const successful = document.execCommand('copy');
+      if (!successful) throw new Error('execCommand failed');
+    } finally {
+      document.body.removeChild(textArea);
+    }
   };
+
+  // 反馈函数
+  const showCopySuccess = () => {
+    toast.success('已复制到剪切板', {
+      duration: 2000,
+    });
+  };
+
+  const showCopyError = () => {
+    toast.error('复制失败，请手动复制', {
+      duration: 3000,
+    });
+  };
+
+  // 增强的复制函数
+  const copyToClipboard = async (text: string) => {
+    try {
+      // 优先使用现代 Clipboard API
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        showCopySuccess();
+      } else {
+        // 降级到传统方法
+        fallbackCopyTextToClipboard(text);
+        showCopySuccess();
+      }
+    } catch (err) {
+      console.error('复制失败:', err);
+      // 尝试降级方法
+      try {
+        fallbackCopyTextToClipboard(text);
+        showCopySuccess();
+      } catch (fallbackErr) {
+        showCopyError();
+      }
+    }
+  };
+
+  const hasQrCodes = !!(booth.wxQrCode || booth.qqQrCode);
 
   return (
     <Sheet
       open={isOpen}
       onOpenChange={(open: boolean) => !open && onClose()}
       snapPointsMode="percent"
-      snapPoints={[65]}
+      snapPoints={[hasQrCodes ? 65 : 45]}
       dismissOnSnapToBottom
       position={0}
       modal
@@ -73,8 +151,15 @@ export function ContactSheet({ booth, isOpen, onClose }: ContactSheetProps) {
                   <div className="font-medium">{booth.phone}</div>
                 </div>
                 <button
-                  onClick={() => copyToClipboard(booth.phone!)}
-                  className="w-8 h-8 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center transition-colors"
+                  onClick={async () => {
+                    setCopyingStates(prev => ({ ...prev, phone: true }));
+                    await copyToClipboard(booth.phone!);
+                    setCopyingStates(prev => ({ ...prev, phone: false }));
+                  }}
+                  disabled={copyingStates.phone}
+                  className={`w-8 h-8 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center transition-colors ${
+                    copyingStates.phone ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
                 >
                   <Copy className="w-4 h-4" />
                 </button>
@@ -89,8 +174,15 @@ export function ContactSheet({ booth, isOpen, onClose }: ContactSheetProps) {
                   <div className="font-medium">{booth.wx}</div>
                 </div>
                 <button
-                  onClick={() => copyToClipboard(booth.wx!)}
-                  className="w-8 h-8 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center transition-colors"
+                  onClick={async () => {
+                    setCopyingStates(prev => ({ ...prev, wx: true }));
+                    await copyToClipboard(booth.wx!);
+                    setCopyingStates(prev => ({ ...prev, wx: false }));
+                  }}
+                  disabled={copyingStates.wx}
+                  className={`w-8 h-8 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center transition-colors ${
+                    copyingStates.wx ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
                 >
                   <Copy className="w-4 h-4" />
                 </button>
@@ -98,23 +190,24 @@ export function ContactSheet({ booth, isOpen, onClose }: ContactSheetProps) {
             )}
           </div>
 
-          {/* 二维码 */}
-          <div className="mt-6 bg-white p-4 rounded-2xl shadow-sm border flex justify-center items-center">
-            <ImageLazyLoader
-              src="/logo.jpg"
-              alt="微信二维码"
-              width={150}
-              height={150}
-              className="rounded-xl"
-            />
-          </div>
-
-          {/* 提示信息 */}
-          <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-            <p className="text-sm text-blue-800">
-              扫描二维码或复制联系方式添加商家微信，获取更多优惠信息
-            </p>
-          </div>
+          {/* 二维码轮播 - 条件渲染 */}
+          {hasQrCodes && (
+            <>
+              <div className="mt-6 bg-white p-4 rounded-2xl shadow-sm border flex justify-center items-center">
+                <QRCodeCarousel 
+                  wxQrCode={booth.wxQrCode} 
+                  qqQrCode={booth.qqQrCode} 
+                />
+              </div>
+              
+              {/* 动态提示信息 */}
+              <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  {getQrTipText(booth.wxQrCode, booth.qqQrCode)}
+                </p>
+              </div>
+            </>
+          )}
         </div>
       </Sheet.Frame>
     </Sheet>
