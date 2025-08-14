@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { getDictData } from "@/lib/api/dictionary";
-import { DictType, DictMap } from "@/types/dictionary";
+import { DictType } from "@/types/dictionary";
+import type { DictMap, DictItem } from "@/types/dictionary";
 
 export const DICT_QUERY_KEYS = {
   all: ["dictionary"] as const,
@@ -33,7 +34,7 @@ export const useDictionary = (
 export const useDictMap = (type: DictType): DictMap | undefined => {
   const { data } = useDictionary(type);
   if (!data || !Array.isArray(data)) return undefined;
-  return data.reduce((map: DictMap, item) => {
+  return data.reduce((map: DictMap, item: DictItem) => {
     map[item.value] = item.label;
     return map;
   }, {} as DictMap);

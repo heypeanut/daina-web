@@ -2,110 +2,21 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Plus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useDictionary } from "@/hooks/api/useDictionary";
+import { DictType } from "@/types/dictionary";
+import { useBoothEditInfo, useBoothUpdate } from "../hooks/use-booth-api";
 
-// Mock字典数据类型
-enum DictType {
-  MARKET = "MARKET"
-}
-
-// Mock字典数据
-const mockMarketData = [
-  { value: "1", label: "广州天河电脑城", sort: 1 },
-  { value: "2", label: "深圳华强北电子市场", sort: 2 },
-  { value: "3", label: "广州十三行服装批发市场", sort: 3 },
-  { value: "4", label: "广州白马服装市场", sort: 4 }
-];
-
-// 档口编辑信息接口
-interface BoothEditInfo {
-  id: string;
-  boothNumber: string;
-  boothName: string;
-  market: string;
-  mainBusiness: string;
-  address: string;
-  phone: string;
-  coverImg: string;
-  wx?: string;
-  qq?: string;
-  wxQrcode?: string;
-  qqQrcode?: string;
-  profile?: string;
-}
-
-// 档口编辑表单接口
-interface BoothEditForm {
-  boothName: string;
-  market: string;
-  mainBusiness: string;
-  address: string;
-  phone: string;
-  coverImage: File | string | null;
-  wx: string;
-  qq: string;
-  wxQrCode: File | string | null;
-  qqQrCode: File | string | null;
-  description: string;
-}
-
-// Mock档口编辑信息
-const mockBoothEditInfo: BoothEditInfo = {
-  id: "1",
-  boothNumber: "A201-A205",
-  boothName: "潮流手机配件专营店",
-  market: "1",
-  mainBusiness: "手机壳、数据线、无线耳机、充电器、手机贴膜",
-  address: "天河区天河路208号天河电脑城2楼A201-A205",
-  phone: "13888888888",
-  coverImg: "/placeholder-booth.jpg",
-  wx: "wechat123",
-  qq: "123456789",
-  wxQrcode: "/placeholder-qr.jpg",
-  qqQrcode: "/placeholder-qr.jpg",
-  profile: "专业从事手机配件销售，质量保证，价格优惠。"
-};
-
-// Mock字典hook
-const useDictionary = (type: DictType) => {
-  return {
-    data: type === DictType.MARKET ? mockMarketData : [],
-    isLoading: false,
-    error: null
-  };
-};
-
-// Mock API函数
-const getBoothEditInfo = async (boothId: string) => {
-  // 模拟API延迟
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  if (boothId === "1") {
-    return mockBoothEditInfo;
-  }
-  
-  throw new Error("档口不存在或无访问权限");
-};
-
-const updateBoothInfo = async (boothId: string, formData: BoothEditForm) => {
-  // 模拟API延迟
-  await new Promise(resolve => setTimeout(resolve, 2000));
-  
-  console.log("档口信息更新:", { boothId, formData });
-  
-  return {
-    success: true,
-    message: "档口信息更新成功！"
-  };
-};
+// 导入类型定义
+import type { BoothEditForm } from "@/types/booth";
 
 export default function BoothEditPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const boothId = searchParams.get("id");
 
-  const [loading, setLoading] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(true);
-  const [boothInfo, setBoothInfo] = useState<BoothEditInfo | null>(null);
+  // 使用真实API hooks
+  const { data: boothInfo, isLoading: initialLoading, error: loadError } = useBoothEditInfo(boothId || "");
+  const boothUpdateMutation = useBoothUpdate();
 
   // 获取市场字典数据
   const {
@@ -128,45 +39,39 @@ export default function BoothEditPage() {
     description: "",
   });
 
-  // 加载档口信息并预填充表单
+  // 处理加载错误
   useEffect(() => {
-    const loadBoothInfo = async () => {
-      if (!boothId) {
-        toast.error("未提供档口ID");
-        navigate(-1);
-        return;
-      }
+    if (!boothId) {
+      toast.error("未提供档口ID");
+      navigate(-1);
+      return;
+    }
 
-      try {
-        setInitialLoading(true);
-        const info = await getBoothEditInfo(boothId);
-        setBoothInfo(info);
+    if (loadError) {
+      console.error("加载档口信息失败:", loadError);
+      toast.error(loadError instanceof Error ? loadError.message : "加载档口信息失败");
+      navigate(-1);
+    }
+  }, [boothId, loadError, navigate]);
 
-        // 预填充表单数据
-        setFormData({
-          boothName: info.boothName,
-          market: info.market,
-          mainBusiness: info.mainBusiness,
-          address: info.address,
-          phone: info.phone,
-          coverImage: info.coverImg, // 使用现有图片URL
-          wx: info.wx || "",
-          qq: info.qq || "",
-          wxQrCode: info.wxQrcode || null,
-          qqQrCode: info.qqQrcode || null,
-          description: info.profile || "",
-        });
-      } catch (error) {
-        console.error("加载档口信息失败:", error);
-        toast.error(error instanceof Error ? error.message : "加载档口信息失败");
-        navigate(-1);
-      } finally {
-        setInitialLoading(false);
-      }
-    };
-
-    loadBoothInfo();
-  }, [boothId, navigate]);
+  // 预填充表单数据
+  useEffect(() => {
+    if (boothInfo) {
+      setFormData({
+        boothName: boothInfo.boothName,
+        market: boothInfo.market,
+        mainBusiness: boothInfo.mainBusiness,
+        address: boothInfo.address,
+        phone: boothInfo.phone,
+        coverImage: boothInfo.coverImg, // 使用现有图片URL
+        wx: boothInfo.wx || "",
+        qq: boothInfo.qq || "",
+        wxQrCode: boothInfo.wxQrcode || null,
+        qqQrCode: boothInfo.qqQrcode || null,
+        description: boothInfo.profile || "",
+      });
+    }
+  }, [boothInfo]);
 
   const handleInputChange = (
     field: keyof BoothEditForm,
@@ -233,10 +138,8 @@ export default function BoothEditPage() {
     if (!validateForm() || !boothId) return;
 
     try {
-      setLoading(true);
-
       // 调用更新API
-      const result = await updateBoothInfo(boothId, formData);
+      const result = await boothUpdateMutation.mutateAsync({ boothId, formData });
 
       if (result.success) {
         toast.success(result.message, {
@@ -251,8 +154,6 @@ export default function BoothEditPage() {
     } catch (error: unknown) {
       console.error("档口信息保存失败:", error);
       toast.error(error instanceof Error ? error.message : "保存失败，请重试");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -306,10 +207,10 @@ export default function BoothEditPage() {
           <h1 className="text-lg font-semibold text-gray-900">编辑档口信息</h1>
           <button
             onClick={handleSave}
-            disabled={loading}
+            disabled={boothUpdateMutation.isPending}
             className="px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "保存中..." : "保存"}
+            {boothUpdateMutation.isPending ? "保存中..." : "保存"}
           </button>
         </div>
       </div>

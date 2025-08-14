@@ -1,31 +1,16 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ShoppingBag, Loader2, ChevronRight } from "lucide-react";
 import { isLoggedIn, redirectToLogin } from "@/lib/auth";
-
-// Mock档口状态枚举
-enum BoothStatus {
-  NOT_APPLIED = 'not_applied',
-  PENDING = 'pending', 
-  APPROVED = 'approved',
-  REJECTED = 'rejected'
-}
-
-// Mock档口状态hook
-function useBoothStatus() {
-  const [boothStatus] = useState<BoothStatus>(BoothStatus.NOT_APPLIED);
-  const [loading] = useState(false);
-
-  return {
-    boothStatus,
-    loading,
-    refetch: () => console.log('重新获取档口状态')
-  };
-}
+import { 
+  useBoothStatus, 
+  getBoothButtonText, 
+  getBoothButtonDescription, 
+  getBoothNavigationPath 
+} from "../hooks/use-booth-status";
 
 export function ServiceSection() {
   const navigate = useNavigate();
-  const { boothStatus, loading } = useBoothStatus();
+  const { data: boothStatus, isLoading: loading, error } = useBoothStatus();
 
   const handleBoothRegistration = () => {
     // 检查登录状态
@@ -36,25 +21,14 @@ export function ServiceSection() {
 
     if (loading) return;
 
-    switch (boothStatus) {
-      case BoothStatus.NOT_APPLIED:
-        // 跳转到档口申请页面
-        navigate('/booth/apply');
-        break;
-      case BoothStatus.PENDING:
-        // 跳转到申请状态查看页面
-        navigate('/booth/status');
-        break;
-      case BoothStatus.APPROVED:
-        // 跳转到档口管理页面
-        navigate('/booth/manage');
-        break;
-      case BoothStatus.REJECTED:
-        // 重新申请
-        navigate('/booth/apply');
-        break;
-      default:
-        navigate('/booth/apply');
+    // 根据档口状态智能跳转
+    const navigationPath = getBoothNavigationPath(boothStatus);
+    
+    // 如果是跳转到档口管理页面，传递来源信息
+    if (navigationPath === "/booth/management") {
+      navigate(navigationPath, { state: { from: "/profile" } });
+    } else {
+      navigate(navigationPath);
     }
   };
 
@@ -63,37 +37,27 @@ export function ServiceSection() {
       return "开通档口";
     }
 
-    switch (boothStatus) {
-      case BoothStatus.NOT_APPLIED:
-        return "开通档口";
-      case BoothStatus.PENDING:
-        return "申请审核中";
-      case BoothStatus.APPROVED:
-        return "档口管理";
-      case BoothStatus.REJECTED:
-        return "重新申请";
-      default:
-        return "开通档口";
+    if (loading || error) {
+      return "开通档口";
     }
+
+    return getBoothButtonText(boothStatus);
   };
 
   const getButtonDescription = () => {
     if (!isLoggedIn()) {
-      return "点击进入登录页面";
+      return "登录后即可申请档口入驻";
     }
 
-    switch (boothStatus) {
-      case BoothStatus.NOT_APPLIED:
-        return "立即申请开通档口，开启生意之路";
-      case BoothStatus.PENDING:
-        return "您的申请正在审核中，请耐心等待";
-      case BoothStatus.APPROVED:
-        return "档口已开通，管理商品和订单";
-      case BoothStatus.REJECTED:
-        return "申请未通过，请重新提交申请";
-      default:
-        return "立即申请开通档口，开启生意之路";
+    if (loading) {
+      return "正在获取档口状态...";
     }
+
+    if (error) {
+      return "立即申请开通档口，开启您的生意之路";
+    }
+
+    return getBoothButtonDescription(boothStatus);
   };
 
   return (

@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { getDictData } from '@/lib/api/dictionary';
-import { DictType, DictItem } from '@/types/dictionary';
+import { DictType } from '@/types/dictionary';
+import type { DictItem } from '@/types/dictionary';
 
 // ==================== 稳定的常量定义 ====================
 

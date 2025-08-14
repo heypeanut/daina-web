@@ -354,40 +354,6 @@ export default function BoothApplyPage() {
           />
         </div>
 
-        {/* 最大商品数 */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            最大商品数
-          </label>
-          <input
-            type="number"
-            value={formData.maxProducts}
-            onChange={(e) =>
-              handleInputChange("maxProducts", parseInt(e.target.value) || 100)
-            }
-            className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
-            placeholder="100"
-            min="1"
-          />
-        </div>
-
-        {/* 排序 */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            排序
-          </label>
-          <input
-            type="number"
-            value={formData.sortOrder}
-            onChange={(e) =>
-              handleInputChange("sortOrder", parseInt(e.target.value) || 0)
-            }
-            className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
-            placeholder="0"
-            min="0"
-          />
-        </div>
-
         {/* 二维码上传 */}
         <div className="grid grid-cols-2 gap-4">
           {/* 微信二维码 */}

@@ -570,7 +570,65 @@ export async function updateBoothInfo(
 // ==================== 产品管理相关API ====================
 
 /**
- * 切换商品上下架状态
+ * 单个商品上架
+ */
+export async function onlineProduct(
+  boothId: string,
+  productId: string
+): Promise<ProductActionResponse> {
+  try {
+    const response = await tenantApi.post<ProductActionResponse>(
+      `/product/booth/${boothId}/batch-online`,
+      { productIds: [productId] }
+    );
+
+    return {
+      success: true,
+      message: response.data.message || "商品已上架",
+      updatedCount: 1
+    };
+  } catch (error: any) {
+    console.error("Error online product:", error);
+    
+    if (error.response?.data?.message) {
+      throw new Error(error.response.data.message);
+    }
+    
+    throw new Error("上架商品失败，请重试");
+  }
+}
+
+/**
+ * 单个商品下架
+ */
+export async function offlineProduct(
+  boothId: string,
+  productId: string
+): Promise<ProductActionResponse> {
+  try {
+    const response = await tenantApi.post<ProductActionResponse>(
+      `/product/booth/${boothId}/batch-offline`,
+      { productIds: [productId] }
+    );
+
+    return {
+      success: true,
+      message: response.data.message || "商品已下架",
+      updatedCount: 1
+    };
+  } catch (error: any) {
+    console.error("Error offline product:", error);
+    
+    if (error.response?.data?.message) {
+      throw new Error(error.response.data.message);
+    }
+    
+    throw new Error("下架商品失败，请重试");
+  }
+}
+
+/**
+ * 切换商品上下架状态（保留兼容性）
  */
 export async function toggleProductStatus(
   productId: string, 
@@ -624,7 +682,65 @@ export async function deleteBoothProduct(productId: string): Promise<ProductActi
 }
 
 /**
- * 批量操作商品
+ * 批量上架商品
+ */
+export async function batchOnlineProducts(
+  boothId: string,
+  productIds: string[]
+): Promise<ProductActionResponse> {
+  try {
+    const response = await tenantApi.post<ProductActionResponse>(
+      `/product/booth/${boothId}/batch-online`,
+      { productIds }
+    );
+
+    return {
+      success: true,
+      message: response.data.message || "批量上架成功",
+      updatedCount: response.data.updatedCount || productIds.length
+    };
+  } catch (error: any) {
+    console.error("Error batch online products:", error);
+    
+    if (error.response?.data?.message) {
+      throw new Error(error.response.data.message);
+    }
+    
+    throw new Error("批量上架失败，请重试");
+  }
+}
+
+/**
+ * 批量下架商品
+ */
+export async function batchOfflineProducts(
+  boothId: string,
+  productIds: string[]
+): Promise<ProductActionResponse> {
+  try {
+    const response = await tenantApi.post<ProductActionResponse>(
+      `/product/booth/${boothId}/batch-offline`,
+      { productIds }
+    );
+
+    return {
+      success: true,
+      message: response.data.message || "批量下架成功",
+      updatedCount: response.data.updatedCount || productIds.length
+    };
+  } catch (error: any) {
+    console.error("Error batch offline products:", error);
+    
+    if (error.response?.data?.message) {
+      throw new Error(error.response.data.message);
+    }
+    
+    throw new Error("批量下架失败，请重试");
+  }
+}
+
+/**
+ * 批量操作商品（保留原有删除功能）
  */
 export async function batchUpdateProducts(
   productIds: string[], 
@@ -793,5 +909,83 @@ export async function createBoothProduct(
     }
 
     throw new Error("创建商品失败，请重试");
+  }
+}
+
+/**
+ * 更新档口商品 - 使用 /api/tenant/product/booth/{boothId}/{productId} 接口
+ */
+export async function updateBoothProduct(
+  productId: string,
+  boothId: string,
+  formData: ProductCreateForm & { existingImages?: string[] }
+): Promise<ProductCreateResponse> {
+  try {
+    // 1. 处理图片上传（如果有新图片）
+    let newImageUrls: string[] = [];
+    if (formData.images && formData.images.length > 0) {
+      try {
+        newImageUrls = await Promise.all(
+          formData.images.map(async (file) => {
+            const url = await uploadFileIfExists(file);
+            return url || '';
+          })
+        );
+        // 过滤掉上传失败的图片
+        newImageUrls = newImageUrls.filter(url => url !== '');
+      } catch (error) {
+        console.warn("部分图片上传失败", error);
+      }
+    }
+
+    // 2. 合并现有图片和新上传的图片
+    const allImageUrls = [...(formData.existingImages || []), ...newImageUrls];
+
+    // 3. 构建 API 请求数据
+    const requestData: ProductCreateRequest = {
+      name: formData.name,
+      price: formData.price,
+      originalPrice: formData.originalPrice,
+      images: allImageUrls, // 使用合并后的图片URL数组
+      description: formData.description,
+      categoryId: formData.categoryId,
+      stock: formData.stock,
+      status: formData.status,
+      boothId: boothId,
+      // 规格参数
+      style: formData.style,
+      phoneModel: formData.phoneModel,
+      productType: formData.productType,
+      trend: formData.trend,
+      imageType: formData.imageType,
+      copyright: formData.copyright,
+      biodegradable: formData.biodegradable,
+      ecoMaterial: formData.ecoMaterial
+    };
+
+    // 4. 调用后端 API 更新商品
+    const response = await tenantApi.put<ProductCreateResponse>(
+      `/product/booth/${boothId}/${productId}`,
+      requestData
+    );
+
+    return {
+      success: true,
+      message: response.data.message || "商品更新成功！",
+      productId: response.data.productId || productId
+    };
+  } catch (error: any) {
+    console.error("Error updating booth product:", error);
+
+    // 处理不同类型的错误
+    if (error.message?.includes("文件上传失败")) {
+      throw error; // 直接抛出文件上传错误
+    }
+
+    if (error.response?.data?.message) {
+      throw new Error(error.response.data.message);
+    }
+
+    throw new Error("更新商品失败，请重试");
   }
 }

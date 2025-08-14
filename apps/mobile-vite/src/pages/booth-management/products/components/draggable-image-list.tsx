@@ -22,8 +22,11 @@ import { CSS } from '@dnd-kit/utilities';
 import { restrictToParentElement, restrictToHorizontalAxis } from '@dnd-kit/modifiers';
 import { X, Star } from 'lucide-react';
 
+// 支持File对象和URL字符串的混合类型
+export type ImageItem = File | string;
+
 interface DraggableImageItemProps {
-  image: File;
+  image: ImageItem;
   index: number;
   isCover: boolean;
   onRemove: (index: number) => void;
@@ -84,7 +87,7 @@ function DraggableImageItem({ image, index, isCover, onRemove, disableAnimation 
       {/* 图片预览 */}
       <div className="aspect-square">
         <img
-          src={URL.createObjectURL(image)}
+          src={typeof image === 'string' ? image : URL.createObjectURL(image)}
           alt={`商品图片 ${index + 1}`}
           className="w-full h-full object-cover"
           draggable={false}
@@ -93,10 +96,19 @@ function DraggableImageItem({ image, index, isCover, onRemove, disableAnimation 
 
       {/* 图片信息 */}
       <div className="p-2 bg-gray-50">
-        <p className="text-xs text-gray-600 truncate">{image.name}</p>
-        <p className="text-xs text-gray-400">
-          {(image.size / 1024 / 1024).toFixed(2)}MB
-        </p>
+        {typeof image === 'string' ? (
+          <>
+            <p className="text-xs text-gray-600 truncate">现有图片</p>
+            <p className="text-xs text-gray-400">已上传</p>
+          </>
+        ) : (
+          <>
+            <p className="text-xs text-gray-600 truncate">{image.name}</p>
+            <p className="text-xs text-gray-400">
+              {(image.size / 1024 / 1024).toFixed(2)}MB
+            </p>
+          </>
+        )}
       </div>
 
       {/* 拖拽指示器 */}
@@ -110,8 +122,8 @@ function DraggableImageItem({ image, index, isCover, onRemove, disableAnimation 
 }
 
 interface DraggableImageListProps {
-  images: File[];
-  onChange: (newImages: File[]) => void;
+  images: ImageItem[];
+  onChange: (newImages: ImageItem[]) => void;
   maxImages?: number;
 }
 

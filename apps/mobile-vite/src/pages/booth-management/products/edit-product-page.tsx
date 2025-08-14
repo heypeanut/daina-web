@@ -2,13 +2,14 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
 import { DraggableImageList, type ImageItem } from "./components/draggable-image-list";
-import { createBoothProduct } from "@/lib/api/booth";
+import { getProductDetail, updateBoothProduct } from "@/lib/api/booth";
 import { useDictionary } from "@/hooks/api/useDictionary";
 import { DictType } from "@/types/dictionary";
 
 // 商品表单接口
-interface ProductCreateForm {
+interface ProductEditForm {
   name: string;
   price?: number;
   originalPrice?: number;
@@ -41,12 +42,26 @@ const useProductStatusDict = () => {
   };
 };
 
-export default function AddProductPage() {
+export default function EditProductPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const productId = searchParams.get("productId");
   const boothId = searchParams.get("boothId");
   
   const [loading, setLoading] = useState(false);
+  
+  // 获取商品详情
+  const {
+    data: productDetail,
+    isLoading: initialLoading,
+    error: productError
+  } = useQuery({
+    queryKey: ['product-detail', productId],
+    queryFn: () => getProductDetail(productId!),
+    enabled: !!productId, // 只有当productId存在时才执行查询
+    retry: 1,
+    staleTime: 5 * 60 * 1000, // 5分钟内不重新请求
+  });
   
   // 获取商品状态字典
   const { 
@@ -55,7 +70,7 @@ export default function AddProductPage() {
     error: statusError 
   } = useProductStatusDict();
 
-  const [formData, setFormData] = useState<ProductCreateForm>({
+  const [formData, setFormData] = useState<ProductEditForm>({
     name: "",
     price: undefined,
     originalPrice: undefined,
@@ -75,6 +90,45 @@ export default function AddProductPage() {
     ecoMaterial: ""
   });
 
+  // 当商品详情加载完成后，填充表单数据
+  useEffect(() => {
+    if (productDetail) {
+      setFormData({
+        name: productDetail.name || "",
+        price: productDetail.price,
+        originalPrice: productDetail.originalPrice,
+        images: productDetail.images?.map(img => img.url) || [], // 将ProductImage转换为URL字符串数组
+        description: productDetail.features || "", // API返回的是features字段
+        categoryId: productDetail.category || "",
+        stock: productDetail.stock,
+        status: productDetail.status?.toString() || "1",
+        style: productDetail.style || "",
+        phoneModel: productDetail.phoneModel || "",
+        productType: productDetail.productType || "",
+        trend: productDetail.trend || "",
+        imageType: productDetail.imageType || "",
+        copyright: productDetail.copyright || "",
+        biodegradable: productDetail.biodegradable || "",
+        ecoMaterial: productDetail.ecoMaterial || ""
+      });
+    }
+  }, [productDetail]);
+
+  // 处理错误和参数验证
+  useEffect(() => {
+    if (!productId) {
+      toast.error("未提供商品ID");
+      navigate(-1);
+      return;
+    }
+    
+    if (productError) {
+      console.error("加载商品详情失败:", productError);
+      toast.error("加载商品详情失败");
+      navigate(-1);
+    }
+  }, [productId, productError, navigate]);
+
   // React Query错误处理
   useEffect(() => {
     if (statusError) {
@@ -83,7 +137,7 @@ export default function AddProductPage() {
     }
   }, [statusError]);
 
-  // 检查档口ID
+  // 检查参数
   useEffect(() => {
     if (!boothId) {
       toast.error("未提供档口ID");
@@ -125,18 +179,23 @@ export default function AddProductPage() {
 
   // 保存商品
   const handleSave = async () => {
-    if (!validateForm() || !boothId) return;
+    if (!validateForm() || !boothId || !productId) return;
 
     try {
       setLoading(true);
       
-      // 确保只传递File对象给API
+      // 分离新上传的文件和现有的图片URL
+      const newFiles = formData.images.filter((img): img is File => img instanceof File);
+      const existingUrls = formData.images.filter((img): img is string => typeof img === 'string');
+      
+      // 创建用于API调用的表单数据，只包含新上传的文件
       const apiFormData = {
         ...formData,
-        images: formData.images.filter((img): img is File => img instanceof File)
+        images: newFiles, // 只传递新上传的文件
+        existingImages: existingUrls // 可以传递现有图片URL给后端参考
       };
       
-      const result = await createBoothProduct(boothId, apiFormData);
+      const result = await updateBoothProduct(productId, boothId, apiFormData);
 
       if (result.success) {
         toast.success(result.message, {
@@ -145,11 +204,11 @@ export default function AddProductPage() {
         // 返回产品管理页面
         navigate(`/booth/products?id=${boothId}`);
       } else {
-        toast.error(result.message || "创建商品失败，请重试");
+        toast.error(result.message || "更新商品失败，请重试");
       }
     } catch (error: any) {
-      console.error("商品创建失败:", error);
-      toast.error(error.message || "创建商品失败，请重试");
+      console.error("商品更新失败:", error);
+      toast.error(error.message || "更新商品失败，请重试");
     } finally {
       setLoading(false);
     }
@@ -158,6 +217,18 @@ export default function AddProductPage() {
   const handleBack = () => {
     navigate(-1);
   };
+
+  // 初始加载状态
+  if (initialLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">加载商品信息中...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -170,7 +241,7 @@ export default function AddProductPage() {
           >
             <ArrowLeft className="w-5 h-5 text-gray-600" />
           </button>
-          <h1 className="text-lg font-semibold text-gray-900">新增商品</h1>
+          <h1 className="text-lg font-semibold text-gray-900">编辑商品</h1>
           <div className="w-10" />
         </div>
       </div>
@@ -288,7 +359,7 @@ export default function AddProductPage() {
         <div className="bg-white rounded-lg p-4 space-y-4 mb-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-900">
-              商品图片 <span className="text-red-500">*</span>
+              商品图片
             </h3>
             <span className="text-sm text-gray-500">
               第一张为封面图，可拖拽调整顺序
@@ -465,10 +536,10 @@ export default function AddProductPage() {
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <h4 className="text-sm font-medium text-blue-800 mb-2">温馨提示</h4>
           <div className="text-sm text-blue-700 space-y-1">
-            <p>• 商品名称和封面图片为必填项</p>
+            <p>• 商品名称为必填项</p>
             <p>• 建议上传清晰的商品图片，有助于吸引买家</p>
             <p>• 详细的商品描述可以提高成交率</p>
-            <p>• 商品创建后可随时编辑修改</p>
+            <p>• 修改后的信息将立即生效</p>
           </div>
         </div>
       </div>
@@ -480,7 +551,7 @@ export default function AddProductPage() {
           disabled={loading}
           className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-4 rounded-lg font-medium hover:from-orange-600 hover:to-red-600 disabled:from-gray-300 disabled:to-gray-300 disabled:cursor-not-allowed transition-all shadow-sm"
         >
-          {loading ? "保存中..." : "保存商品"}
+          {loading ? "保存中..." : "保存修改"}
         </button>
       </div>
     </div>

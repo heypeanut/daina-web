@@ -2,24 +2,12 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus } from "lucide-react";
 import { toast } from "sonner";
+import { useDictionary } from "@/hooks/api/useDictionary";
+import { DictType } from "@/types/dictionary";
+import { useUserInfo } from "@/pages/profile/hooks/use-api";
+import { useBoothApplication } from "../hooks/use-booth-api";
 
-// Mock字典数据类型
-enum DictType {
-  MARKET = "MARKET"
-}
 
-// Mock字典数据
-const mockMarketData = [
-  { value: "1", label: "广州天河电脑城", sort: 1 },
-  { value: "2", label: "深圳华强北电子市场", sort: 2 },
-  { value: "3", label: "广州十三行服装批发市场", sort: 3 },
-  { value: "4", label: "广州白马服装市场", sort: 4 }
-];
-
-// Mock用户信息
-const mockUserInfo = {
-  phone: "138****8888"
-};
 
 // 档口申请表单接口
 interface BoothApplicationForm {
@@ -40,38 +28,11 @@ interface BoothApplicationForm {
   sortOrder?: number;
 }
 
-// Mock字典hook
-const useDictionary = (type: DictType) => {
-  return {
-    data: type === DictType.MARKET ? mockMarketData : [],
-    isLoading: false,
-    error: null
-  };
-};
-
-// Mock用户信息hook
-const useUserInfo = () => {
-  return {
-    data: mockUserInfo
-  };
-};
-
-// Mock API提交函数
-const submitBoothApplication = async (formData: BoothApplicationForm) => {
-  // 模拟API延迟
-  await new Promise(resolve => setTimeout(resolve, 2000));
-  
-  console.log("档口申请提交:", formData);
-  
-  return {
-    success: true,
-    message: "档口申请提交成功！我们将在1-3个工作日内审核您的申请。"
-  };
-};
-
 export default function BoothApplyPage() {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
+  
+  // 使用真实的API Hook
+  const boothApplicationMutation = useBoothApplication();
 
   // 获取市场字典数据
   const {
@@ -107,7 +68,7 @@ export default function BoothApplyPage() {
         phone: userInfo.phone,
       }));
     }
-  }, [userInfo?.phone]);
+  }, [userInfo?.phone, formData.phone]);
 
   const handleInputChange = (
     field: keyof BoothApplicationForm,
@@ -179,9 +140,8 @@ export default function BoothApplyPage() {
     if (!validateForm()) return;
 
     try {
-      setLoading(true);
-      // 调用真实API提交申请
-      const result = await submitBoothApplication(formData);
+      // 使用mutation提交申请
+      const result = await boothApplicationMutation.mutateAsync(formData);
 
       if (result.success) {
         toast.success(result.message, {
@@ -196,8 +156,6 @@ export default function BoothApplyPage() {
     } catch (error: unknown) {
       console.error("档口申请提交失败:", error);
       toast.error(error instanceof Error ? error.message : "提交失败，请重试");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -219,10 +177,10 @@ export default function BoothApplyPage() {
           <h1 className="text-lg font-semibold text-gray-900">档口入驻</h1>
           <button
             onClick={handleSubmit}
-            disabled={loading}
+            disabled={boothApplicationMutation.isPending}
             className="px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "提交中..." : "提交"}
+            {boothApplicationMutation.isPending ? "提交中..." : "提交"}
           </button>
         </div>
       </div>
@@ -412,41 +370,6 @@ export default function BoothApplyPage() {
             placeholder="请输入QQ号"
           />
         </div>
-
-        {/* 最大商品数 */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            最大商品数
-          </label>
-          <input
-            type="number"
-            value={formData.maxProducts}
-            onChange={(e) =>
-              handleInputChange("maxProducts", parseInt(e.target.value) || 100)
-            }
-            className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
-            placeholder="100"
-            min="1"
-          />
-        </div>
-
-        {/* 排序 */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            排序
-          </label>
-          <input
-            type="number"
-            value={formData.sortOrder}
-            onChange={(e) =>
-              handleInputChange("sortOrder", parseInt(e.target.value) || 0)
-            }
-            className="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
-            placeholder="0"
-            min="0"
-          />
-        </div>
-
         {/* 二维码上传 */}
         <div className="grid grid-cols-2 gap-4">
           {/* 微信二维码 */}

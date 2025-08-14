@@ -28,6 +28,7 @@ const SearchPage = lazy(() => import('@/pages/search/search-page'));
 const ImageSearchPage = lazy(() => import('@/pages/search/image-search-page'));
 const SearchResultsPage = lazy(() => import('@/pages/search/search-results-page'));
 const BoothSelectPage = lazy(() => import('@/pages/booth-management/select/booth-select-page'));
+const EditProductPage = lazy(() => import('@/pages/booth-management/products/edit-product-page'));
 const PrivacyPolicyPage = lazy(() => import('@/pages/legal/privacy-policy-page'));
 const UserAgreementPage = lazy(() => import('@/pages/legal/user-agreement-page'));
 
@@ -172,6 +173,14 @@ export const router = createBrowserRouter([
     element: (
       <SuspenseWrapper>
         <AddProductPage />
+      </SuspenseWrapper>
+    ),
+  },
+  {
+    path: '/booth/products/edit',
+    element: (
+      <SuspenseWrapper>
+        <EditProductPage />
       </SuspenseWrapper>
     ),
   },
