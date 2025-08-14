@@ -1,8 +1,8 @@
 interface ProductBasicInfoProps {
   name: string;
-  price: number;
-  maxPrice?: number;
-  originalPrice?: number;
+  price: number | null | undefined;
+  maxPrice?: number | null | undefined;
+  originalPrice?: number | null | undefined;
   stock: number;
   views: number;
   features?: string;
@@ -21,32 +21,35 @@ export function ProductBasicInfo({
   boothName,
   className = ''
 }: ProductBasicInfoProps) {
-  const formatPrice = (price: number) => {
+  const formatPrice = (price: number | null | undefined) => {
+    if (price === null || price === undefined) return null;
     return price.toFixed(2);
   };
 
   return (
     <div className={`bg-white p-4 ${className}`}>
       {/* 价格信息 */}
-      <div className="mb-3">
-        <div className="flex items-end gap-2 mb-1">
-          <span className="text-3xl font-bold text-red-500">
-            ¥{formatPrice(price)} 
-            {
-              maxPrice && (
-                <span>
-                  -¥{formatPrice(maxPrice)}
-                </span>
-              )
-            }
-          </span>
-          {!!(originalPrice && originalPrice > price) && (
-            <span className="text-sm text-gray-400 line-through mb-1">
-              ¥{formatPrice(originalPrice)}
+      {(price !== null && price !== undefined) && (
+        <div className="mb-3">
+          <div className="flex items-end gap-2 mb-1">
+            <span className="text-3xl font-bold text-red-500">
+              ¥{formatPrice(price)} 
+              {
+                (maxPrice !== null && maxPrice !== undefined) && (
+                  <span>
+                    -¥{formatPrice(maxPrice)}
+                  </span>
+                )
+              }
             </span>
-          )}
+            {!!(originalPrice && originalPrice !== null && originalPrice !== undefined && originalPrice > price) && (
+              <span className="text-sm text-gray-400 line-through mb-1">
+                ¥{formatPrice(originalPrice)}
+              </span>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* 产品标题 */}
       <div className="mb-4">

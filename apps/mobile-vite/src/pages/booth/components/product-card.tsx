@@ -22,7 +22,7 @@ export function ProductCard({
     };
 
     // 判断是否有特价（有原价且原价高于现价）
-    const hasDiscount = product.originalPrice && product.originalPrice > product.price;
+    const hasDiscount = product.originalPrice && product.originalPrice !== null && product.originalPrice !== undefined && product.price && product.price !== null && product.price !== undefined && product.originalPrice > product.price;
     const hasNewTag = isNewProduct();
 
     if (isGridView) {
@@ -61,16 +61,18 @@ export function ProductCard({
             </h4>
 
             {/* Price */}
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-red-500 font-bold text-lg">
-                ¥{product.price?.toFixed(2) || "0.00"}
-              </span>
-              {product.originalPrice && (
-                <span className="text-gray-400 text-sm line-through">
-                  ¥{product.originalPrice.toFixed(2)}
+            {(product.price !== null && product.price !== undefined) && (
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-red-500 font-bold text-lg">
+                  ¥{product.price.toFixed(2)}
                 </span>
-              )}
-            </div>
+                {(product.originalPrice !== null && product.originalPrice !== undefined) && (
+                  <span className="text-gray-400 text-sm line-through">
+                    ¥{product.originalPrice.toFixed(2)}
+                  </span>
+                )}
+              </div>
+            )}
 
             {/* Views info */}
             <div className="text-xs text-gray-500">
@@ -108,16 +110,18 @@ export function ProductCard({
               {product.name}
             </h4>
 
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-red-500 font-bold">
-                ¥{product.price?.toFixed(2) || "0.00"}
-              </span>
-              {product.originalPrice && (
-                <span className="text-gray-400 text-xs line-through">
-                  ¥{product.originalPrice.toFixed(2)}
+            {(product.price !== null && product.price !== undefined) && (
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-red-500 font-bold">
+                  ¥{product.price.toFixed(2)}
                 </span>
-              )}
-            </div>
+                {(product.originalPrice !== null && product.originalPrice !== undefined) && (
+                  <span className="text-gray-400 text-xs line-through">
+                    ¥{product.originalPrice.toFixed(2)}
+                  </span>
+                )}
+              </div>
+            )}
 
             <div className="text-xs text-gray-500">
               <span>浏览 {product.views || 0}</span>

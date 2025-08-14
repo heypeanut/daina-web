@@ -24,13 +24,13 @@ import type {
   ProductCreateRequest,
   ProductCreateResponse,
   ProductCategory,
-  ProductDetail
+  ProductDetail,
 } from "@/types/booth";
 
 import type {
   GetBoothsParams,
   GetBoothsResponse,
-  GetBoothProductsParams
+  GetBoothProductsParams,
 } from "@/types/booth-api";
 
 // ==================== 档口列表相关API ====================
@@ -253,7 +253,7 @@ export async function submitBoothApplication(
       wxQrcode: wxQrCodeUrl, // 前端wxQrCode -> 后端wxQrcode
       qqQrcode: qqQrCodeUrl, // 前端qqQrCode -> 后端qqQrcode
       profile: formData.description, // 前端description -> 后端profile
-      categoryIds: formData.categoryIds
+      categoryIds: formData.categoryIds,
     };
 
     // 3. 调用后端API
@@ -325,9 +325,7 @@ function mapBoothStatus(
  */
 export async function getMyBooths(): Promise<MyBoothResponse> {
   try {
-    const response = await tenantApi.get<MyBoothResponse>(
-      "/booth/mine"
-    );
+    const response = await tenantApi.get<MyBoothResponse>("/booth/mine");
     console.log("response.data", response.data);
     return response.data;
   } catch (error) {
@@ -359,7 +357,9 @@ export async function getUserBoothStatus(): Promise<UserBoothStatus> {
     // 统计不同状态的档口数量
     const activeBooths = booths.filter((booth) => booth.status === "active");
     const pendingBooths = booths.filter((booth) => booth.status === "pending");
-    const rejectedBooths = booths.filter((booth) => booth.status === "rejected");
+    const rejectedBooths = booths.filter(
+      (booth) => booth.status === "rejected"
+    );
 
     return {
       hasBooths: activeBooths.length > 0,
@@ -396,11 +396,13 @@ export async function getMyBoothDetailById(id: string): Promise<MyBoothItem> {
 /**
  * 获取档口管理信息（包含统计数据）
  */
-export async function getBoothManagementInfo(id: string): Promise<BoothManagementInfo> {
+export async function getBoothManagementInfo(
+  id: string
+): Promise<BoothManagementInfo> {
   try {
     // 直接获取单个档口详情
     const boothItem = await getMyBoothDetailById(id);
-    
+
     // TODO: 获取统计数据（等后端提供统计接口后更新）
     // 目前使用模拟数据
     const stats = {
@@ -408,7 +410,7 @@ export async function getBoothManagementInfo(id: string): Promise<BoothManagemen
       totalViews: 0,
       totalOrders: 0,
       rating: 5.0,
-      followers: 0
+      followers: 0,
     };
 
     // 将MyBoothItem转换为BoothManagementInfo格式
@@ -423,11 +425,14 @@ export async function getBoothManagementInfo(id: string): Promise<BoothManagemen
       wx: boothItem.wx,
       qq: boothItem.qq,
       coverImg: boothItem.coverImg,
-      status: mapBoothStatus(boothItem.status) as "active" | "pending" | "rejected",
+      status: mapBoothStatus(boothItem.status) as
+        | "active"
+        | "pending"
+        | "rejected",
       statusText: boothItem.statusText,
       stats,
       createdAt: boothItem.createdAt,
-      productsCount: boothItem._count.products
+      productsCount: boothItem._count.products,
     };
   } catch (error) {
     console.error(`Error fetching booth management info for id ${id}:`, error);
@@ -438,12 +443,14 @@ export async function getBoothManagementInfo(id: string): Promise<BoothManagemen
 /**
  * 获取用户的所有档口列表（用于档口选择页面）
  */
-export async function getUserBoothList(): Promise<import("@/types/booth").BoothSelectItem[]> {
+export async function getUserBoothList(): Promise<
+  import("@/types/booth").BoothSelectItem[]
+> {
   try {
     const userStatus = await getUserBoothStatus();
-    
+
     // 将UserBoothStatus转换为BoothSelectItem格式
-    return userStatus.booths.map(booth => ({
+    return userStatus.booths.map((booth) => ({
       id: booth.id,
       boothName: booth.boothName,
       boothNumber: "", // 等待后端在/booth/mine接口中添加该字段
@@ -453,7 +460,7 @@ export async function getUserBoothList(): Promise<import("@/types/booth").BoothS
       coverImg: booth.coverImg,
       rejectReason: booth.rejectReason,
       auditTime: booth.auditTime,
-      lastSubmitTime: booth.lastSubmitTime
+      lastSubmitTime: booth.lastSubmitTime,
     }));
   } catch (error) {
     console.error("Error fetching user booth list:", error);
@@ -466,11 +473,13 @@ export async function getUserBoothList(): Promise<import("@/types/booth").BoothS
 /**
  * 获取档口编辑信息
  */
-export async function getBoothEditInfo(boothId: string): Promise<BoothEditInfo> {
+export async function getBoothEditInfo(
+  boothId: string
+): Promise<BoothEditInfo> {
   try {
     // 获取档口详细信息
     const boothItem = await getMyBoothDetailById(boothId);
-    
+
     // 转换为编辑表单所需的数据格式
     return {
       id: boothItem.id,
@@ -485,7 +494,7 @@ export async function getBoothEditInfo(boothId: string): Promise<BoothEditInfo> 
       qq: boothItem.qq,
       wxQrcode: boothItem.wxQrcode,
       qqQrcode: boothItem.qqQrcode,
-      profile: "" // MyBoothItem中没有profile字段，使用空字符串
+      profile: "", // MyBoothItem中没有profile字段，使用空字符串
     };
   } catch (error) {
     console.error(`Error fetching booth edit info for id ${boothId}:`, error);
@@ -497,7 +506,7 @@ export async function getBoothEditInfo(boothId: string): Promise<BoothEditInfo> 
  * 更新档口信息
  */
 export async function updateBoothInfo(
-  boothId: string, 
+  boothId: string,
   formData: BoothEditForm
 ): Promise<BoothApplicationResponse> {
   try {
@@ -509,19 +518,19 @@ export async function updateBoothInfo(
     // 只上传新的文件（File类型），字符串类型表示保持现有图片不变
     if (formData.coverImage instanceof File) {
       coverImageUrl = await uploadFileIfExists(formData.coverImage);
-    } else if (typeof formData.coverImage === 'string') {
+    } else if (typeof formData.coverImage === "string") {
       coverImageUrl = formData.coverImage; // 保持原有URL
     }
 
     if (formData.wxQrCode instanceof File) {
       wxQrCodeUrl = await uploadFileIfExists(formData.wxQrCode);
-    } else if (typeof formData.wxQrCode === 'string') {
+    } else if (typeof formData.wxQrCode === "string") {
       wxQrCodeUrl = formData.wxQrCode; // 保持原有URL
     }
 
     if (formData.qqQrCode instanceof File) {
       qqQrCodeUrl = await uploadFileIfExists(formData.qqQrCode);
-    } else if (typeof formData.qqQrCode === 'string') {
+    } else if (typeof formData.qqQrCode === "string") {
       qqQrCodeUrl = formData.qqQrCode; // 保持原有URL
     }
 
@@ -537,7 +546,7 @@ export async function updateBoothInfo(
       profile: formData.description,
       ...(coverImageUrl && { coverImg: coverImageUrl }),
       ...(wxQrCodeUrl && { wxQrcode: wxQrCodeUrl }),
-      ...(qqQrCodeUrl && { qqQrcode: qqQrCodeUrl })
+      ...(qqQrCodeUrl && { qqQrcode: qqQrCodeUrl }),
     };
 
     // 调用后端更新接口（假设使用PUT方法）
@@ -549,7 +558,7 @@ export async function updateBoothInfo(
     return {
       success: true,
       message: response.data.message || "档口信息更新成功！",
-      applicationId: boothId
+      applicationId: boothId,
     };
   } catch (error: any) {
     console.error("Error updating booth info:", error);
@@ -585,15 +594,15 @@ export async function onlineProduct(
     return {
       success: true,
       message: response.data.message || "商品已上架",
-      updatedCount: 1
+      updatedCount: 1,
     };
   } catch (error: any) {
     console.error("Error online product:", error);
-    
+
     if (error.response?.data?.message) {
       throw new Error(error.response.data.message);
     }
-    
+
     throw new Error("上架商品失败，请重试");
   }
 }
@@ -614,15 +623,15 @@ export async function offlineProduct(
     return {
       success: true,
       message: response.data.message || "商品已下架",
-      updatedCount: 1
+      updatedCount: 1,
     };
   } catch (error: any) {
     console.error("Error offline product:", error);
-    
+
     if (error.response?.data?.message) {
       throw new Error(error.response.data.message);
     }
-    
+
     throw new Error("下架商品失败，请重试");
   }
 }
@@ -631,7 +640,7 @@ export async function offlineProduct(
  * 切换商品上下架状态（保留兼容性）
  */
 export async function toggleProductStatus(
-  productId: string, 
+  productId: string,
   status: string
 ): Promise<ProductActionResponse> {
   try {
@@ -642,24 +651,28 @@ export async function toggleProductStatus(
 
     return {
       success: true,
-      message: response.data.message || `商品已${status === 'active' ? '上架' : '下架'}`,
-      updatedCount: 1
+      message:
+        response.data.message ||
+        `商品已${status === "active" ? "上架" : "下架"}`,
+      updatedCount: 1,
     };
   } catch (error: any) {
     console.error("Error toggling product status:", error);
-    
+
     if (error.response?.data?.message) {
       throw new Error(error.response.data.message);
     }
-    
-    throw new Error(`${status === 'active' ? '上架' : '下架'}商品失败，请重试`);
+
+    throw new Error(`${status === "active" ? "上架" : "下架"}商品失败，请重试`);
   }
 }
 
 /**
  * 删除商品
  */
-export async function deleteBoothProduct(productId: string): Promise<ProductActionResponse> {
+export async function deleteBoothProduct(
+  productId: string
+): Promise<ProductActionResponse> {
   try {
     const response = await tenantApi.delete<ProductActionResponse>(
       `/product/${productId}`
@@ -668,15 +681,15 @@ export async function deleteBoothProduct(productId: string): Promise<ProductActi
     return {
       success: true,
       message: response.data.message || "商品删除成功",
-      updatedCount: 1
+      updatedCount: 1,
     };
   } catch (error: any) {
     console.error("Error deleting product:", error);
-    
+
     if (error.response?.data?.message) {
       throw new Error(error.response.data.message);
     }
-    
+
     throw new Error("删除商品失败，请重试");
   }
 }
@@ -697,15 +710,15 @@ export async function batchOnlineProducts(
     return {
       success: true,
       message: response.data.message || "批量上架成功",
-      updatedCount: response.data.updatedCount || productIds.length
+      updatedCount: response.data.updatedCount || productIds.length,
     };
   } catch (error: any) {
     console.error("Error batch online products:", error);
-    
+
     if (error.response?.data?.message) {
       throw new Error(error.response.data.message);
     }
-    
+
     throw new Error("批量上架失败，请重试");
   }
 }
@@ -726,15 +739,15 @@ export async function batchOfflineProducts(
     return {
       success: true,
       message: response.data.message || "批量下架成功",
-      updatedCount: response.data.updatedCount || productIds.length
+      updatedCount: response.data.updatedCount || productIds.length,
     };
   } catch (error: any) {
     console.error("Error batch offline products:", error);
-    
+
     if (error.response?.data?.message) {
       throw new Error(error.response.data.message);
     }
-    
+
     throw new Error("批量下架失败，请重试");
   }
 }
@@ -743,42 +756,42 @@ export async function batchOfflineProducts(
  * 批量操作商品（保留原有删除功能）
  */
 export async function batchUpdateProducts(
-  productIds: string[], 
-  action: 'activate' | 'deactivate' | 'delete'
+  productIds: string[],
+  action: "activate" | "deactivate" | "delete"
 ): Promise<ProductActionResponse> {
   try {
     const response = await tenantApi.post<ProductActionResponse>(
-      '/product/batch',
+      "/product/batch",
       {
         productIds,
-        action
+        action,
       }
     );
 
     const actionNames = {
-      'activate': '上架',
-      'deactivate': '下架', 
-      'delete': '删除'
+      activate: "上架",
+      deactivate: "下架",
+      delete: "删除",
     };
 
     return {
       success: true,
       message: response.data.message || `批量${actionNames[action]}成功`,
-      updatedCount: response.data.updatedCount || productIds.length
+      updatedCount: response.data.updatedCount || productIds.length,
     };
   } catch (error: any) {
     console.error("Error batch updating products:", error);
-    
+
     if (error.response?.data?.message) {
       throw new Error(error.response.data.message);
     }
-    
+
     const actionNames = {
-      'activate': '上架',
-      'deactivate': '下架', 
-      'delete': '删除'
+      activate: "上架",
+      deactivate: "下架",
+      delete: "删除",
     };
-    
+
     throw new Error(`批量${actionNames[action]}失败，请重试`);
   }
 }
@@ -792,24 +805,27 @@ export async function getBoothProductsManagement(
     pageNum?: number;
     pageSize?: number;
     keyword?: string;
-    status?: 'all' | 'active' | 'inactive';
-    sortBy?: 'created_time' | 'price' | 'views';
-    sortOrder?: 'asc' | 'desc';
+    status?: "all" | "active" | "inactive";
+    sortBy?: "created_time" | "price" | "views";
+    sortOrder?: "asc" | "desc";
   } = {}
 ): Promise<PaginatedResponse<ProductListItem>> {
   const queryParams = {
     pageNum: (params.pageNum || 1).toString(),
     pageSize: (params.pageSize || 12).toString(),
     ...(params.keyword && { keyword: params.keyword }),
-    ...(params.status && params.status !== 'all' && { status: params.status }),
+    ...(params.status && params.status !== "all" && { status: params.status }),
     ...(params.sortBy && { sortBy: params.sortBy }),
-    ...(params.sortOrder && { sortOrder: params.sortOrder })
+    ...(params.sortOrder && { sortOrder: params.sortOrder }),
   };
 
   try {
-    const response = await tenantApi.get(`/product/booth/${boothId}/management`, {
-      params: queryParams,
-    });
+    const response = await tenantApi.get(
+      `/product/booth/${boothId}/management`,
+      {
+        params: queryParams,
+      }
+    );
     return response.data;
   } catch (error) {
     console.error("Error fetching booth products for management:", error);
@@ -824,7 +840,9 @@ export async function getBoothProductsManagement(
  */
 export async function getProductCategories(): Promise<ProductCategory[]> {
   try {
-    const response = await tenantApi.get<ProductCategory[]>('/product/categories');
+    const response = await tenantApi.get<ProductCategory[]>(
+      "/product/categories"
+    );
     return response.data.sort((a, b) => a.sort - b.sort);
   } catch (error) {
     console.error("Error fetching product categories:", error);
@@ -844,7 +862,7 @@ export async function createBoothProduct(
     if (!formData.images || formData.images.length === 0) {
       throw new Error("请上传商品图片");
     }
-    console.log('formData.images', formData.images);
+    console.log("formData.images", formData.images);
     // 2. 上传图片
     let additionalImageUrls: string[] = [];
     if (formData.images.length > 0) {
@@ -852,17 +870,17 @@ export async function createBoothProduct(
         additionalImageUrls = await Promise.all(
           formData.images.map(async (file) => {
             const url = await uploadFileIfExists(file);
-            return url || '';
+            return url || "";
           })
         );
         // 过滤掉上传失败的图片
-        additionalImageUrls = additionalImageUrls.filter(url => url !== '');
+        additionalImageUrls = additionalImageUrls.filter((url) => url !== "");
       } catch (error) {
         console.warn("部分附加图片上传失败", error);
         // 附加图片上传失败不阻断创建流程
       }
     }
-    console.log('additionalImageUrls', additionalImageUrls);
+    console.log("additionalImageUrls", additionalImageUrls);
     // 3. 构建 API 请求数据
     const requestData: ProductCreateRequest = {
       name: formData.name,
@@ -882,7 +900,7 @@ export async function createBoothProduct(
       imageType: formData.imageType,
       copyright: formData.copyright,
       biodegradable: formData.biodegradable,
-      ecoMaterial: formData.ecoMaterial
+      ecoMaterial: formData.ecoMaterial,
     };
 
     // 4. 调用后端 API
@@ -894,7 +912,7 @@ export async function createBoothProduct(
     return {
       success: true,
       message: response.data.message || "商品创建成功！",
-      productId: response.data.productId
+      productId: response.data.productId,
     };
   } catch (error: any) {
     console.error("Error creating booth product:", error);
@@ -928,11 +946,11 @@ export async function updateBoothProduct(
         newImageUrls = await Promise.all(
           formData.images.map(async (file) => {
             const url = await uploadFileIfExists(file);
-            return url || '';
+            return url || "";
           })
         );
         // 过滤掉上传失败的图片
-        newImageUrls = newImageUrls.filter(url => url !== '');
+        newImageUrls = newImageUrls.filter((url) => url !== "");
       } catch (error) {
         console.warn("部分图片上传失败", error);
       }
@@ -960,7 +978,7 @@ export async function updateBoothProduct(
       imageType: formData.imageType,
       copyright: formData.copyright,
       biodegradable: formData.biodegradable,
-      ecoMaterial: formData.ecoMaterial
+      ecoMaterial: formData.ecoMaterial,
     };
 
     // 4. 调用后端 API 更新商品
@@ -972,7 +990,7 @@ export async function updateBoothProduct(
     return {
       success: true,
       message: response.data.message || "商品更新成功！",
-      productId: response.data.productId || productId
+      productId: response.data.productId || productId,
     };
   } catch (error: any) {
     console.error("Error updating booth product:", error);

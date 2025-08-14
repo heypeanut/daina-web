@@ -89,7 +89,8 @@ export default function FavoritesPage() {
     }
   };
 
-  const formatPrice = (price: number) => {
+  const formatPrice = (price: number | null | undefined) => {
+    if (price === null || price === undefined) return '';
     return `¥${price.toFixed(2)}`;
   };
 
@@ -174,16 +175,18 @@ export default function FavoritesPage() {
                         {product.name}
                       </h3>
                       
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-red-500 font-bold text-lg">
-                          {formatPrice(product.price)}
-                        </span>
-                        {product.originalPrice && (
-                          <span className="text-gray-400 text-sm line-through">
-                            {formatPrice(product.originalPrice)}
+                      {(product.price !== null && product.price !== undefined) && (
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-red-500 font-bold text-lg">
+                            {formatPrice(product.price)}
                           </span>
-                        )}
-                      </div>
+                          {(product.originalPrice !== null && product.originalPrice !== undefined) && (
+                            <span className="text-gray-400 text-sm line-through">
+                              {formatPrice(product.originalPrice)}
+                            </span>
+                          )}
+                        </div>
+                      )}
 
                       <div className="flex items-center justify-between text-xs text-gray-500">
                         <span>{product.boothName}</span>

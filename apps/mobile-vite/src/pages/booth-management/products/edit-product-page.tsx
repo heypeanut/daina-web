@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { DraggableImageList, type ImageItem } from "./components/draggable-image-list";
 import { getProductDetail, updateBoothProduct } from "@/lib/api/booth";
+import { useUpdateProduct } from "../hooks/use-product-management";
 import { useDictionary } from "@/hooks/api/useDictionary";
 import { DictType } from "@/types/dictionary";
 
@@ -50,6 +51,9 @@ export default function EditProductPage() {
   
   const [loading, setLoading] = useState(false);
   
+  // 更新商品Hook
+  const updateProductMutation = useUpdateProduct();
+  
   // 获取商品详情
   const {
     data: productDetail,
@@ -60,7 +64,8 @@ export default function EditProductPage() {
     queryFn: () => getProductDetail(productId!),
     enabled: !!productId, // 只有当productId存在时才执行查询
     retry: 1,
-    staleTime: 5 * 60 * 1000, // 5分钟内不重新请求
+    staleTime: 0, // 不缓存，每次都重新请求
+    gcTime: 0,    // 立即垃圾回收
   });
   
   // 获取商品状态字典
@@ -195,7 +200,11 @@ export default function EditProductPage() {
         existingImages: existingUrls // 可以传递现有图片URL给后端参考
       };
       
-      const result = await updateBoothProduct(productId, boothId, apiFormData);
+      const result = await updateProductMutation.mutateAsync({
+        productId: productId,
+        boothId: boothId,
+        formData: apiFormData
+      });
 
       if (result.success) {
         toast.success(result.message, {

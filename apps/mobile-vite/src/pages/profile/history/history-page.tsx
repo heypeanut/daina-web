@@ -252,9 +252,11 @@ export default function HistoryPage() {
                           <h3 className="text-sm font-medium text-gray-900 mb-1 line-clamp-2">
                             {footprint.product.name}
                           </h3>
-                          <div className="text-red-500 font-bold text-sm mb-1">
-                            ¥{footprint.product.price.toFixed(2)}
-                          </div>
+                          {(footprint.product.price !== null && footprint.product.price !== undefined) && (
+                            <div className="text-red-500 font-bold text-sm mb-1">
+                              ¥{footprint.product.price.toFixed(2)}
+                            </div>
+                          )}
                           <div className="text-xs text-gray-500">
                             来自：{footprint.product.boothName}
                           </div>

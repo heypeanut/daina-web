@@ -1,9 +1,10 @@
 /**
  * 格式化价格显示
  * @param price 价格数字
- * @returns 格式化后的价格字符串
+ * @returns 格式化后的价格字符串，价格为空时返回空字符串
  */
-export function formatPrice(price: number): string {
+export function formatPrice(price: number | null | undefined): string {
+  if (price === null || price === undefined) return '';
   return `¥${price.toFixed(2)}`;
 }
 

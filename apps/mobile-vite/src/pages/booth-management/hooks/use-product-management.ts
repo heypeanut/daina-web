@@ -6,11 +6,14 @@ import {
   deleteBoothProduct,
   batchOnlineProducts,
   batchOfflineProducts,
-  batchUpdateProducts
+  batchUpdateProducts,
+  updateBoothProduct
 } from "@/lib/api/booth";
 import type { 
   ProductListItem,
-  ProductActionResponse
+  ProductActionResponse,
+  ProductCreateForm,
+  ProductCreateResponse
 } from "@/types/booth";
 import type { PaginatedResponse } from "@/lib/api/config";
 
@@ -56,7 +59,9 @@ export function useToggleProductStatus() {
     onSuccess: (data) => {
       console.log("产品状态切换成功:", data);
       // 刷新产品列表缓存
-      queryClient.invalidateQueries({ queryKey: ["booth-products-management"] });
+      queryClient.invalidateQueries({ 
+        predicate: (query) => query.queryKey[0] === "booth-products-management"
+      });
     },
     onError: (error) => {
       console.error("产品状态切换失败:", error);
@@ -77,7 +82,9 @@ export function useDeleteProduct() {
     onSuccess: (data) => {
       console.log("产品删除成功:", data);
       // 刷新产品列表缓存
-      queryClient.invalidateQueries({ queryKey: ["booth-products-management"] });
+      queryClient.invalidateQueries({ 
+        predicate: (query) => query.queryKey[0] === "booth-products-management"
+      });
     },
     onError: (error) => {
       console.error("产品删除失败:", error);
@@ -107,10 +114,40 @@ export function useBatchUpdateProducts() {
     onSuccess: (data) => {
       console.log("批量操作成功:", data);
       // 刷新产品列表缓存
-      queryClient.invalidateQueries({ queryKey: ["booth-products-management"] });
+      queryClient.invalidateQueries({ 
+        predicate: (query) => query.queryKey[0] === "booth-products-management"
+      });
     },
     onError: (error) => {
       console.error("批量操作失败:", error);
+    },
+  });
+}
+
+/**
+ * 更新产品Hook
+ */
+export function useUpdateProduct() {
+  const queryClient = useQueryClient();
+
+  return useMutation<ProductCreateResponse, Error, { 
+    productId: string; 
+    boothId: string; 
+    formData: ProductCreateForm & { existingImages?: string[] }
+  }>({
+    mutationFn: async ({ productId, boothId, formData }) => {
+      return await updateBoothProduct(productId, boothId, formData);
+    },
+    onSuccess: (data, variables) => {
+      console.log("商品更新成功:", data);
+      
+      // 只失效商品管理列表缓存，触发重新请求列表接口
+      queryClient.invalidateQueries({ 
+        predicate: (query) => query.queryKey[0] === "booth-products-management" && query.queryKey[1] === variables.boothId
+      });
+    },
+    onError: (error) => {
+      console.error("商品更新失败:", error);
     },
   });
 }
