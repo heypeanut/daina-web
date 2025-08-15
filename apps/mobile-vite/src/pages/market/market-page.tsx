@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { MobileLayout } from "@/components/layout";
 
-import { BoothGrid } from "./components";
+import { BoothGrid, BoothGridSkeleton } from "./components";
 import { UnifiedSearchBar } from "@/components/common";
 
 import { useInfiniteBooths } from "./hooks/use-api";
@@ -35,6 +35,7 @@ export default function MarketPage() {
   // 直接使用API hook
   const {
     allData: booths,
+    isLoadingInitial,
     isLoadingMore,
     hasMore,
     loadMore,
@@ -91,6 +92,27 @@ export default function MarketPage() {
             >
               重试
             </button>
+          </div>
+        </div>
+      </MobileLayout>
+    );
+  }
+
+  // 初始加载状态 - 显示骨架屏
+  if (isLoadingInitial) {
+    return (
+      <MobileLayout>
+        <div className="min-h-screen bg-gray-50">
+          <UnifiedSearchBar
+            variant="market"
+            className="fixed top-0 left-0 right-0 z-50"
+            placeholder="搜索档口名称、主营商品..."
+            showLogo={true}
+            showCamera={true}
+            logoSize={32}
+          />
+          <div className="pt-[68px]">
+            <BoothGridSkeleton />
           </div>
         </div>
       </MobileLayout>

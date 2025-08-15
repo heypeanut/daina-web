@@ -4,7 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { DraggableImageList, type ImageItem } from "./components/draggable-image-list";
-import { getProductDetail, updateBoothProduct } from "@/lib/api/booth";
+import { getProductDetailForOwner } from "@/lib/api/booth";
 import { useUpdateProduct } from "../hooks/use-product-management";
 import { useDictionary } from "@/hooks/api/useDictionary";
 import { DictType } from "@/types/dictionary";
@@ -61,7 +61,7 @@ export default function EditProductPage() {
     error: productError
   } = useQuery({
     queryKey: ['product-detail', productId],
-    queryFn: () => getProductDetail(productId!),
+    queryFn: () => getProductDetailForOwner(productId!),
     enabled: !!productId, // 只有当productId存在时才执行查询
     retry: 1,
     staleTime: 0, // 不缓存，每次都重新请求

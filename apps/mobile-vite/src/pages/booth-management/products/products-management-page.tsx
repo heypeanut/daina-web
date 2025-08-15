@@ -136,12 +136,9 @@ export default function ProductsManagementPage() {
           : [...prev, productId]
       );
     } else {
-      // 添加状态检查：只有上架商品才能预览
-      const product = products.find((p) => p.id === productId);
-      if (product && product.status === "1") {
-        navigate(`/product/${productId}`);
-      }
-      // 非上架商品不执行跳转
+      // 档口所有者可以预览所有商品（包括下架商品）
+      // 添加查询参数标识来自档口管理
+      navigate(`/product/${productId}?from=booth-management`);
     }
   };
 
@@ -440,9 +437,7 @@ export default function ProductsManagementPage() {
               {products.map((product) => (
                 <div
                   key={product.id}
-                  className={`bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden transition-shadow duration-200 ${
-                    product.status === "1" ? "hover:shadow-md" : ""
-                  }`}
+                  className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden transition-shadow duration-200 hover:shadow-md"
                 >
                   <div className="flex p-3 gap-3">
                     {/* 商品内容区域包装 */}
@@ -468,7 +463,7 @@ export default function ProductsManagementPage() {
                       {/* 商品图片 */}
                       <div
                         className={`relative w-20 h-20 flex-shrink-0 ${
-                          product.status === "1" && !bulkMode
+                          !bulkMode
                             ? "cursor-pointer"
                             : "cursor-default"
                         }`}
@@ -505,7 +500,7 @@ export default function ProductsManagementPage() {
                       {/* 商品信息 */}
                       <div
                         className={`flex-1 min-w-0 ${
-                          product.status === "1" && !bulkMode
+                          !bulkMode
                             ? "cursor-pointer"
                             : "cursor-default"
                         }`}

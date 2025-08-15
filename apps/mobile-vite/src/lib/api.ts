@@ -76,6 +76,22 @@ class ApiClient {
 
       console.log("API Response status:", response.status, response.statusText);
 
+      // 处理401未授权错误
+      if (response.status === 401) {
+        // 清除本地存储的认证信息
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("auth_token");
+          localStorage.removeItem("user_info");
+          // 触发登录状态变化事件
+          window.dispatchEvent(new Event("loginStatusChange"));
+          // 跳转到登录页，保存当前页面作为返回地址
+          const currentPath = window.location.pathname + window.location.search;
+          const loginUrl = `/login?returnUrl=${encodeURIComponent(currentPath)}`;
+          window.location.href = loginUrl;
+        }
+        throw new Error("登录已过期，请重新登录");
+      }
+
       const data = await response.json();
       console.log("API Response data:", data);
 
@@ -84,7 +100,7 @@ class ApiClient {
         throw new Error(data.msg || data.message || "操作失败");
       }
 
-      // 处理HTTP错误
+      // 处理其他HTTP错误
       if (!response.ok) {
         throw new Error(data.msg || data.message || `请求失败 (${response.status})`);
       }
@@ -337,6 +353,19 @@ class ApiClient {
       body: formData,
     });
 
+    // 处理401未授权错误
+    if (response.status === 401) {
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("auth_token");
+        localStorage.removeItem("user_info");
+        window.dispatchEvent(new Event("loginStatusChange"));
+        const currentPath = window.location.pathname + window.location.search;
+        const loginUrl = `/login?returnUrl=${encodeURIComponent(currentPath)}`;
+        window.location.href = loginUrl;
+      }
+      throw new Error("登录已过期，请重新登录");
+    }
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -373,6 +402,19 @@ class ApiClient {
       headers,
       body: formData,
     });
+
+    // 处理401未授权错误
+    if (response.status === 401) {
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("auth_token");
+        localStorage.removeItem("user_info");
+        window.dispatchEvent(new Event("loginStatusChange"));
+        const currentPath = window.location.pathname + window.location.search;
+        const loginUrl = `/login?returnUrl=${encodeURIComponent(currentPath)}`;
+        window.location.href = loginUrl;
+      }
+      throw new Error("登录已过期，请重新登录");
+    }
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);

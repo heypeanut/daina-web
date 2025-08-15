@@ -34,18 +34,8 @@ export const queryClient = new QueryClient({
   },
 });
 
-// 全局错误处理
-queryClient.setMutationDefaults(['auth'], {
-  mutationFn: async (variables: any) => {
-    // 这里可以添加全局的变更处理逻辑
-    throw new Error('Mutation function must be provided');
-  },
-  onError: (error) => {
-    console.error('Mutation error:', error);
-    // 这里可以添加全局错误处理逻辑
-    // 比如显示toast、记录日志等
-  },
-});
+// 全局错误处理 - 通过React Query Provider在应用层处理
+// 这里不设置默认的mutation配置，避免类型错误
 
 // 清除所有缓存的辅助函数
 export const clearAllQueries = () => {

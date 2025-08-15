@@ -6,7 +6,7 @@ import {
   deleteBoothProduct,
   batchOnlineProducts,
   batchOfflineProducts,
-  batchUpdateProducts,
+  batchDeleteProducts,
   updateBoothProduct,
   createBoothProduct
 } from "@/lib/api/booth";
@@ -107,7 +107,7 @@ export function useBatchUpdateProducts() {
         case 'deactivate':
           return await batchOfflineProducts(boothId, productIds);
         case 'delete':
-          return await batchUpdateProducts(productIds, action);
+          return await batchDeleteProducts(productIds);
         default:
           throw new Error('不支持的操作类型');
       }

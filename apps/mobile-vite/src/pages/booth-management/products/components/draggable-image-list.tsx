@@ -19,8 +19,9 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { restrictToParentElement, restrictToHorizontalAxis } from '@dnd-kit/modifiers';
+import { restrictToParentElement } from '@dnd-kit/modifiers';
 import { X, Star } from 'lucide-react';
+import { ImageCropModal } from '@/components/common/ImageCropModal';
 
 // 支持File对象和URL字符串的混合类型
 export type ImageItem = File | string;
@@ -133,6 +134,8 @@ export function DraggableImageList({
   maxImages = 10 
 }: DraggableImageListProps) {
   const [disableAnimation, setDisableAnimation] = useState(false);
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [currentCropFile, setCurrentCropFile] = useState<File | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // 清理定时器，避免内存泄漏
@@ -201,34 +204,67 @@ export function DraggableImageList({
   };
 
   const handleAddImages = (event: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('handleAddImages 被调用');
     const files = Array.from(event.target.files || []);
+    console.log('选择的文件:', files);
     
-    if (files.length === 0) return;
-    
-    // 检查图片数量限制
-    if (images.length + files.length > maxImages) {
-      alert(`最多只能上传${maxImages}张图片`);
+    if (files.length === 0) {
+      console.log('没有选择文件');
       return;
     }
     
-    // 验证每个文件
-    for (const file of files) {
-      if (file.size > 5 * 1024 * 1024) {
-        alert(`图片 "${file.name}" 大小超过5MB，请选择更小的图片`);
-        return;
-      }
-      
-      if (!file.type.startsWith('image/')) {
-        alert(`文件 "${file.name}" 不是图片格式`);
-        return;
-      }
+    // 检查图片数量限制
+    if (images.length >= maxImages) {
+      console.log('图片数量超限');
+      alert(`最多只能上传${maxImages}张图片`);
+      event.target.value = '';
+      return;
     }
     
-    const newImages = [...images, ...files];
-    onChange(newImages);
+    // 只处理第一张图片（一次只能裁切一张）
+    const file = files[0];
+    console.log('处理文件:', file.name, file.type, file.size);
+    
+    // 验证文件
+    if (file.size > 5 * 1024 * 1024) {
+      console.log('文件过大');
+      alert(`图片 "${file.name}" 大小超过5MB，请选择更小的图片`);
+      event.target.value = '';
+      return;
+    }
+    
+    if (!file.type.startsWith('image/')) {
+      console.log('文件类型不正确');
+      alert(`文件 "${file.name}" 不是图片格式`);
+      event.target.value = '';
+      return;
+    }
+    
+    // 打开裁切弹窗
+    console.log('准备打开裁切弹窗');
+    setCurrentCropFile(file);
+    setCropModalOpen(true);
+    console.log('裁切弹窗状态已设置');
     
     // 重置input
     event.target.value = '';
+  };
+
+  // 处理裁切完成
+  const handleCropComplete = (result: { file: File; url: string }) => {
+    const newImages = [...images, result.file];
+    onChange(newImages);
+    setCropModalOpen(false);
+    setCurrentCropFile(null);
+    
+    // 清理URL（组件会自动处理）
+    URL.revokeObjectURL(result.url);
+  };
+
+  // 关闭裁切弹窗
+  const handleCropClose = () => {
+    setCropModalOpen(false);
+    setCurrentCropFile(null);
   };
 
   return (
@@ -281,13 +317,15 @@ export function DraggableImageList({
                   还可添加 {maxImages - images.length} 张
                   {images.length === 0 && ' (第一张将作为封面图)'}
                 </p>
+                <p className="text-xs text-orange-600 mt-1">
+                  📐 上传后将自动裁切为正方形
+                </p>
               </div>
             </div>
           </div>
           <input
             type="file"
             accept="image/*"
-            multiple
             onChange={handleAddImages}
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           />
@@ -302,8 +340,22 @@ export function DraggableImageList({
             <li>长按图片可拖动调整顺序</li>
             <li>第一张图片将作为商品封面</li>
             <li>点击右上角 ✕ 可删除图片</li>
+            <li>上传时会自动裁切为正方形</li>
           </ul>
         </div>
+      )}
+
+      {/* 图片裁切弹窗 */}
+      {currentCropFile && (
+        <ImageCropModal
+          isOpen={cropModalOpen}
+          imageFile={currentCropFile}
+          onClose={handleCropClose}
+          onCropComplete={handleCropComplete}
+          aspectRatio={1}
+          cropShape="rect"
+          title="裁切商品图片"
+        />
       )}
     </div>
   );

@@ -18,10 +18,10 @@ export function useInfiniteBooths(params: Omit<GetBoothsParams, 'pageNum'>) {
   return useInfiniteData<Booth, GetBoothsParams>({
     queryKey: ['infinite-booths', JSON.stringify(params)],
     queryFn: async ({ pageNum, pageSize, keyword, categoryId, sortBy, location }) => {
-      // getBooths API期望size字段，需要转换参数
-      const apiParams: any = { 
+      // getBooths API期望pageSize字段
+      const apiParams: GetBoothsParams = { 
         pageNum, 
-        size: pageSize, 
+        pageSize, 
         keyword, 
         categoryId, 
         sortBy, 

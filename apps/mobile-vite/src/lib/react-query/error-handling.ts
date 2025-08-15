@@ -61,9 +61,14 @@ function handleUnauthorizedError(): void {
   // 触发登录状态变化事件
   window.dispatchEvent(new Event("loginStatusChange"));
   
-  // 跳转到登录页面（如果需要）
-  // 这里可以根据具体需求实现跳转逻辑
-  console.warn('用户认证已过期，请重新登录');
+  // 跳转到登录页面，保存当前页面作为返回地址
+  if (typeof window !== "undefined") {
+    const currentPath = window.location.pathname + window.location.search;
+    const loginUrl = `/login?returnUrl=${encodeURIComponent(currentPath)}`;
+    window.location.href = loginUrl;
+  }
+  
+  console.warn('用户认证已过期，正在跳转到登录页面');
 }
 
 // 获取用户友好的错误消息

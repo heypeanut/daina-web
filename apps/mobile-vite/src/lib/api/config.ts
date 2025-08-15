@@ -55,6 +55,10 @@ class TenantApiClient {
           localStorage.removeItem("user_info");
           // 触发登录状态变化事件，让组件自行处理状态更新
           window.dispatchEvent(new Event("loginStatusChange"));
+          // 跳转到登录页，保存当前页面作为返回地址
+          const currentPath = window.location.pathname + window.location.search;
+          const loginUrl = `/login?returnUrl=${encodeURIComponent(currentPath)}`;
+          window.location.href = loginUrl;
           throw new Error("登录已过期，请重新登录");
         }
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -161,7 +165,11 @@ class TenantApiClient {
         if (response.status === 401) {
           localStorage.removeItem("auth_token");
           localStorage.removeItem("user_info");
-          window.location.href = "/login";
+          window.dispatchEvent(new Event("loginStatusChange"));
+          // 跳转到登录页，保存当前页面作为返回地址
+          const currentPath = window.location.pathname + window.location.search;
+          const loginUrl = `/login?returnUrl=${encodeURIComponent(currentPath)}`;
+          window.location.href = loginUrl;
           throw new Error("登录已过期，请重新登录");
         }
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);

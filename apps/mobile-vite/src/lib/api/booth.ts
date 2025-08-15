@@ -44,7 +44,7 @@ export async function getBooths(
   const queryParams = {
     ...params,
     pageNum: params.pageNum.toString(),
-    size: params.size.toString(),
+    pageSize: params.pageSize.toString(),
   };
   const response = await tenantApi.get("/booth", { params: queryParams });
   return response.data;
@@ -88,7 +88,7 @@ export async function searchBooths(
 export async function getHotBooths(limit: number = 10): Promise<Booth[]> {
   const response = await getBooths({
     pageNum: 1,
-    size: limit,
+    pageSize: limit,
     sortBy: "popular",
   });
   return response.rows;
@@ -186,6 +186,14 @@ export async function trackBoothShare(boothId: string): Promise<void> {
  */
 export async function getProductDetail(id: string): Promise<ProductDetail> {
   const response = await tenantApi.get(`/product/${id}`);
+  return response.data;
+}
+
+/**
+ * 档口所有者获取商品详情（包括下架状态） - 使用 /api/tenant/product/owner/{id} 接口
+ */
+export async function getProductDetailForOwner(id: string): Promise<ProductDetail> {
+  const response = await tenantApi.get(`/product/owner/${id}`);
   return response.data;
 }
 
@@ -753,12 +761,47 @@ export async function batchOfflineProducts(
 }
 
 /**
- * 批量操作商品（保留原有删除功能）
+ * 批量删除商品（新接口）
+ */
+export async function batchDeleteProducts(
+  productIds: string[]
+): Promise<ProductActionResponse> {
+  try {
+    const response = await tenantApi.post<ProductActionResponse>(
+      "/product/batch-delete",
+      {
+        ids: productIds,
+      }
+    );
+
+    return {
+      success: true,
+      message: response.data.message || "批量删除成功",
+      updatedCount: response.data.updatedCount || productIds.length,
+    };
+  } catch (error: any) {
+    console.error("Error batch deleting products:", error);
+
+    if (error.response?.data?.message) {
+      throw new Error(error.response.data.message);
+    }
+
+    throw new Error("批量删除失败，请重试");
+  }
+}
+
+/**
+ * 批量操作商品（保留原有删除功能，但删除操作使用新接口）
  */
 export async function batchUpdateProducts(
   productIds: string[],
   action: "activate" | "deactivate" | "delete"
 ): Promise<ProductActionResponse> {
+  // 如果是删除操作，使用新的批量删除接口
+  if (action === "delete") {
+    return await batchDeleteProducts(productIds);
+  }
+
   try {
     const response = await tenantApi.post<ProductActionResponse>(
       "/product/batch",
