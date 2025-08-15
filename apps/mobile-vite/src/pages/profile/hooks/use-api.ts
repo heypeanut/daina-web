@@ -172,18 +172,18 @@ export function useGetHistory(
   pageSize: number = 10
 ) {
   return useQuery({
-    queryKey: ["trafficHistory", type, page, pageSize],
+    queryKey: ["footprints", "list", { type, page }],
     queryFn: () => getFootprints(type, page, pageSize),
   });
 }
 
-// 无限滚动版本的浏览历史hook
+// 无限滚动版本的浏览历史hook - 使用统一的查询键
 export function useInfiniteHistory(
   type: "product" | "booth" = "product",
   pageSize: number = 20
 ) {
   return useInfiniteQuery({
-    queryKey: ["trafficHistory", "infinite", type],
+    queryKey: ["footprints", "infinite", type],
     queryFn: async ({ pageParam = 1 }) => {
       const response = await getFootprints(type, pageParam, pageSize);
       return response;

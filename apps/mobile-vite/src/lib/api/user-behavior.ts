@@ -60,14 +60,46 @@ export interface FavoriteBooth {
   createdAt: string;
 }
 
+// 历史记录中的Booth信息（来自接口返回）
+export interface HistoryBooth {
+  id: string;
+  boothName: string;
+  boothNumber: string;
+  coverImg: string;
+  market: string;
+  createdAt: string;
+}
+
+// 历史记录中的Product信息（来自接口返回）
+export interface HistoryProduct {
+  id: string;
+  name: string;
+  price?: number;
+  originalPrice?: number;
+  image: string;
+  boothName: string;
+  boothId: string;
+  views?: number;
+  createdAt: string;
+}
+
 export interface Footprint {
   id: string;
-  userId: string;
+  userId?: string;
   type: "product" | "booth";
   targetId: string;
-  product?: Product;
-  booth?: Booth;
-  visitedAt: string;
+  // 根据接口返回格式，直接包含完整的booth或product信息
+  boothName?: string;
+  boothNumber?: string;
+  coverImg?: string;
+  market?: string;
+  name?: string;
+  price?: number;
+  originalPrice?: number;
+  image?: string;
+  views?: number;
+  createdAt: string;
+  visitedAt?: string; // 兼容旧格式
 }
 
 // ==================== 收藏相关API ====================
@@ -80,12 +112,15 @@ export async function toggleFavorite(
   targetId: string, 
   action: 'add' | 'remove'
 ): Promise<void> {
-  const data = type === 'product' ? { productId: targetId } : { boothId: targetId };
+  const data = {
+    type: type === 'product' ? 'product' : 'booth',
+    itemId: targetId // 使用实际的商品ID或档口ID
+  };
   
   if (action === 'add') {
     await tenantApi.post('/user/favorites', data);
   } else {
-    await tenantApi.delete('/user/favorites', data);
+    await tenantApi.delete('/user/favorites', { data });
   }
 }
 
@@ -126,9 +161,33 @@ export async function getFavorites(
   pageSize: number = 20
 ): Promise<PaginatedResponse<FavoriteProduct | FavoriteBooth>> {
   const response = await tenantApi.get('/user/favorites', {
-    params: { type, page, pageSize }
+    params: { 
+      type, 
+      page: page.toString(), 
+      pageSize: pageSize.toString() 
+    }
   });
   return response.data;
+}
+
+/**
+ * 获取收藏商品列表
+ */
+export async function getFavoriteProducts(
+  page: number = 1,
+  pageSize: number = 20
+): Promise<PaginatedResponse<FavoriteProduct>> {
+  return getFavorites('product', page, pageSize) as Promise<PaginatedResponse<FavoriteProduct>>;
+}
+
+/**
+ * 获取收藏档口列表
+ */
+export async function getFavoriteBooths(
+  page: number = 1,
+  pageSize: number = 20
+): Promise<PaginatedResponse<FavoriteBooth>> {
+  return getFavorites('booth', page, pageSize) as Promise<PaginatedResponse<FavoriteBooth>>;
 }
 
 /**
@@ -138,9 +197,10 @@ export async function checkFavoriteStatus(
   type: 'product' | 'booth',
   targetId: string
 ): Promise<boolean> {
-  const params = type === 'product' 
-    ? { productId: targetId } 
-    : { boothId: targetId };
+  const params = {
+    type: type === 'product' ? 'product' : 'booth',
+    itemId: targetId // 使用实际的商品ID或档口ID
+  };
     
   try {
     const response = await tenantApi.get('/user/favorites/check', { params });
@@ -199,12 +259,16 @@ export async function getFootprints(
       rows: [],
       total: 0,
       page,
+      pageNum: page,
       pageSize,
       hasNext: false,
     };
   }
 
-  const params: { page: number; pageSize: number; type?: string } = { page, pageSize };
+  const params: { page: string; pageSize: string; type?: string } = { 
+    page: page.toString(), 
+    pageSize: pageSize.toString() 
+  };
   if (type) params.type = type;
   
   const response = await tenantApi.get('/user/history', { params });

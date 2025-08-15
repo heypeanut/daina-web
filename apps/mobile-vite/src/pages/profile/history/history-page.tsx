@@ -1,11 +1,11 @@
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Trash2, Package, Store, Eye, MapPin } from "lucide-react";
-import { ImageLazyLoader } from "@/components/common";
+import { ArrowLeft, Eye } from "lucide-react";
 import { useInfiniteHistory } from "../hooks";
 import { useInfiniteScroll } from "@/hooks/useIntersectionObserver";
 import { useQueryClient } from "@tanstack/react-query";
 import { removeFootprint, clearFootprints } from "@/lib/api/user-behavior";
+import { HistoryBoothCard, HistoryProductCard } from "./components";
 
 // 浏览记录类型
 type FootprintType = "product" | "booth";
@@ -47,9 +47,9 @@ export default function HistoryPage() {
   }, [navigate]);
 
   const handleItemClick = useCallback((footprint: Footprint) => {
-    if (footprint.type === "product" && footprint.product) {
+    if (footprint.type === "product") {
       navigate(`/product/${footprint.targetId}`);
-    } else if (footprint.type === "booth" && footprint.booth) {
+    } else if (footprint.type === "booth") {
       navigate(`/booth/${footprint.targetId}`);
     }
   }, [navigate]);
@@ -61,7 +61,7 @@ export default function HistoryPage() {
       await removeFootprint(footprintId);
       
       // 更新缓存，从所有页面中移除该记录
-      queryClient.setQueryData(['trafficHistory', 'infinite', filter], (oldData: any) => {
+      queryClient.setQueryData(['footprints', 'infinite', filter], (oldData: any) => {
         if (!oldData) return oldData;
         
         return {
@@ -94,7 +94,7 @@ export default function HistoryPage() {
       await clearFootprints(filter);
       
       // 清空缓存
-      queryClient.setQueryData(['trafficHistory', 'infinite', filter], {
+      queryClient.setQueryData(['footprints', 'infinite', filter], {
         pages: [{
           rows: [],
           total: 0,
@@ -208,98 +208,25 @@ export default function HistoryPage() {
           <div className="p-4">
             <div className="space-y-3">
               {filteredFootprints?.map((footprint) => (
-                <div
-                  key={footprint.id}
-                  className="bg-white rounded-lg border border-gray-200 overflow-hidden"
-                >
-                  <div className="flex p-3 gap-3">
-                    {/* 图片 */}
-                    <div
-                      className="relative w-16 h-16 flex-shrink-0 cursor-pointer"
-                      onClick={() => handleItemClick(footprint)}
-                    >
-                      <ImageLazyLoader
-                        src={footprint.type === "product" 
-                          ? footprint.product?.image || "/placeholder-product.jpg"
-                          : footprint.booth?.coverImage || "/placeholder-booth.jpg"
-                        }
-                        alt={footprint.type === "product" 
-                          ? footprint.product?.name || ""
-                          : footprint.booth?.name || ""
-                        }
-                        width={64}
-                        height={64}
-                        className="w-full h-full object-cover rounded-lg"
-                      />
-                      
-                      {/* 类型标识 */}
-                      <div className="absolute top-1 left-1 bg-black/50 rounded px-1 py-0.5">
-                        {footprint.type === "product" ? (
-                          <Package size={10} className="text-white" />
-                        ) : (
-                          <Store size={10} className="text-white" />
-                        )}
-                      </div>
-                    </div>
-
-                    {/* 信息 */}
-                    <div 
-                      className="flex-1 min-w-0 cursor-pointer"
-                      onClick={() => handleItemClick(footprint)}
-                    >
-                      {footprint.type === "product" && footprint.product ? (
-                        <>
-                          <h3 className="text-sm font-medium text-gray-900 mb-1 line-clamp-2">
-                            {footprint.product.name}
-                          </h3>
-                          {(footprint.product.price !== null && footprint.product.price !== undefined) && (
-                            <div className="text-red-500 font-bold text-sm mb-1">
-                              ¥{footprint.product.price.toFixed(2)}
-                            </div>
-                          )}
-                          <div className="text-xs text-gray-500">
-                            来自：{footprint.product.boothName}
-                          </div>
-                        </>
-                      ) : footprint.booth ? (
-                        <>
-                          <h3 className="text-sm font-medium text-gray-900 mb-1">
-                            {footprint.booth.name}
-                          </h3>
-                          <div className="flex items-center text-xs text-gray-500 mb-1">
-                            <MapPin size={10} className="mr-1" />
-                            <span>{footprint.booth.location || '未知位置'}</span>
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            {footprint.booth.followers} 关注
-                          </div>
-                        </>
-                      ) : null}
-                      
-                      <div className="text-xs text-gray-400 mt-2">
-                        浏览时间：{formatDate(footprint.visitedAt)}
-                      </div>
-                    </div>
-
-                    {/* 删除按钮 */}
-                    <div className="flex items-start">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleRemoveFootprint(footprint.id);
-                        }}
-                        disabled={removing === footprint.id}
-                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors disabled:opacity-50"
-                      >
-                        {removing === footprint.id ? (
-                          <div className="w-4 h-4 border-2 border-gray-300 border-t-red-500 rounded-full animate-spin" />
-                        ) : (
-                          <Trash2 className="w-4 h-4" />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                footprint.type === "product" ? (
+                  <HistoryProductCard
+                    key={footprint.id}
+                    footprint={footprint}
+                    onCardClick={handleItemClick}
+                    onRemove={handleRemoveFootprint}
+                    isRemoving={removing === footprint.id}
+                    formatDate={formatDate}
+                  />
+                ) : (
+                  <HistoryBoothCard
+                    key={footprint.id}
+                    footprint={footprint}
+                    onCardClick={handleItemClick}
+                    onRemove={handleRemoveFootprint}
+                    isRemoving={removing === footprint.id}
+                    formatDate={formatDate}
+                  />
+                )
               ))}
             </div>
             

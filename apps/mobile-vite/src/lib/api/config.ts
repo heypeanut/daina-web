@@ -214,6 +214,8 @@ export interface PaginatedResponse<T> {
   rows: T[];
   total: number;
   page?: number;
+  pageNum?: number; // 新接口使用pageNum
   pageSize?: number;
   totalPages?: number;
+  hasNext?: boolean; // 兼容旧格式
 }
