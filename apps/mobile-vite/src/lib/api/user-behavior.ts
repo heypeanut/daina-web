@@ -272,7 +272,50 @@ export async function getFootprints(
   if (type) params.type = type;
   
   const response = await tenantApi.get('/user/history', { params });
-  return response.data;
+
+  console.log('=== getFootprints API原始响应 ===');
+  console.log('API路径: /user/history');
+  console.log('请求参数:', params);
+  console.log('原始数据:', response.data);
+  console.log('数据结构:', response.data.rows ? '包含rows数组' : '不包含rows');
+  if (response.data.rows && response.data.rows[0]) {
+    console.log('第一条原始记录:', response.data.rows[0]);
+    console.log('第一条记录字段:', Object.keys(response.data.rows[0]));
+  }
+
+  // 数据转换逻辑（根据实际API结构调整）
+  const transformedData = {
+    ...response.data,
+    rows: response.data.rows.map((item: any) => {
+      const transformedItem = {
+        ...item,
+        // 尝试将不同的ID字段映射到targetId
+        targetId: item.targetId || 
+                  item.productId || 
+                  item.boothId || 
+                  item.objectId ||
+                  item.product?.id ||
+                  item.booth?.id ||
+                  item.id  // 最后尝试用记录自身的id
+      };
+      
+      // 调试转换结果
+      if (item.targetId !== transformedItem.targetId) {
+        console.log('字段映射:', {
+          original: item.targetId,
+          mapped: transformedItem.targetId,
+          source: 'productId/boothId/objectId/product.id/booth.id/id'
+        });
+      }
+      
+      return transformedItem;
+    })
+  };
+
+  console.log('转换后数据:', transformedData);
+  console.log('转换后第一条记录:', transformedData.rows[0]);
+
+  return transformedData;
 }
 
 /**

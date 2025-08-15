@@ -186,9 +186,21 @@ export function useInfiniteHistory(
     queryKey: ["footprints", "infinite", type],
     queryFn: async ({ pageParam = 1 }) => {
       const response = await getFootprints(type, pageParam, pageSize);
+      console.log('=== useInfiniteHistory API返回数据 ===');
+      console.log('类型:', type);
+      console.log('页码:', pageParam);
+      console.log('原始响应:', response);
+      console.log('第一条记录样例:', response.rows[0]);
+      if (response.rows[0]) {
+        console.log('第一条记录的字段:', Object.keys(response.rows[0]));
+      }
       return response;
     },
     initialPageParam: 1,
+    staleTime: 0,        // 数据立即过期，确保获取最新内容
+    cacheTime: 0,        // 不缓存数据
+    refetchOnMount: true, // 每次挂载时重新获取
+    refetchOnWindowFocus: true, // 窗口获得焦点时重新获取
     getNextPageParam: (lastPage, allPages) => {
       // 检查是否有更多数据
       if (lastPage.rows.length === 0) {

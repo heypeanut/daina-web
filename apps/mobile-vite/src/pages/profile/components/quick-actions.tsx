@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Heart, Store, Clock, Settings } from "lucide-react";
+import { Heart, Store, Package, Clock, Settings } from "lucide-react";
 import { useLoginStatus } from "../hooks";
 
 interface QuickAction {
@@ -37,19 +37,19 @@ export function QuickActions() {
       requireLogin: true,
     },
     {
-      icon: Clock,
-      label: "浏览记录",
-      route: "/profile/history",
+      icon: Package,
+      label: "商品记录",
+      route: "/profile/product-history",
       color: "text-green-500",
       requireLogin: true,
     },
-    // {
-    //   icon: Settings,
-    //   label: "设置",
-    //   route: "/profile/settings",
-    //   color: "text-gray-500",
-    //   requireLogin: false,
-    // },
+    {
+      icon: Clock,
+      label: "档口记录",
+      route: "/profile/booth-history",
+      color: "text-purple-500",
+      requireLogin: true,
+    },
   ];
 
   const handleActionClick = (action: QuickAction) => {

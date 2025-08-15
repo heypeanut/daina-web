@@ -1,2 +1,2 @@
-export { HistoryBoothCard } from './HistoryBoothCard';
-export { HistoryProductCard } from './HistoryProductCard';
+export { BoothHistoryCard } from './BoothHistoryCard';
+export { ProductHistoryCard } from './ProductHistoryCard';

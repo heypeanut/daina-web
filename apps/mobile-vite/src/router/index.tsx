@@ -15,7 +15,8 @@ const RegisterPage = lazy(() => import('@/pages/auth/register-page'));
 // Profile子页面
 const FavoritesPage = lazy(() => import('@/pages/profile/favorites/favorites-page'));
 const FollowedBoothsPage = lazy(() => import('@/pages/profile/favorites/followed-booths-page'));
-const HistoryPage = lazy(() => import('@/pages/profile/history/history-page'));
+const ProductHistoryPage = lazy(() => import('@/pages/profile/history/ProductHistoryPage'));
+const BoothHistoryPage = lazy(() => import('@/pages/profile/history/BoothHistoryPage'));
 const SettingsPage = lazy(() => import('@/pages/profile/settings/settings-page'));
 
 // 档口管理页面
@@ -209,10 +210,18 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/profile/history',
+    path: '/profile/product-history',
     element: (
       <SuspenseWrapper>
-        <HistoryPage />
+        <ProductHistoryPage />
+      </SuspenseWrapper>
+    ),
+  },
+  {
+    path: '/profile/booth-history',
+    element: (
+      <SuspenseWrapper>
+        <BoothHistoryPage />
       </SuspenseWrapper>
     ),
   },

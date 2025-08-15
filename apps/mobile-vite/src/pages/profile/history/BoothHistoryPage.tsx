@@ -5,20 +5,18 @@ import { useInfiniteHistory } from "../hooks";
 import { useInfiniteScroll } from "@/hooks/useIntersectionObserver";
 import { useQueryClient } from "@tanstack/react-query";
 import { removeFootprint, clearFootprints } from "@/lib/api/user-behavior";
-import { HistoryBoothCard, HistoryProductCard } from "./components";
+import { BoothHistoryCard } from "./components/BoothHistoryCard";
 
-// 浏览记录类型
-type FootprintType = "product" | "booth";
-
-// 使用API中定义的接口
 import type { Footprint } from "@/lib/api/user-behavior";
 
-export default function HistoryPage() {
+export default function BoothHistoryPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [filter, setFilter] = useState<FootprintType>("product");
   const [removing, setRemoving] = useState<string | null>(null);
   const [clearing, setClearing] = useState(false);
+  
+  // 固定为档口类型
+  const filter = "booth";
   
   // 使用无限滚动 hook
   const {
@@ -47,11 +45,20 @@ export default function HistoryPage() {
   }, [navigate]);
 
   const handleItemClick = useCallback((footprint: Footprint) => {
-    if (footprint.type === "product") {
-      navigate(`/product/${footprint.targetId}`);
-    } else if (footprint.type === "booth") {
-      navigate(`/booth/${footprint.targetId}`);
+    // 尝试多种可能的ID字段
+    const possibleId = footprint.targetId || 
+                      (footprint as any).boothId || 
+                      (footprint as any).objectId ||
+                      (footprint as any).booth?.id ||
+                      (footprint as any).targetBooth?.id;
+    
+    if (!possibleId) {
+      alert('档口信息异常，无法跳转');
+      return;
     }
+    
+    // 档口历史页面直接跳转到档口详情
+    navigate(`/booth/${possibleId}`);
   }, [navigate]);
 
   const handleRemoveFootprint = async (footprintId: string) => {
@@ -60,21 +67,12 @@ export default function HistoryPage() {
     try {
       await removeFootprint(footprintId);
       
-      // 更新缓存，从所有页面中移除该记录
-      queryClient.setQueryData(['footprints', 'infinite', filter], (oldData: any) => {
-        if (!oldData) return oldData;
-        
-        return {
-          ...oldData,
-          pages: oldData.pages.map((page: any) => ({
-            ...page,
-            rows: page.rows.filter((item: any) => item.id !== footprintId),
-            total: Math.max(0, page.total - 1),
-          })),
-        };
+      // 刷新数据以获取最新内容
+      await queryClient.invalidateQueries({
+        queryKey: ['footprints', 'infinite', filter]
       });
       
-      console.log(`已删除浏览记录: ${footprintId}`);
+      console.log(`已删除档口浏览记录: ${footprintId}`);
     } catch (error) {
       console.error("删除失败:", error);
       alert("删除失败，请重试");
@@ -84,7 +82,7 @@ export default function HistoryPage() {
   };
 
   const handleClearAll = async () => {
-    if (!confirm("确定要清空所有浏览记录吗？此操作不可恢复。")) {
+    if (!confirm("确定要清空所有档口浏览记录吗？此操作不可恢复。")) {
       return;
     }
     
@@ -93,19 +91,12 @@ export default function HistoryPage() {
     try {
       await clearFootprints(filter);
       
-      // 清空缓存
-      queryClient.setQueryData(['footprints', 'infinite', filter], {
-        pages: [{
-          rows: [],
-          total: 0,
-          page: 1,
-          pageSize: 20,
-          hasNext: false,
-        }],
-        pageParams: [1],
+      // 刷新数据以获取最新内容
+      await queryClient.invalidateQueries({
+        queryKey: ['footprints', 'infinite', filter]
       });
       
-      console.log(`已清空${filter === 'product' ? '商品' : '档口'}浏览记录`);
+      console.log('已清空档口浏览记录');
     } catch (error) {
       console.error("清空失败:", error);
       alert("清空失败，请重试");
@@ -129,9 +120,6 @@ export default function HistoryPage() {
     return date.toLocaleDateString();
   };
 
-  // 数据已经按类型过滤，无需再次过滤
-  const filteredFootprints = footprints;
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* 头部 */}
@@ -144,7 +132,7 @@ export default function HistoryPage() {
             <ArrowLeft className="w-5 h-5 text-gray-600" />
           </button>
           <h1 className="text-lg font-semibold text-gray-900">
-            浏览记录 ({filteredFootprints?.length || 0})
+            档口浏览记录 ({footprints?.length || 0})
           </h1>
           <button
             onClick={handleClearAll}
@@ -153,28 +141,6 @@ export default function HistoryPage() {
           >
             {clearing ? "清空中..." : "清空"}
           </button>
-        </div>
-
-        {/* 筛选标签 */}
-        <div className="flex items-center px-4 pb-3">
-          <div className="flex space-x-1 bg-gray-100 rounded-lg p-1">
-            {[
-              { key: "product", label: "商品" },
-              { key: "booth", label: "档口" }
-            ].map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setFilter(tab.key as FootprintType)}
-                className={`px-3 py-1.5 rounded-md text-sm transition-all ${
-                  filter === tab.key
-                    ? "bg-white text-gray-900 shadow-sm"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
         </div>
       </div>
 
@@ -186,15 +152,15 @@ export default function HistoryPage() {
             <div className="w-8 h-8 border-2 border-gray-300 border-t-orange-500 rounded-full animate-spin mb-4" />
             <p className="text-gray-500">加载中...</p>
           </div>
-        ) : filteredFootprints?.length === 0 ? (
+        ) : footprints?.length === 0 ? (
           /* 空状态 */
           <div className="flex flex-col items-center justify-center py-20">
             <Eye className="w-16 h-16 text-gray-300 mb-4" />
             <p className="text-gray-500 text-center mb-2">
-              {filter === "product" ? "暂无商品浏览记录" : "暂无档口浏览记录"}
+              暂无档口浏览记录
             </p>
             <p className="text-gray-400 text-sm text-center">
-              去逛逛感兴趣的内容吧
+              去逛逛感兴趣的档口吧
             </p>
             <button
               onClick={() => navigate('/market')}
@@ -207,26 +173,15 @@ export default function HistoryPage() {
           /* 记录列表 */
           <div className="p-4">
             <div className="space-y-3">
-              {filteredFootprints?.map((footprint) => (
-                footprint.type === "product" ? (
-                  <HistoryProductCard
-                    key={footprint.id}
-                    footprint={footprint}
-                    onCardClick={handleItemClick}
-                    onRemove={handleRemoveFootprint}
-                    isRemoving={removing === footprint.id}
-                    formatDate={formatDate}
-                  />
-                ) : (
-                  <HistoryBoothCard
-                    key={footprint.id}
-                    footprint={footprint}
-                    onCardClick={handleItemClick}
-                    onRemove={handleRemoveFootprint}
-                    isRemoving={removing === footprint.id}
-                    formatDate={formatDate}
-                  />
-                )
+              {footprints?.map((footprint) => (
+                <BoothHistoryCard
+                  key={footprint.id}
+                  footprint={footprint}
+                  onCardClick={handleItemClick}
+                  onRemove={handleRemoveFootprint}
+                  isRemoving={removing === footprint.id}
+                  formatDate={formatDate}
+                />
               ))}
             </div>
             
