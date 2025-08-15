@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { DraggableImageList, type ImageItem } from "./components/draggable-image-list";
-import { createBoothProduct } from "@/lib/api/booth";
+import { useCreateProduct } from "../hooks/use-product-management";
 import { useDictionary } from "@/hooks/api/useDictionary";
 import { DictType } from "@/types/dictionary";
 
@@ -46,7 +46,8 @@ export default function AddProductPage() {
   const [searchParams] = useSearchParams();
   const boothId = searchParams.get("boothId");
   
-  const [loading, setLoading] = useState(false);
+  // 使用创建商品的mutation hook
+  const createProductMutation = useCreateProduct();
   
   // 获取商品状态字典
   const { 
@@ -127,16 +128,17 @@ export default function AddProductPage() {
   const handleSave = async () => {
     if (!validateForm() || !boothId) return;
 
+    // 确保只传递File对象给API
+    const apiFormData = {
+      ...formData,
+      images: formData.images.filter((img): img is File => img instanceof File)
+    };
+    
     try {
-      setLoading(true);
-      
-      // 确保只传递File对象给API
-      const apiFormData = {
-        ...formData,
-        images: formData.images.filter((img): img is File => img instanceof File)
-      };
-      
-      const result = await createBoothProduct(boothId, apiFormData);
+      const result = await createProductMutation.mutateAsync({
+        boothId,
+        formData: apiFormData
+      });
 
       if (result.success) {
         toast.success(result.message, {
@@ -150,8 +152,6 @@ export default function AddProductPage() {
     } catch (error: any) {
       console.error("商品创建失败:", error);
       toast.error(error.message || "创建商品失败，请重试");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -477,10 +477,10 @@ export default function AddProductPage() {
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4">
         <button
           onClick={handleSave}
-          disabled={loading}
+          disabled={createProductMutation.isPending}
           className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-4 rounded-lg font-medium hover:from-orange-600 hover:to-red-600 disabled:from-gray-300 disabled:to-gray-300 disabled:cursor-not-allowed transition-all shadow-sm"
         >
-          {loading ? "保存中..." : "保存商品"}
+          {createProductMutation.isPending ? "保存中..." : "保存商品"}
         </button>
       </div>
     </div>

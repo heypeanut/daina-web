@@ -7,7 +7,8 @@ import {
   batchOnlineProducts,
   batchOfflineProducts,
   batchUpdateProducts,
-  updateBoothProduct
+  updateBoothProduct,
+  createBoothProduct
 } from "@/lib/api/booth";
 import type { 
   ProductListItem,
@@ -26,7 +27,7 @@ export function useBoothProductsManagement(
     pageNum?: number;
     pageSize?: number;
     keyword?: string;
-    status?: 'all' | 'active' | 'inactive';
+    status?: 'all' | '1' | '0';
     sortBy?: 'created_time' | 'price' | 'views';
     sortOrder?: 'asc' | 'desc';
   } = {}
@@ -120,6 +121,33 @@ export function useBatchUpdateProducts() {
     },
     onError: (error) => {
       console.error("批量操作失败:", error);
+    },
+  });
+}
+
+/**
+ * 创建产品Hook
+ */
+export function useCreateProduct() {
+  const queryClient = useQueryClient();
+
+  return useMutation<ProductCreateResponse, Error, { 
+    boothId: string; 
+    formData: ProductCreateForm 
+  }>({
+    mutationFn: async ({ boothId, formData }) => {
+      return await createBoothProduct(boothId, formData);
+    },
+    onSuccess: (data, variables) => {
+      console.log("商品创建成功:", data);
+      
+      // 失效商品管理列表缓存，触发重新请求列表接口
+      queryClient.invalidateQueries({ 
+        predicate: (query) => query.queryKey[0] === "booth-products-management" && query.queryKey[1] === variables.boothId
+      });
+    },
+    onError: (error) => {
+      console.error("商品创建失败:", error);
     },
   });
 }

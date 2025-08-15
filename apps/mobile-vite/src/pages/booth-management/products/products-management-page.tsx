@@ -16,21 +16,20 @@ import {
   useDeleteProduct,
   useBatchUpdateProducts,
 } from "../hooks/use-product-management";
-import { useDictMap, useDictionary } from "@/hooks/api/useDictionary";
+import { useDictionary } from "@/hooks/api/useDictionary";
 import { DictType } from "@/types/dictionary";
-import type { DictMap } from "@/types/dictionary";
 
-// 本地定义字典翻译函数
-const translateDictValue = (
-  value: string | undefined,
-  dictMap: DictMap | undefined
-): string => {
-  if (!value || !dictMap) return value || "";
-  return dictMap[value] || value;
-};
+// 本地定义字典翻译函数（暂未使用，保留备用）
+// const translateDictValue = (
+//   value: string | undefined,
+//   dictMap: DictMap | undefined
+// ): string => {
+//   if (!value || !dictMap) return value || "";
+//   return dictMap[value] || value;
+// };
 
 // 商品状态
-type ProductStatus = "active" | "inactive" | "all"; // active: 上架, inactive: 下架, all: 全部
+type ProductStatus = "1" | "0" | "all"; // 1: 上架, 0: 下架, all: 全部
 
 export default function ProductsManagementPage() {
   const navigate = useNavigate();
@@ -57,7 +56,8 @@ export default function ProductsManagementPage() {
   }
 
   // 状态管理
-  const [searchKeyword, setSearchKeyword] = useState("");
+  const [searchInput, setSearchInput] = useState("");      // 输入框的值
+  const [searchQuery, setSearchQuery] = useState("");     // 实际搜索的关键词
   const [showSearch, setShowSearch] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [bulkMode, setBulkMode] = useState(false);
@@ -69,8 +69,18 @@ export default function ProductsManagementPage() {
   const pageSize = 12;
 
   // 字典Hooks
-  const productStatusDictMap = useDictMap(DictType.PRODUCT_STATUS);
+  // const productStatusDictMap = useDictMap(DictType.PRODUCT_STATUS); // 暂未使用
   const { data: productStatusDict } = useDictionary(DictType.PRODUCT_STATUS);
+
+  // 构建API参数
+  const apiParams = {
+    pageNum: currentPage,
+    pageSize,
+    keyword: searchQuery || undefined,
+    status: filter === "all" ? undefined : filter,
+    sortBy: "created_time" as const,
+    sortOrder: "desc" as const,
+  };
 
   // API Hooks
   const {
@@ -78,14 +88,7 @@ export default function ProductsManagementPage() {
     isLoading,
     error,
     refetch,
-  } = useBoothProductsManagement(boothId, {
-    pageNum: currentPage,
-    pageSize,
-    keyword: searchKeyword || undefined,
-    status: filter === "all" ? undefined : filter,
-    sortBy: "created_time",
-    sortOrder: "desc",
-  });
+  } = useBoothProductsManagement(boothId, apiParams);
 
   const toggleStatusMutation = useToggleProductStatus();
   const deleteProductMutation = useDeleteProduct();
@@ -94,17 +97,17 @@ export default function ProductsManagementPage() {
   // 从API数据中获取产品列表
   const products = productsData?.rows || [];
   const totalProducts = productsData?.total || 0;
-  const hasNextPage = currentPage * pageSize < totalProducts;
 
   // 搜索处理
   const handleSearch = useCallback(() => {
-    setCurrentPage(1); // 重置到第一页
-    // 由于searchKeyword已经在依赖中，useQuery会自动重新请求
-  }, []);
+    setSearchQuery(searchInput);  // 将输入框的值设为搜索关键词
+    setCurrentPage(1);            // 重置到第一页
+  }, [searchInput]);
 
   // 清除搜索
   const handleClearSearch = useCallback(() => {
-    setSearchKeyword("");
+    setSearchInput("");     // 清空输入框
+    setSearchQuery("");     // 清空搜索关键词
     setShowSearch(false);
     setCurrentPage(1);
   }, []);
@@ -115,15 +118,9 @@ export default function ProductsManagementPage() {
     setCurrentPage(1); // 重置到第一页
   }, []);
 
-  // 加载更多
-  const handleLoadMore = useCallback(() => {
-    if (hasNextPage && !isLoading) {
-      setCurrentPage((prev) => prev + 1);
-    }
-  }, [hasNextPage, isLoading]);
-
   const handleBack = () => {
-    navigate(-1);
+    // 返回到档口管理页面，而不是使用浏览器历史记录
+    navigate(`/booth/management?id=${boothId}`);
   };
 
   const handleAddProduct = () => {
@@ -272,7 +269,7 @@ export default function ProductsManagementPage() {
           </button>
 
           <h1 className="text-lg font-semibold text-gray-900">
-            商品管理 ({totalProducts})
+            商品管理
           </h1>
 
           <div className="flex items-center gap-2">
@@ -297,8 +294,8 @@ export default function ProductsManagementPage() {
             <div className="flex gap-2">
               <input
                 type="text"
-                value={searchKeyword}
-                onChange={(e) => setSearchKeyword(e.target.value)}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
                 onKeyPress={(e) => e.key === "Enter" && handleSearch()}
                 placeholder="搜索商品名称..."
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
@@ -310,7 +307,7 @@ export default function ProductsManagementPage() {
               >
                 搜索
               </button>
-              {searchKeyword && (
+              {searchInput && (
                 <button
                   onClick={handleClearSearch}
                   className="px-4 py-2 text-gray-600 hover:text-gray-900"
@@ -419,12 +416,12 @@ export default function ProductsManagementPage() {
           <div className="flex flex-col items-center justify-center py-20">
             <Package className="w-16 h-16 text-gray-300 mb-4" />
             <p className="text-gray-500 text-center mb-2">
-              {searchKeyword ? "未找到相关商品" : "暂无商品"}
+              {searchQuery ? "未找到相关商品" : "暂无商品"}
             </p>
             <p className="text-gray-400 text-sm text-center mb-4">
-              {searchKeyword ? "试试其他关键词" : "发布您的第一个商品吧"}
+              {searchQuery ? "试试其他关键词" : "发布您的第一个商品吧"}
             </p>
-            {!searchKeyword && (
+            {!searchQuery && (
               <button
                 onClick={handleAddProduct}
                 className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
@@ -620,32 +617,33 @@ export default function ProductsManagementPage() {
               ))}
             </div>
 
-            {/* 加载更多 */}
-            {hasNextPage && (
-              <div className="flex justify-center mt-6">
+            {/* 简洁版分页 */}
+            {products.length > 0 && totalProducts > pageSize && (
+              <div className="flex items-center justify-center gap-4 mt-6">
                 <button
-                  onClick={handleLoadMore}
-                  disabled={isLoading}
-                  className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2"
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1 || isLoading}
+                  className="flex items-center gap-1 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 disabled:text-gray-300 disabled:cursor-not-allowed"
                 >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      加载中...
-                    </>
-                  ) : (
-                    "加载更多"
-                  )}
+                  <ArrowLeft className="w-4 h-4" />
+                  上一页
+                </button>
+                
+                <span className="text-sm text-gray-600">
+                  第 {currentPage} 页 / 共 {Math.ceil(totalProducts / pageSize)} 页
+                </span>
+                
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(Math.ceil(totalProducts / pageSize), prev + 1))}
+                  disabled={currentPage >= Math.ceil(totalProducts / pageSize) || isLoading}
+                  className="flex items-center gap-1 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 disabled:text-gray-300 disabled:cursor-not-allowed"
+                >
+                  下一页
+                  <ArrowLeft className="w-4 h-4 rotate-180" />
                 </button>
               </div>
             )}
 
-            {/* 已加载完所有数据 */}
-            {!hasNextPage && products.length > 0 && (
-              <div className="text-center mt-6 text-gray-500 text-sm">
-                已显示全部 {totalProducts} 个商品
-              </div>
-            )}
           </div>
         )}
       </div>

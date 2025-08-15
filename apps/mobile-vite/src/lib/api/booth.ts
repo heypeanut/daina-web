@@ -805,7 +805,7 @@ export async function getBoothProductsManagement(
     pageNum?: number;
     pageSize?: number;
     keyword?: string;
-    status?: "all" | "active" | "inactive";
+    status?: "all" | "1" | "0";
     sortBy?: "created_time" | "price" | "views";
     sortOrder?: "asc" | "desc";
   } = {}
@@ -819,6 +819,7 @@ export async function getBoothProductsManagement(
     ...(params.sortOrder && { sortOrder: params.sortOrder }),
   };
 
+
   try {
     const response = await tenantApi.get(
       `/product/booth/${boothId}/management`,
@@ -826,6 +827,7 @@ export async function getBoothProductsManagement(
         params: queryParams,
       }
     );
+    
     return response.data;
   } catch (error) {
     console.error("Error fetching booth products for management:", error);
