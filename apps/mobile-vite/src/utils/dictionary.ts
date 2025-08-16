@@ -1,4 +1,4 @@
-import { DictMap } from '@/types/dictionary';
+import type { DictMap } from '@/types/dictionary';
 
 export const translateDictValue = (
   value: string | undefined,

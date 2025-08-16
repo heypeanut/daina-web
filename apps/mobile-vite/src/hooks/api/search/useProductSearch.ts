@@ -1,28 +1,68 @@
 /**
  * 商品搜索相关的React Query Hooks
- * 
+ *
  * 提供商品搜索的状态管理、缓存、错误处理等功能
  * 支持基础搜索和无限滚动搜索两种模式
- * 
+ *
  * @author Claude Code
  * @version 1.0.0
  */
 
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
-import {
-  searchProducts,
-  ProductSearchParams,
-  ProductSearchResponse,
-} from "@/lib/api/search";
+import { searchProducts } from "@/lib/api/search";
+import type { Product } from "@/types/api";
+
+// 类型定义
+export interface ProductSearchParams {
+  keyword: string;
+  pageNum?: number;
+  pageSize?: number;
+  boothId?: string;
+  categoryId?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  sortBy?: "relevance" | "price" | "sales" | "latest";
+}
+
+export interface ProductSearchResponse {
+  rows: Product[];
+  total: number;
+  pageNum?: number;
+  pageSize?: number;
+  totalPages?: number;
+  hasNext?: boolean;
+  searchTime?: number;
+  suggestions?: string[];
+}
 
 // Query Keys
 export const PRODUCT_SEARCH_QUERY_KEYS = {
   all: ["productSearch"] as const,
   search: () => [...PRODUCT_SEARCH_QUERY_KEYS.all, "search"] as const,
   searchQuery: (params: ProductSearchParams) =>
-    [...PRODUCT_SEARCH_QUERY_KEYS.search(), params] as const,
+    [
+      ...PRODUCT_SEARCH_QUERY_KEYS.search(),
+      params.keyword,
+      params.pageNum,
+      params.pageSize,
+      params.boothId,
+      params.categoryId,
+      params.minPrice,
+      params.maxPrice,
+      params.sortBy,
+    ] as const,
   infinite: (params: Omit<ProductSearchParams, "pageNum">) =>
-    [...PRODUCT_SEARCH_QUERY_KEYS.all, "infinite", params] as const,
+    [
+      ...PRODUCT_SEARCH_QUERY_KEYS.all,
+      "infinite",
+      params.keyword,
+      params.pageSize,
+      params.boothId,
+      params.categoryId,
+      params.minPrice,
+      params.maxPrice,
+      params.sortBy,
+    ] as const,
 };
 
 // Cache times and performance settings
@@ -32,7 +72,7 @@ const CACHE_TIMES = {
 
 const PERFORMANCE_CONFIG = {
   MAX_PAGES: 10, // 最多缓存10页数据，防止内存泄漏
-  RETRY_COUNT: 2, // 重试次数
+  RETRY_COUNT: 0, // 禁用重试避免重复请求
   RETRY_DELAY: 1000, // 重试延迟（毫秒）
   GC_TIME: 10 * 60 * 1000, // 10分钟后清理未使用的缓存
 };
@@ -51,17 +91,20 @@ export function useProductSearch(
 
   return useQuery({
     queryKey: PRODUCT_SEARCH_QUERY_KEYS.searchQuery(params),
-    queryFn: async ({ signal }): Promise<ProductSearchResponse> => await searchProducts(params, signal),
+    queryFn: async ({ signal }): Promise<ProductSearchResponse> =>
+      await searchProducts(params, signal),
     // 性能优化配置
     staleTime: CACHE_TIMES.PRODUCT_SEARCH,
     gcTime: PERFORMANCE_CONFIG.GC_TIME,
     enabled: enabled && !!params.keyword?.trim(),
-    placeholderData: keepPreviousData ? (previousData) => previousData : undefined,
+    placeholderData: keepPreviousData
+      ? (previousData) => previousData
+      : undefined,
     retry: PERFORMANCE_CONFIG.RETRY_COUNT,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     refetchOnWindowFocus: false,
     // 减少不必要的重新渲染
-    notifyOnChangeProps: ['data', 'error', 'isError', 'isLoading'],
+    notifyOnChangeProps: ["data", "error", "isError", "isLoading"],
   });
 }
 
@@ -74,7 +117,10 @@ export function useInfiniteProductSearch(
 
   return useInfiniteQuery({
     queryKey: PRODUCT_SEARCH_QUERY_KEYS.infinite(params),
-    queryFn: async ({ pageParam = 1, signal }): Promise<ProductSearchResponse> => {
+    queryFn: async ({
+      pageParam = 1,
+      signal,
+    }): Promise<ProductSearchResponse> => {
       const searchParams = {
         ...params,
         pageNum: pageParam,
@@ -88,28 +134,39 @@ export function useInfiniteProductSearch(
       const currentPageNumber = pages.length; // 当前已加载页数
       const nextPageNumber = currentPageNumber + 1; // 下一页的页码
       const pageSize = lastPage.pageSize || 20;
-      const totalPages = lastPage.totalPages || Math.ceil(lastPage.total / pageSize);
-      
+      const totalPages =
+        lastPage.totalPages || Math.ceil(lastPage.total / pageSize);
+
       // 限制最大页数，防止内存泄漏
       if (pages.length >= PERFORMANCE_CONFIG.MAX_PAGES) {
         return undefined;
       }
-      
+
       // 检查是否还有下一页
       const hasNextPage = nextPageNumber <= totalPages;
-      
+
       return hasNextPage ? nextPageNumber : undefined;
     },
     // 性能优化配置
     staleTime: CACHE_TIMES.PRODUCT_SEARCH,
-    gcTime: PERFORMANCE_CONFIG.GC_TIME, // 替代 cacheTime
+    gcTime: PERFORMANCE_CONFIG.GC_TIME,
     enabled: enabled && !!params.keyword?.trim(),
-    retry: PERFORMANCE_CONFIG.RETRY_COUNT,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-    // 网络空闲时重新获取数据
+    retry: false, // 完全禁用重试
+    retryDelay: 0,
     refetchOnWindowFocus: false,
-    refetchOnMount: true,
+    refetchOnMount: false,
+    refetchOnReconnect: false, // 禁用重连时重新请求
+    refetchInterval: false, // 禁用定时重新请求
+    refetchIntervalInBackground: false,
+    // 防止重复请求的关键配置
+    networkMode: "online", // 只在在线时请求
     // 减少不必要的重新渲染
-    notifyOnChangeProps: ['data', 'error', 'isError', 'isLoading', 'isFetchingNextPage'],
+    notifyOnChangeProps: [
+      "data",
+      "error",
+      "isError",
+      "isLoading",
+      "isFetchingNextPage",
+    ],
   });
 }

@@ -35,7 +35,7 @@ export interface Product {
   name: string;
   price: number;
   originalPrice?: number;
-  coverImage: string;
+  images: { url: string }[];
   description?: string;
   category?: string;
   views?: number;

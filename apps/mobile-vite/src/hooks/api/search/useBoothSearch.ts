@@ -9,20 +9,37 @@
  */
 
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
-import {
-  searchBooths,
-  BoothSearchParams,
-  BoothSearchResponse,
-} from "@/lib/api/search";
+import { searchBooths } from "@/lib/api/search";
+
+// 类型定义
+export interface BoothSearchParams {
+  keyword: string;
+  pageNum?: number;
+  pageSize?: number;
+  location?: string;
+  categoryId?: string;
+  sortBy?: 'relevance' | 'popular' | 'rating';
+}
+
+export interface BoothSearchResponse {
+  rows: any[];
+  total: number;
+  pageNum?: number;
+  pageSize?: number;
+  totalPages?: number;
+  hasNext?: boolean;
+  searchTime?: number;
+  suggestions?: string[];
+}
 
 // Query Keys
 export const BOOTH_SEARCH_QUERY_KEYS = {
   all: ["boothSearch"] as const,
   search: () => [...BOOTH_SEARCH_QUERY_KEYS.all, "search"] as const,
   searchQuery: (params: BoothSearchParams) =>
-    [...BOOTH_SEARCH_QUERY_KEYS.search(), params] as const,
+    [...BOOTH_SEARCH_QUERY_KEYS.search(), params.keyword, params.pageNum, params.pageSize, params.location, params.categoryId, params.sortBy] as const,
   infinite: (params: Omit<BoothSearchParams, "pageNum">) =>
-    [...BOOTH_SEARCH_QUERY_KEYS.all, "infinite", params] as const,
+    [...BOOTH_SEARCH_QUERY_KEYS.all, "infinite", params.keyword, params.pageSize, params.location, params.categoryId, params.sortBy] as const,
 };
 
 // Cache times and performance settings
@@ -32,7 +49,7 @@ const CACHE_TIMES = {
 
 const PERFORMANCE_CONFIG = {
   MAX_PAGES: 10, // 最多缓存10页数据，防止内存泄漏
-  RETRY_COUNT: 2, // 重试次数
+  RETRY_COUNT: 0, // 禁用重试避免重复请求
   RETRY_DELAY: 1000, // 重试延迟（毫秒）
   GC_TIME: 10 * 60 * 1000, // 10分钟后清理未使用的缓存
 };
@@ -103,10 +120,15 @@ export function useInfiniteBoothSearch(
     staleTime: CACHE_TIMES.BOOTH_SEARCH,
     gcTime: PERFORMANCE_CONFIG.GC_TIME,
     enabled: enabled && !!params.keyword?.trim(),
-    retry: PERFORMANCE_CONFIG.RETRY_COUNT,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    retry: false, // 完全禁用重试
+    retryDelay: 0,
     refetchOnWindowFocus: false,
-    refetchOnMount: true,
+    refetchOnMount: false,
+    refetchOnReconnect: false, // 禁用重连时重新请求
+    refetchInterval: false, // 禁用定时重新请求
+    refetchIntervalInBackground: false,
+    // 防止重复请求的关键配置
+    networkMode: 'online', // 只在在线时请求
     notifyOnChangeProps: ['data', 'error', 'isError', 'isLoading', 'isFetchingNextPage'],
   });
 }
