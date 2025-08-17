@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { MobileLayout } from '@/components/layout';
-import { Search, Camera, ArrowLeft, X } from 'lucide-react';
+import { Camera, X } from 'lucide-react';
 import { UnifiedSearchBar } from '@/components/common';
 
 export default function SearchPage() {
@@ -11,8 +11,6 @@ export default function SearchPage() {
   const [boothKeyword, setBoothKeyword] = useState('');
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<'product' | 'booth'>('product');
-  const [productId, setProductId] = useState('');
-  const [boothId, setBoothId] = useState('');
   const [boothIdParam, setBoothIdParam] = useState('');
   const [currentBoothInfo, setCurrentBoothInfo] = useState<{id: string; name: string} | null>(null);
 
@@ -110,26 +108,6 @@ export default function SearchPage() {
     navigate(`/search/image?searchType=${searchType}`);
   };
 
-  const handleProductIdSearch = () => {
-    if (productId.trim()) {
-      console.log('商品ID查询:', productId.trim());
-      let searchUrl = `/search/results?type=product&mode=id&q=${encodeURIComponent(productId.trim())}`;
-
-      // 如果是档口内搜索，添加boothId参数
-      if (boothIdParam) {
-        searchUrl += `&boothId=${boothIdParam}`;
-      }
-
-      navigate(searchUrl);
-    }
-  };
-
-  const handleBoothIdSearch = () => {
-    if (boothId.trim()) {
-      console.log('档口ID查询:', boothId.trim());
-      navigate(`/search/results?type=booth&mode=id&q=${encodeURIComponent(boothId.trim())}`);
-    }
-  };
 
   // 计算当前搜索关键词和占位符
   const currentKeyword = boothIdParam || activeTab === 'product' ? productKeyword : boothKeyword;

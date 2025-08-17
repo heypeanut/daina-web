@@ -1,32 +1,11 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { MobileLayout } from "@/components/layout";
-import { ArrowLeft, Search, Filter } from "lucide-react";
+import { ArrowLeft, Search } from "lucide-react";
 import ProductSearchResults from "@/pages/search/components/ProductSearchResults";
 import BoothSearchResults from "@/pages/search/components/BoothSearchResults";
 
-// 图片搜索结果类型
-interface Product {
-  id: string;
-  name: string;
-  price: number;
-  originalPrice?: number;
-  imageUrl: string;
-  similarity?: number;
-  shop: string;
-  views?: number;
-}
-
-interface Booth {
-  id: string;
-  boothName: string;
-  market: string;
-  imageUrl: string;
-  similarity?: number;
-  productsCount: number;
-  followers?: number;
-  views?: number;
-}
+import type { Product, Booth } from "@/types/api";
 
 export default function SearchResultsPage() {
   const navigate = useNavigate();
@@ -207,18 +186,6 @@ export default function SearchResultsPage() {
             </div>
           )}
         </div>
-
-        {/* 筛选栏 */}
-        {!isImageSearch && (
-          <div className="bg-white border-b border-gray-100 px-4 py-3">
-            <div className="flex items-center">
-              <button className="flex items-center text-sm text-gray-600">
-                <Filter className="w-4 h-4 mr-1" />
-                筛选
-              </button>
-            </div>
-          </div>
-        )}
 
         {/* 搜索结果内容 */}
         {renderContent()}

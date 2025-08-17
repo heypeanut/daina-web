@@ -10,6 +10,7 @@
 
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { searchBooths } from "@/lib/api/search";
+import type { Booth } from "@/types/api";
 
 // 类型定义
 export interface BoothSearchParams {
@@ -22,7 +23,7 @@ export interface BoothSearchParams {
 }
 
 export interface BoothSearchResponse {
-  rows: any[];
+  rows: Booth[];
   total: number;
   pageNum?: number;
   pageSize?: number;
@@ -72,7 +73,9 @@ export function useBoothSearch(
     staleTime: CACHE_TIMES.BOOTH_SEARCH,
     gcTime: PERFORMANCE_CONFIG.GC_TIME,
     enabled: enabled && !!params.keyword?.trim(),
-    keepPreviousData,
+    placeholderData: keepPreviousData
+      ? (previousData) => previousData
+      : undefined,
     retry: PERFORMANCE_CONFIG.RETRY_COUNT,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     refetchOnWindowFocus: false,

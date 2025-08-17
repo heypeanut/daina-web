@@ -15,7 +15,6 @@ export default function BoothSearchResults() {
   const keyword = useMemo(() => searchParams.get("q") || "", [searchParams]);
   const queryParams = useMemo(() => ({ keyword }), [keyword]);
 
-  // 只有一个查询
   const boothQuery = useInfiniteBoothSearch(queryParams, {
     enabled: !!keyword,
   });
@@ -60,7 +59,14 @@ export default function BoothSearchResults() {
       {/* 搜索结果统计信息 */}
       <div className="flex items-center justify-between mb-4">
         <span className="text-sm text-gray-600">
-          已加载 {allBooths.length} 个档口
+          {boothQuery.data?.pages[0]?.total ? (
+            <>
+              共找到 <span className="text-orange-500 font-medium">{boothQuery.data.pages[0].total}</span> 个档口，
+              已加载 {allBooths.length} 个
+            </>
+          ) : (
+            `已加载 ${allBooths.length} 个档口`
+          )}
         </span>
         <ViewModeToggle
           viewMode={viewMode}
