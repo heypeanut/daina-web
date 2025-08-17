@@ -42,6 +42,12 @@ export interface ImageSearchResponse<T> {
   pageSize?: number;
 }
 
+export interface ApiResponse<T> {
+  code: number;
+  message: string;
+  data: T;
+}
+
 // ==================== 上传相关类型 ====================
 
 export interface UploadResponse {
@@ -108,6 +114,27 @@ export async function searchProductsByImage(
   const response = await tenantApi.postFormData('/search/image/product', formData);
   
   return response.data;
+}
+
+/**
+ * 使用base64格式的产品图片搜索（新版API）
+ */
+export async function searchProductsByImageBase64(
+  imageBase64: string,
+  options: ImageSearchOptions = {}
+): Promise<ImageSearchResponse<ProductSearchResult>> {
+  const requestBody = {
+    image: imageBase64,
+    pageNum: options.pageNum || 1,
+    pageSize: options.limit || 20,
+    minSimilarity: options.minSimilarity || 0.7,
+    boothId: options.boothId || null
+  };
+  
+  const response = await tenantApi.post('/search/images', requestBody);
+  
+  // tenantApi返回的是 { data: T }，而T就是我们需要的数据部分
+  return response.data as ImageSearchResponse<ProductSearchResult>;
 }
 
 // ==================== 图片上传API ====================

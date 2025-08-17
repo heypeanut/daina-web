@@ -4,6 +4,9 @@ import { MobileLayout } from "@/components/layout";
 import { ArrowLeft, Search } from "lucide-react";
 import ProductSearchResults from "@/pages/search/components/ProductSearchResults";
 import BoothSearchResults from "@/pages/search/components/BoothSearchResults";
+import ProductCard from "@/pages/search/components/ProductCard";
+import { searchProductsByImageBase64 } from "@/lib/api/upload-search";
+import { useInfiniteScroll } from "@/hooks/useIntersectionObserver";
 
 import type { Product, Booth } from "@/types/api";
 
@@ -17,6 +20,9 @@ export default function SearchResultsPage() {
   const [imageBooths, setImageBooths] = useState<Booth[]>([]);
   const [imageProductTotal, setImageProductTotal] = useState(0);
   const [imageBoothTotal, setImageBoothTotal] = useState(0);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchImage, setSearchImage] = useState<string>("");
 
   // 获取搜索参数
   const keyword = useMemo(() => searchParams.get("q") || "", [searchParams]);
@@ -28,7 +34,6 @@ export default function SearchResultsPage() {
     () => searchType.startsWith("image-"),
     [searchType]
   );
-  const searchImage = sessionStorage.getItem("searchImage");
 
   // 计算当前搜索模式
   const currentSearchMode = useMemo(() => {
@@ -45,14 +50,31 @@ export default function SearchResultsPage() {
         setError("");
         try {
           const imageResults = sessionStorage.getItem("imageSearchResults");
-          if (imageResults) {
+          const searchImageData = sessionStorage.getItem("searchImage");
+          
+          if (imageResults && searchImageData) {
             const results = JSON.parse(imageResults);
+            setSearchImage(searchImageData);
+            
             if (searchType === "image-product") {
-              setImageProducts(results.rows || []);
+              // 转换API返回的数据格式为Product格式
+              const products = (results.rows || []).map((item: any) => ({
+                id: item.product.id,
+                name: item.product.name,
+                price: item.product.price,
+                images: item.product.images || [{ url: item.url }],
+                category: item.product.category,
+                views: item.product.views,
+                createdAt: item.product.createdAt,
+                similarity: item.similarity // 添加相似度信息
+              }));
+              setImageProducts(products);
               setImageProductTotal(results.total || 0);
+              setCurrentPage(1); // 重置页码
             } else {
               setImageBooths(results.rows || []);
               setImageBoothTotal(results.total || 0);
+              setCurrentPage(1); // 重置页码
             }
           }
         } catch (error) {
@@ -64,8 +86,80 @@ export default function SearchResultsPage() {
     }
   }, [searchType, isImageSearch]);
 
+  // 加载更多图片搜索结果
+  const handleLoadMoreImageResults = async () => {
+    if (isLoadingMore || !searchImage) return;
+    
+    const nextPage = currentPage + 1;
+    const hasMoreData = currentSearchMode === "product" 
+      ? imageProducts.length < imageProductTotal
+      : imageBooths.length < imageBoothTotal;
+      
+    if (!hasMoreData) return;
+
+    try {
+      setIsLoadingMore(true);
+      
+      if (currentSearchMode === "product") {
+        const result = await searchProductsByImageBase64(searchImage, {
+          pageNum: nextPage,
+          limit: 20,
+          minSimilarity: 0.75,
+        });
+
+        if (result && result.rows && result.rows.length > 0) {
+          const newProducts = result.rows.map((item: any) => ({
+            id: item.product.id,
+            name: item.product.name,
+            price: item.product.price,
+            images: item.product.images || [{ url: item.url }],
+            category: item.product.category,
+            views: item.product.views,
+            createdAt: item.product.createdAt,
+            similarity: item.similarity
+          }));
+          
+          setImageProducts(prev => [...prev, ...newProducts]);
+          setCurrentPage(nextPage);
+        }
+      }
+      // TODO: 添加booth的分页加载逻辑
+      
+    } catch (error) {
+      console.error("加载更多图片搜索结果失败:", error);
+      setError("加载更多结果失败");
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
+
+  // 无限滚动hook - 只在图片搜索时使用
+  const hasMoreImageData = isImageSearch && (
+    currentSearchMode === "product" 
+      ? imageProducts.length < imageProductTotal
+      : imageBooths.length < imageBoothTotal
+  );
+
+  const { triggerRef, shouldShowTrigger } = useInfiniteScroll(
+    handleLoadMoreImageResults,
+    {
+      hasMore: hasMoreImageData,
+      isLoading: isLoadingMore,
+      threshold: 0.1,
+      rootMargin: '100px',
+    }
+  );
+
   const handleBack = () => {
     navigate(-1);
+  };
+
+  const handleProductClick = (productId: string) => {
+    navigate(`/product/${productId}`);
+  };
+
+  const handleBoothClick = (boothId: string) => {
+    navigate(`/booth/${boothId}`);
   };
 
   const getSearchTitle = () => {
@@ -118,14 +212,77 @@ export default function SearchResultsPage() {
         );
       }
 
-      // 这里可以渲染图片搜索的结果，暂时简化处理
+      // 渲染图片搜索的结果
       return (
         <div className="p-4">
           <p className="text-sm text-gray-600 mb-4">
-            已找到 {currentResults.length} 个
+            已找到 {getCurrentTotal()} 个
             {currentSearchMode === "product" ? "商品" : "档口"}
+            {getCurrentTotal() > currentResults.length && (
+              <span className="text-gray-500">
+                （已显示 {currentResults.length} 个）
+              </span>
+            )}
           </p>
-          {/* 图片搜索结果的具体渲染逻辑可以后续添加 */}
+          {currentSearchMode === "product" ? (
+            <>
+              <div className="grid grid-cols-2 gap-4">
+                {imageProducts.map((product) => (
+                  <ProductCard 
+                    key={product.id}
+                    product={product}
+                    viewMode="grid"
+                    onClick={() => handleProductClick(product.id)}
+                  />
+                ))}
+              </div>
+              
+              {/* 无限滚动触发器 */}
+              {shouldShowTrigger && (
+                <div ref={triggerRef} className="mt-6 py-4 flex justify-center">
+                  {isLoadingMore && (
+                    <div className="flex items-center space-x-2">
+                      <div className="animate-spin w-5 h-5 border-2 border-orange-500 border-t-transparent rounded-full" />
+                      <span className="text-sm text-gray-600">加载更多商品...</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <div className="space-y-4">
+                {imageBooths.map((booth, index) => (
+                  <div 
+                    key={booth.id || index} 
+                    onClick={() => booth.id && handleBoothClick(booth.id)}
+                    className="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer border border-gray-100 hover:border-orange-200 active:scale-[0.98]"
+                  >
+                    <h3 className="font-medium text-gray-900 mb-2">{booth.name}</h3>
+                    {booth.description && (
+                      <p className="text-sm text-gray-600 line-clamp-2">{booth.description}</p>
+                    )}
+                    <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
+                      <span>点击查看详情</span>
+                      <span className="text-orange-500">→</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              {/* 无限滚动触发器 */}
+              {shouldShowTrigger && (
+                <div ref={triggerRef} className="mt-6 py-4 flex justify-center">
+                  {isLoadingMore && (
+                    <div className="flex items-center space-x-2">
+                      <div className="animate-spin w-5 h-5 border-2 border-orange-500 border-t-transparent rounded-full" />
+                      <span className="text-sm text-gray-600">加载更多档口...</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          )}
         </div>
       );
     }

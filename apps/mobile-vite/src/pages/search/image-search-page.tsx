@@ -1,67 +1,16 @@
-import React, { useState, useRef, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import React, { useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { MobileLayout } from "@/components/layout";
 import { Camera, ArrowLeft, Upload, ImageIcon, X } from "lucide-react";
 import { toast } from "sonner";
+import { searchProductsByImageBase64 } from "@/lib/api/upload-search";
 
-// Mock API函数
-const searchProductsByImage = async (file: File, options: { limit: number; minSimilarity: number }) => {
-  // 模拟API延迟
-  await new Promise(resolve => setTimeout(resolve, 2000));
-  
-  // 模拟搜索结果
-  return {
-    rows: [
-      {
-        id: "1",
-        name: "iPhone 15 透明保护壳",
-        price: 29.9,
-        originalPrice: 39.9,
-        imageUrl: "/placeholder-product.jpg",
-        similarity: 0.92,
-        shop: "数码配件专营店"
-      },
-      {
-        id: "2", 
-        name: "手机防摔保护套",
-        price: 19.9,
-        originalPrice: 29.9,
-        imageUrl: "/placeholder-product.jpg",
-        similarity: 0.88,
-        shop: "手机配件批发"
-      }
-    ],
-    total: 2
-  };
-};
-
-const searchBoothsByImage = async (file: File, options: { limit: number; minSimilarity: number }) => {
-  // 模拟API延迟
-  await new Promise(resolve => setTimeout(resolve, 2000));
-  
-  // 模拟搜索结果
-  return {
-    rows: [
-      {
-        id: "1",
-        boothName: "潮流手机配件专营店",
-        market: "广州天河电脑城",
-        imageUrl: "/placeholder-booth.jpg",
-        similarity: 0.89,
-        productsCount: 120
-      }
-    ],
-    total: 1
-  };
-};
 
 export default function ImageSearchPage() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [searchType, setSearchType] = useState<"booth" | "product">("booth");
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -104,10 +53,23 @@ export default function ImageSearchPage() {
     cameraInput.onchange = (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
-        // 使用相同的处理逻辑
-        handleFileSelect({
-          target: { files: [file] },
-        } as React.ChangeEvent<HTMLInputElement>);
+        // 直接处理文件，不需要模拟事件
+        if (file.size > 10 * 1024 * 1024) {
+          toast.error("图片文件不能超过10MB");
+          return;
+        }
+
+        if (!file.type.startsWith("image/")) {
+          toast.error("请选择图片文件");
+          return;
+        }
+
+        setSelectedFile(file);
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setSelectedImage(e.target?.result as string);
+        };
+        reader.readAsDataURL(file);
       }
       // 清理临时元素
       document.body.removeChild(cameraInput);
@@ -118,34 +80,25 @@ export default function ImageSearchPage() {
   };
 
   const handleSearch = async () => {
-    if (selectedFile) {
+    if (selectedFile && selectedImage) {
       try {
         setIsSearching(true);
         setError(null);
-        let result;
+        
+        // 使用完整的Base64格式（包含data:image/...;base64,前缀）
+        
+        const result = await searchProductsByImageBase64(selectedImage, {
+          limit: 20,
+          minSimilarity: 0.75,
+        });
 
-        if (searchType === "product") {
-          result = await searchProductsByImage(selectedFile, {
-            limit: 20,
-            minSimilarity: 0.75,
-          });
-        } else {
-          result = await searchBoothsByImage(selectedFile, {
-            limit: 20,
-            minSimilarity: 0.75,
-          });
-        }
-
-        // API返回标准格式：{rows: [...], total: n}
+        // tenantApi已经处理了响应，直接返回的就是data部分：{rows: [...], total: n}
         if (result && result.rows && result.rows.length > 0) {
           // 将搜索结果保存到sessionStorage，传递给结果页面
           sessionStorage.setItem("imageSearchResults", JSON.stringify(result));
-          sessionStorage.setItem("searchImage", selectedImage || "");
+          sessionStorage.setItem("searchImage", selectedImage);
 
-          // 根据搜索类型设置URL
-          const urlType =
-            searchType === "product" ? "image-product" : "image-booth";
-          navigate(`/search/results?type=${urlType}`);
+          navigate(`/search/results?type=image-product`);
         } else {
           // 无搜索结果
           toast.error("未找到相似的结果，请尝试其他图片");
@@ -168,22 +121,10 @@ export default function ImageSearchPage() {
     setError(null);
   };
 
-  // 从URL参数检测搜索类型
-  useEffect(() => {
-    const type = searchParams.get("searchType");
-    if (type === "product") {
-      setSearchType("product");
-    }
-  }, [searchParams]);
-
-  // 动态生成页面标题和按钮文本
-  const pageTitle = searchType === "product" ? "以图搜商品" : "以图搜档口";
-  const searchButtonText =
-    searchType === "product" ? "开始搜索商品" : "开始搜索档口";
-  const descriptionText =
-    searchType === "product"
-      ? "上传商品图片，快速找到相似的商品信息"
-      : "上传商品图片，快速找到相似的档口信息";
+  // 固定为商品搜索
+  const pageTitle = "以图搜商品";
+  const searchButtonText = "开始搜索商品";
+  const descriptionText = "上传商品图片，快速找到相似的商品信息";
 
   return (
     <MobileLayout showTabBar={false}>
@@ -212,7 +153,7 @@ export default function ImageSearchPage() {
               </div>
               <div className="flex-1">
                 <h3 className="text-base font-medium text-gray-900 mb-2">
-                  拍照搜索{searchType === "product" ? "商品" : "档口"}
+                  拍照搜索商品
                 </h3>
                 <p className="text-sm text-gray-600">{descriptionText}</p>
               </div>

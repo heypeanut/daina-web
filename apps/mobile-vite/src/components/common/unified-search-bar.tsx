@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { Search, Filter, Camera, X, ArrowLeft, Share2 } from 'lucide-react';
+import { Search, Filter, Camera, X, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { searchProductsByImageBase64 } from '@/lib/api/upload-search';
+import { toast } from 'sonner';
 
 export interface UnifiedSearchBarProps {
   // 基础配置
@@ -48,8 +50,6 @@ export function UnifiedSearchBar({
   
   // Logo配置
   showLogo = true,
-  logoSrc = '/logo.png',
-  logoSize = 28,
   
   // 搜索功能
   placeholder = '搜索商品关键字或货号',
@@ -61,15 +61,12 @@ export function UnifiedSearchBar({
   // 右侧按钮
   showFilter = false,
   showCamera = false,
-  showShare = false,
   onFilterClick,
   onCameraClick,
-  onShareClick,
   
   // 档口页专用
   showBack = false,
   onBackClick,
-  title,
   
   // 搜索状态
   isFocused: externalFocused,
@@ -124,7 +121,72 @@ export function UnifiedSearchBar({
     if (onCameraClick) {
       onCameraClick();
     } else {
-      navigate('/search/image');
+      // 直接触发图片选择
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.style.display = 'none';
+      
+      input.onchange = async (e) => {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        if (file) {
+          try {
+            // 检查文件大小和类型
+            if (file.size > 10 * 1024 * 1024) {
+              toast.error('图片文件不能超过10MB');
+              return;
+            }
+            
+            if (!file.type.startsWith('image/')) {
+              toast.error('请选择图片文件');
+              return;
+            }
+            
+            // 显示加载提示
+            toast.loading('正在搜索中...', { id: 'image-search' });
+            
+            // 转换为base64并调用搜索API
+            const reader = new FileReader();
+            reader.onload = async () => {
+              try {
+                const base64Image = reader.result as string;
+                // 使用完整的Base64格式（包含data:image/...;base64,前缀）
+                
+                const result = await searchProductsByImageBase64(base64Image, {
+                  limit: 20,
+                  minSimilarity: 0.75,
+                });
+
+                toast.dismiss('image-search');
+
+                // tenantApi已经处理了响应，直接返回的就是data部分：{rows: [...], total: n}
+                if (result && result.rows && result.rows.length > 0) {
+                  // 将搜索结果保存到sessionStorage，传递给结果页面
+                  sessionStorage.setItem('imageSearchResults', JSON.stringify(result));
+                  sessionStorage.setItem('searchImage', base64Image);
+                  navigate('/search/results?type=image-product');
+                } else {
+                  toast.error('未找到相似的结果，请尝试其他图片');
+                }
+              } catch (error) {
+                toast.dismiss('image-search');
+                console.error('图片搜索失败:', error);
+                toast.error('搜索失败，请重试');
+              }
+            };
+            reader.readAsDataURL(file);
+            
+          } catch (error) {
+            console.error('图片处理失败:', error);
+            toast.error('图片处理失败，请重试');
+          }
+        }
+        // 清理元素
+        document.body.removeChild(input);
+      };
+      
+      document.body.appendChild(input);
+      input.click();
     }
   };
   
@@ -176,8 +238,8 @@ export function UnifiedSearchBar({
     );
   }
 
-  // market variant和home variant使用相同的样式
-  if (variant === 'market' || variant === 'home') {
+  // market variant也使用相同的样式
+  if (variant === 'market') {
     return (
       <div className={`bg-gradient-to-r from-orange-500 to-red-500 px-4 py-3 ${className}`}>
         <div className="flex items-center space-x-3">
