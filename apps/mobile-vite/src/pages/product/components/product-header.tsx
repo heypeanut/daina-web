@@ -1,4 +1,4 @@
-import { ArrowLeft, Share2, ShoppingCart } from 'lucide-react';
+import { ArrowLeft, Share2, ShoppingCart, Heart } from "lucide-react";
 
 interface ProductHeaderProps {
   title?: string;
@@ -6,19 +6,27 @@ interface ProductHeaderProps {
   onShareClick?: () => void;
   showCart?: boolean;
   onCartClick?: () => void;
+  showFavorite?: boolean;
+  isFavorited?: boolean;
+  onFavoriteClick?: () => void;
   className?: string;
 }
 
 export function ProductHeader({
-  title = '商品详情',
+  title = "商品详情",
   onBackClick,
   onShareClick,
   showCart = false,
   onCartClick,
-  className = ''
+  showFavorite = false,
+  isFavorited = false,
+  onFavoriteClick,
+  className = "",
 }: ProductHeaderProps) {
   return (
-    <div className={`bg-white px-4 py-3 flex items-center border-b border-gray-100 ${className}`}>
+    <div
+      className={`bg-white px-4 py-3 flex items-center border-b border-gray-100 ${className}`}
+    >
       {/* 返回按钮 */}
       <button
         onClick={onBackClick}
@@ -34,6 +42,20 @@ export function ProductHeader({
 
       {/* 右侧按钮组 */}
       <div className="flex items-center gap-2 ml-3">
+        {/* 收藏按钮 */}
+        {showFavorite && onFavoriteClick && (
+          <button
+            onClick={onFavoriteClick}
+            className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors ${
+              isFavorited
+                ? "bg-pink-100 text-pink-600"
+                : "text-gray-600 hover:bg-gray-100"
+            }`}
+          >
+            <Heart size={18} className={isFavorited ? "fill-current" : ""} />
+          </button>
+        )}
+
         {/* 分享按钮 */}
         {onShareClick && (
           <button

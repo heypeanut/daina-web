@@ -1,46 +1,68 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, ShoppingCart, Trash2, Package } from "lucide-react";
+import { ArrowLeft, Package, Trash2 } from "lucide-react";
 import { ImageLazyLoader } from "@/components/common";
-import { useGetFavoriteProducts } from "../hooks";
-import { type FavoriteProduct } from "@/lib/api/user-behavior";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  getFavoriteProducts,
+  removeProductFromFavorites,
+} from "@/lib/api/user-behavior";
+import type { FavoriteProduct } from "@/lib/api/user-behavior";
+import type { PaginatedResponse } from "@/lib/api/config";
 
 export default function FavoritesPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [removing, setRemoving] = useState<string | null>(null);
-  const { data: favoriteProducts } = useGetFavoriteProducts();
 
-  const handleBack = () => {
-    navigate(-1);
-  };
+  // 获取收藏商品列表
+  const { data: favoriteProducts, isLoading } = useQuery<
+    PaginatedResponse<FavoriteProduct>
+  >({
+    queryKey: ["favoriteProducts"],
+    queryFn: () => getFavoriteProducts(1, 20),
+    staleTime: 0, // 数据立即过期，确保每次都重新获取
+    refetchOnWindowFocus: true, // 窗口重新获得焦点时刷新
+    refetchOnMount: true, // 组件挂载时刷新
+  });
 
-  const handleProductClick = (productId: string) => {
-    navigate(`/product/${productId}`);
-  };
-
-  const handleRemoveFavorite = async (productId: string) => {
-    setRemoving(productId);
-
-    try {
-      // 模拟API延迟
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      // TODO: 调用实际的取消收藏API
-      console.log(`已取消收藏商品: ${productId}`);
-    } catch (error) {
+  // 取消收藏mutation
+  const removeFavoriteMutation = useMutation({
+    mutationFn: removeProductFromFavorites,
+    onSuccess: () => {
+      // 刷新收藏列表
+      queryClient.invalidateQueries({ queryKey: ["favoriteProducts"] });
+    },
+    onError: (error) => {
       console.error("取消收藏失败:", error);
       alert("取消收藏失败，请重试");
-    } finally {
-      setRemoving(null);
-    }
-  };
+    },
+  });
 
-  const formatPrice = (price: number | null | undefined) => {
-    if (price === null || price === undefined) return "";
-    return `¥${price.toFixed(2)}`;
-  };
+  const handleBack = useCallback(() => {
+    navigate(-1);
+  }, [navigate]);
 
-  const formatDate = (dateString: string) => {
+  const handleProductClick = useCallback(
+    (productId: string) => {
+      navigate(`/product/${productId}`);
+    },
+    [navigate]
+  );
+
+  const handleRemoveFavorite = useCallback(
+    async (productId: string) => {
+      setRemoving(productId);
+      try {
+        await removeFavoriteMutation.mutateAsync(productId);
+      } finally {
+        setRemoving(null);
+      }
+    },
+    [removeFavoriteMutation]
+  );
+
+  const formatDate = useCallback((dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
     const diffTime = now.getTime() - date.getTime();
@@ -51,7 +73,11 @@ export default function FavoritesPage() {
     if (diffDays < 7) return `${diffDays}天前`;
     if (diffDays < 30) return `${Math.floor(diffDays / 7)}周前`;
     return date.toLocaleDateString();
-  };
+  }, []);
+
+  const formatPrice = useCallback((price: number) => {
+    return `¥${price.toFixed(2)}`;
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -73,7 +99,17 @@ export default function FavoritesPage() {
 
       {/* 内容区域 */}
       <div className="pb-6">
-        {!favoriteProducts || favoriteProducts.rows.length === 0 ? (
+        {isLoading && !favoriteProducts?.rows?.length ? (
+          /* 加载状态 */
+          <div className="flex justify-center py-20">
+            <div className="flex items-center space-x-3">
+              <div className="w-4 h-4 border-2 border-gray-200 border-t-orange-500 rounded-full animate-spin" />
+              <span className="text-sm text-gray-600 font-medium">
+                正在加载...
+              </span>
+            </div>
+          </div>
+        ) : !favoriteProducts || favoriteProducts.rows.length === 0 ? (
           /* 空状态 */
           <div className="flex flex-col items-center justify-center py-20">
             <Package className="w-16 h-16 text-gray-300 mb-4" />
@@ -92,106 +128,69 @@ export default function FavoritesPage() {
           /* 商品列表 */
           <div className="p-4">
             <div className="space-y-3">
-              {favoriteProducts.rows.map((favorite) => {
-                // 确保favorite是FavoriteProduct类型
-                if (
-                  "product" in favorite &&
-                  (favorite as FavoriteProduct).product
-                ) {
-                  const product = (favorite as FavoriteProduct).product;
-                  return (
-                    <div
-                      key={favorite.id}
-                      className="bg-white rounded-lg border border-gray-200 overflow-hidden"
-                    >
-                      <div className="flex p-3 gap-3">
-                        {/* 商品图片 */}
-                        <div
-                          className="relative w-20 h-20 flex-shrink-0 cursor-pointer"
-                          onClick={() => handleProductClick(product.id)}
-                        >
-                          <ImageLazyLoader
-                            src={
-                              product.image ||
-                              (product.images && Array.isArray(product.images)
-                                ? product.images[0]
-                                : "")
-                            }
-                            alt={product.name}
-                            width={80}
-                            height={80}
-                            className="w-full h-full object-cover rounded-lg"
-                          />
-                        </div>
+              {favoriteProducts?.rows?.map((product: FavoriteProduct) => (
+                <div
+                  key={product.id}
+                  className="bg-white rounded-lg border border-gray-200 overflow-hidden"
+                >
+                  <div className="p-4">
+                    <div className="flex gap-3">
+                      {/* 商品图片 */}
+                      <div
+                        className="relative w-20 h-20 flex-shrink-0 cursor-pointer overflow-hidden rounded-lg"
+                        onClick={() => handleProductClick(product.productId)}
+                      >
+                        <ImageLazyLoader
+                          src={product.coverImg}
+                          alt={product.name}
+                          width={80}
+                          height={80}
+                          className="w-full h-full object-cover"
+                          fallbackSrc="/product-placeholder.png"
+                        />
+                      </div>
 
-                        {/* 商品信息 */}
-                        <div
-                          className="flex-1 min-w-0 cursor-pointer"
-                          onClick={() => handleProductClick(product.id)}
-                        >
-                          <h3 className="text-sm font-medium text-gray-900 mb-1 line-clamp-2">
+                      {/* 商品信息 */}
+                      <div
+                        className="flex-1 min-w-0 cursor-pointer"
+                        onClick={() => handleProductClick(product.productId)}
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <h3 className="text-lg font-semibold text-gray-900 truncate flex-1 line-clamp-2">
                             {product.name}
                           </h3>
 
-                          {product.price !== null &&
-                            product.price !== undefined && (
-                              <div className="flex items-center gap-2 mb-2">
-                                <span className="text-red-500 font-bold text-lg">
-                                  {formatPrice(product.price)}
-                                </span>
-                                {product.originalPrice !== null &&
-                                  product.originalPrice !== undefined && (
-                                    <span className="text-gray-400 text-sm line-through">
-                                      {formatPrice(product.originalPrice)}
-                                    </span>
-                                  )}
-                              </div>
-                            )}
-
-                          <div className="flex items-center justify-between text-xs text-gray-500">
-                            <span>{product.boothName}</span>
-                            <span>浏览 {product.sales || 0}</span>
-                          </div>
-
-                          <div className="text-xs text-gray-400 mt-1">
-                            收藏于 {formatDate(favorite.createdAt)}
-                          </div>
-                        </div>
-
-                        {/* 操作按钮 */}
-                        <div className="flex flex-col justify-between items-end">
+                          {/* 取消收藏按钮 */}
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleRemoveFavorite(product.id);
+                              handleRemoveFavorite(product.productId);
                             }}
-                            disabled={removing === product.id}
-                            className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors disabled:opacity-50"
+                            disabled={removing === product.productId}
+                            className="ml-2 p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors disabled:opacity-50"
                           >
-                            {removing === product.id ? (
+                            {removing === product.productId ? (
                               <div className="w-4 h-4 border-2 border-gray-300 border-t-red-500 rounded-full animate-spin" />
                             ) : (
                               <Trash2 className="w-4 h-4" />
                             )}
                           </button>
+                        </div>
 
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              // TODO: 实现购物车功能
-                              console.log("添加到购物车:", product.id);
-                            }}
-                            className="p-2 text-gray-400 hover:text-orange-500 hover:bg-orange-50 rounded-full transition-colors"
-                          >
-                            <ShoppingCart className="w-4 h-4" />
-                          </button>
+                        {/* 价格 */}
+                        <div className="text-lg font-bold text-orange-500 mb-2">
+                          {formatPrice(product.price)}
+                        </div>
+
+                        {/* 收藏时间 */}
+                        <div className="text-xs text-gray-400">
+                          收藏于 {formatDate(product.createdAt)}
                         </div>
                       </div>
                     </div>
-                  );
-                }
-                return null; // 如果不是商品类型，不渲染
-              })}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}

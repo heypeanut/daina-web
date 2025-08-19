@@ -1,49 +1,65 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  ArrowLeft,
-  Store,
-  MapPin,
-  Star,
-  Users,
-  Trash2,
-  ShoppingBag,
-  Eye,
-} from "lucide-react";
+import { ArrowLeft, Store, MapPin, Trash2 } from "lucide-react";
 import { ImageLazyLoader } from "@/components/common";
-import { useGetFollowedBooths } from "../hooks";
-
-// Mock关注档口数据
-interface FavoriteBooth {
-  id: string;
-  boothName: string;
-  marketLabel: string;
-  address: string;
-  coverImg: string;
-  followers: number;
-  view: number;
-  productCount: number;
-  rating: number;
-  followedAt: string;
-  mainBusiness: string;
-}
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getFavoriteBooths, unfollowBooth } from "@/lib/api/user-behavior";
+import type { FavoriteBooth } from "@/lib/api/user-behavior";
+import type { PaginatedResponse } from "@/lib/api/config";
 
 export default function FollowedBoothsPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [unfollowing, setUnfollowing] = useState<string | null>(null);
-  const { data: followedBooths, isLoading } = useGetFollowedBooths();
 
-  const handleBack = () => {
+  // 获取收藏档口列表
+  const { data: followedBooths, isLoading } = useQuery<
+    PaginatedResponse<FavoriteBooth>
+  >({
+    queryKey: ["favoriteBooths"],
+    queryFn: () => getFavoriteBooths(1, 20),
+    staleTime: 0, // 数据立即过期，确保每次都重新获取
+    refetchOnWindowFocus: true, // 窗口重新获得焦点时刷新
+    refetchOnMount: true, // 组件挂载时刷新
+  });
+
+  // 取消关注mutation
+  const unfollowMutation = useMutation({
+    mutationFn: unfollowBooth,
+    onSuccess: () => {
+      // 刷新收藏列表
+      queryClient.invalidateQueries({ queryKey: ["favoriteBooths"] });
+    },
+    onError: (error) => {
+      console.error("取消关注失败:", error);
+      alert("取消关注失败，请重试");
+    },
+  });
+
+  const handleBack = useCallback(() => {
     navigate(-1);
-  };
+  }, [navigate]);
 
-  const handleBoothClick = (boothId: string) => {
-    navigate(`/booth/${boothId}`);
-  };
+  const handleBoothClick = useCallback(
+    (boothId: string) => {
+      navigate(`/booth/${boothId}`);
+    },
+    [navigate]
+  );
 
-  const handleUnfollow = async (boothId: string) => {};
+  const handleUnfollow = useCallback(
+    async (boothId: string) => {
+      setUnfollowing(boothId);
+      try {
+        await unfollowMutation.mutateAsync(boothId);
+      } finally {
+        setUnfollowing(null);
+      }
+    },
+    [unfollowMutation]
+  );
 
-  const formatDate = (dateString: string) => {
+  const formatDate = useCallback((dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
     const diffTime = now.getTime() - date.getTime();
@@ -54,13 +70,7 @@ export default function FollowedBoothsPage() {
     if (diffDays < 7) return `${diffDays}天前`;
     if (diffDays < 30) return `${Math.floor(diffDays / 7)}周前`;
     return date.toLocaleDateString();
-  };
-
-  const formatNumber = (num: number) => {
-    if (num < 1000) return num.toString();
-    if (num < 10000) return `${(num / 1000).toFixed(1)}k`;
-    return `${(num / 10000).toFixed(1)}w`;
-  };
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -74,7 +84,7 @@ export default function FollowedBoothsPage() {
             <ArrowLeft className="w-5 h-5 text-gray-600" />
           </button>
           <h1 className="text-lg font-semibold text-gray-900">
-            关注档口 ({followedBooths?.total || 0})
+            关注档口 ({followedBooths?.rows?.length || 0})
           </h1>
           <div className="w-10" />
         </div>
@@ -82,7 +92,17 @@ export default function FollowedBoothsPage() {
 
       {/* 内容区域 */}
       <div className="pb-6">
-        {followedBooths?.rows.length === 0 ? (
+        {isLoading && !followedBooths?.rows?.length ? (
+          /* 加载状态 */
+          <div className="flex justify-center py-20">
+            <div className="flex items-center space-x-3">
+              <div className="w-4 h-4 border-2 border-gray-200 border-t-orange-500 rounded-full animate-spin" />
+              <span className="text-sm text-gray-600 font-medium">
+                正在加载...
+              </span>
+            </div>
+          </div>
+        ) : !followedBooths?.rows?.length ? (
           /* 空状态 */
           <div className="flex flex-col items-center justify-center py-20">
             <Store className="w-16 h-16 text-gray-300 mb-4" />
@@ -101,7 +121,7 @@ export default function FollowedBoothsPage() {
           /* 档口列表 */
           <div className="p-4">
             <div className="space-y-3">
-              {followedBooths?.rows.map((booth) => (
+              {followedBooths?.rows?.map((booth: FavoriteBooth) => (
                 <div
                   key={booth.id}
                   className="bg-white rounded-lg border border-gray-200 overflow-hidden"
@@ -111,21 +131,22 @@ export default function FollowedBoothsPage() {
                       {/* 档口头像 */}
                       <div
                         className="relative w-16 h-16 flex-shrink-0 cursor-pointer overflow-hidden rounded-lg"
-                        onClick={() => handleBoothClick(booth.id)}
+                        onClick={() => handleBoothClick(booth.boothId)}
                       >
                         <ImageLazyLoader
                           src={booth.coverImg}
                           alt={booth.boothName}
                           width={64}
                           height={64}
-                          className="w-full h-full object-cover"
+                          className="w-16 h-16 object-cover"
+                          fallbackSrc="/cover.png"
                         />
                       </div>
 
                       {/* 档口信息 */}
                       <div
                         className="flex-1 min-w-0 cursor-pointer"
-                        onClick={() => handleBoothClick(booth.id)}
+                        onClick={() => handleBoothClick(booth.boothId)}
                       >
                         <div className="flex items-start justify-between mb-2">
                           <h3 className="text-lg font-semibold text-gray-900 truncate flex-1">
@@ -136,12 +157,12 @@ export default function FollowedBoothsPage() {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleUnfollow(booth.id);
+                              handleUnfollow(booth.boothId);
                             }}
-                            disabled={unfollowing === booth.id}
+                            disabled={unfollowing === booth.boothId}
                             className="ml-2 p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors disabled:opacity-50"
                           >
-                            {unfollowing === booth.id ? (
+                            {unfollowing === booth.boothId ? (
                               <div className="w-4 h-4 border-2 border-gray-300 border-t-red-500 rounded-full animate-spin" />
                             ) : (
                               <Trash2 className="w-4 h-4" />
@@ -152,37 +173,12 @@ export default function FollowedBoothsPage() {
                         {/* 位置信息 */}
                         <div className="flex items-center text-sm text-gray-500 mb-2">
                           <MapPin size={12} className="mr-1 flex-shrink-0" />
-                          <span className="truncate">{booth.marketLabel}</span>
-                        </div>
-
-                        {/* 主营业务 */}
-                        <div className="text-sm text-gray-600 mb-2 line-clamp-1">
-                          主营：{booth.mainBusiness}
-                        </div>
-
-                        {/* 统计信息 */}
-                        <div className="flex items-center gap-4 text-xs text-gray-400">
-                          <div className="flex items-center">
-                            <Users size={10} className="mr-1" />
-                            <span>{formatNumber(booth.followers)} 关注</span>
-                          </div>
-                          <div className="flex items-center">
-                            <Eye size={10} className="mr-1" />
-                            <span>{formatNumber(booth.view)} 浏览</span>
-                          </div>
-                          <div className="flex items-center">
-                            <ShoppingBag size={10} className="mr-1" />
-                            <span>{booth.productCount} 商品</span>
-                          </div>
-                          <div className="flex items-center">
-                            <Star size={10} className="mr-1" />
-                            <span>{booth.rating}</span>
-                          </div>
+                          <span className="truncate">{booth.market}</span>
                         </div>
 
                         {/* 关注时间 */}
-                        <div className="text-xs text-gray-400 mt-2">
-                          关注于 {formatDate(booth.followedAt)}
+                        <div className="text-xs text-gray-400">
+                          关注于 {formatDate(booth.createdAt)}
                         </div>
                       </div>
                     </div>

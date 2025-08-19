@@ -46,17 +46,23 @@ export interface Booth {
 
 export interface FavoriteProduct {
   id: string;
-  userId: string;
+  userId: number;
+  targetType: "product";
   productId: string;
-  product: Product;
+  name: string;
+  price: number;
+  coverImg: string;
   createdAt: string;
 }
 
 export interface FavoriteBooth {
   id: string;
-  userId: string;
+  userId: number;
+  targetType: "booth";
   boothId: string;
-  booth: Booth;
+  boothName: string;
+  market: string;
+  coverImg: string;
   createdAt: string;
 }
 
@@ -81,8 +87,10 @@ export async function toggleFavorite(
   targetId: string,
   action: "add" | "remove"
 ): Promise<void> {
-  const data =
-    type === "product" ? { productId: targetId } : { boothId: targetId };
+  const data = {
+    type: type === "product" ? "product" : "booth",
+    itemId: targetId,
+  };
 
   if (action === "add") {
     await tenantApi.post("/user/favorites", data);
@@ -166,12 +174,14 @@ export async function checkFavoriteStatus(
   type: "product" | "booth",
   targetId: string
 ): Promise<boolean> {
-  const params =
-    type === "product" ? { productId: targetId } : { boothId: targetId };
+  const params = {
+    type: type === "product" ? "product" : "booth",
+    itemId: targetId,
+  };
 
   try {
     const response = await tenantApi.get("/user/favorites/check", { params });
-    return response.data?.isFavorited || false;
+    return response.data?.isFavorite || false;
   } catch {
     return false;
   }

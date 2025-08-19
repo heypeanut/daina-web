@@ -254,11 +254,20 @@ export function useToggleProductFavorite() {
         await removeProductFromFavorites(productId);
       }
     },
-    onSuccess: () => {
+    onSuccess: (_, { productId }) => {
       // 刷新收藏商品列表缓存
       queryClient.invalidateQueries({ queryKey: ["favoriteProducts"] });
       // 刷新商品收藏状态缓存
       queryClient.invalidateQueries({ queryKey: ["productFavoriteStatus"] });
+      // 刷新特定商品的收藏状态
+      queryClient.invalidateQueries({
+        queryKey: ["productFavoriteStatus", productId],
+      });
+      // 立即重新获取数据
+      queryClient.refetchQueries({ queryKey: ["favoriteProducts"] });
+      queryClient.refetchQueries({
+        queryKey: ["productFavoriteStatus", productId],
+      });
     },
   });
 }
@@ -281,11 +290,18 @@ export function useToggleBoothFollow() {
         await unfollowBooth(boothId);
       }
     },
-    onSuccess: () => {
+    onSuccess: (_, { boothId }) => {
       // 刷新关注档口列表缓存
-      queryClient.invalidateQueries({ queryKey: ["followedBooths"] });
+      queryClient.invalidateQueries({ queryKey: ["favoriteBooths"] });
       // 刷新档口关注状态缓存
       queryClient.invalidateQueries({ queryKey: ["boothFollowStatus"] });
+      // 刷新特定档口的关注状态
+      queryClient.invalidateQueries({
+        queryKey: ["boothFollowStatus", boothId],
+      });
+      // 立即重新获取数据
+      queryClient.refetchQueries({ queryKey: ["favoriteBooths"] });
+      queryClient.refetchQueries({ queryKey: ["boothFollowStatus", boothId] });
     },
   });
 }
@@ -299,7 +315,8 @@ export function useProductFavoriteStatus(
     queryKey: ["productFavoriteStatus", productId],
     queryFn: () => isProductFavorited(productId),
     enabled: enabled && Boolean(productId),
-    staleTime: 5 * 60 * 1000, // 5分钟缓存
+    staleTime: 0, // 立即过期，确保状态实时更新
+    refetchOnWindowFocus: true, // 窗口重新获得焦点时刷新
   });
 }
 
@@ -309,7 +326,8 @@ export function useBoothFollowStatus(boothId: string, enabled: boolean = true) {
     queryKey: ["boothFollowStatus", boothId],
     queryFn: () => isBoothFollowed(boothId),
     enabled: enabled && Boolean(boothId),
-    staleTime: 5 * 60 * 1000, // 5分钟缓存
+    staleTime: 0, // 立即过期，确保状态实时更新
+    refetchOnWindowFocus: true, // 窗口重新获得焦点时刷新
   });
 }
 
@@ -323,7 +341,8 @@ export function useFavoriteStatus(
     queryKey: [`${type}FavoriteStatus`, targetId],
     queryFn: () => checkFavoriteStatus(type, targetId),
     enabled: enabled && Boolean(targetId),
-    staleTime: 5 * 60 * 1000, // 5分钟缓存
+    staleTime: 0, // 立即过期，确保状态实时更新
+    refetchOnWindowFocus: true, // 窗口重新获得焦点时刷新
   });
 }
 
@@ -344,14 +363,30 @@ export function useToggleFavorite() {
       await toggleFavorite(type, targetId, action);
     },
     onSuccess: (_, variables) => {
-      const { type } = variables;
+      const { type, targetId } = variables;
       // 根据类型刷新对应的缓存
       if (type === "product") {
         queryClient.invalidateQueries({ queryKey: ["favoriteProducts"] });
         queryClient.invalidateQueries({ queryKey: ["productFavoriteStatus"] });
+        queryClient.invalidateQueries({
+          queryKey: ["productFavoriteStatus", targetId],
+        });
+        // 立即重新获取收藏商品列表
+        queryClient.refetchQueries({ queryKey: ["favoriteProducts"] });
+        queryClient.refetchQueries({
+          queryKey: ["productFavoriteStatus", targetId],
+        });
       } else {
-        queryClient.invalidateQueries({ queryKey: ["followedBooths"] });
+        queryClient.invalidateQueries({ queryKey: ["favoriteBooths"] });
         queryClient.invalidateQueries({ queryKey: ["boothFollowStatus"] });
+        queryClient.invalidateQueries({
+          queryKey: ["boothFollowStatus", targetId],
+        });
+        // 立即重新获取收藏档口列表
+        queryClient.refetchQueries({ queryKey: ["favoriteBooths"] });
+        queryClient.refetchQueries({
+          queryKey: ["boothFollowStatus", targetId],
+        });
       }
     },
   });

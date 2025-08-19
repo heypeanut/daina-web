@@ -1,37 +1,64 @@
-import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Phone, QrCode } from 'lucide-react';
-import { MobileLayout } from '@/components/layout';
-import { ContactSheet, AgentContactSheet } from '../booth/components';
+import { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Phone, QrCode } from "lucide-react";
+import { MobileLayout } from "@/components/layout";
+import { ContactSheet, AgentContactSheet } from "../booth/components";
 import {
   ProductHeader,
   ProductImageViewer,
   ProductBasicInfo,
   ProductSpecs,
-  BoothInfoCard
-} from './components';
-import { useGetProductDetail } from './hooks';
+  BoothInfoCard,
+} from "./components";
+import { useGetProductDetail } from "./hooks";
+import {
+  useLoginStatus,
+  useProductFavoriteStatus,
+  useToggleProductFavorite,
+} from "@/pages/profile/hooks/use-api";
 
 export default function ProductDetailPage() {
   const { id: productId } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  
+
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [isAgentModalOpen, setIsAgentModalOpen] = useState(false);
 
   // 使用产品详情Hook
-  const { data: product, isLoading, isError, error, refetch: handleRefresh } = useGetProductDetail(productId || '');
+  const {
+    data: product,
+    isLoading,
+    isError,
+    error,
+    refetch: handleRefresh,
+  } = useGetProductDetail(productId || "");
+
+  // 登录状态和收藏功能
+  const { isLoggedIn } = useLoginStatus();
+  const { data: isFavorited } = useProductFavoriteStatus(
+    productId || "",
+    isLoggedIn
+  );
+  const toggleFavoriteMutation = useToggleProductFavorite();
 
   const handleBack = () => {
     if (window.history.length > 1) {
       navigate(-1);
     } else {
-      navigate('/');
+      navigate("/");
     }
   };
+
+  const handleFavoriteToggle = () => {
+    if (!isLoggedIn || !productId) return;
+
+    const action = isFavorited ? "remove" : "add";
+    toggleFavoriteMutation.mutate({ productId, action });
+  };
+
   const handleFollowClick = (boothId: string) => {
     // TODO: 实现关注功能
-    console.log('关注档口:', boothId);
+    console.log("关注档口:", boothId);
   };
 
   // 错误状态
@@ -68,24 +95,27 @@ export default function ProductDetailPage() {
           <div className="animate-pulse">
             {/* Header skeleton */}
             <div className="bg-white border-b border-gray-100 h-14"></div>
-            
+
             {/* Image skeleton */}
             <div className="bg-white">
               <div className="aspect-square bg-gray-200"></div>
               <div className="p-4 flex gap-2">
                 {[...Array(4)].map((_, i) => (
-                  <div key={i} className="w-16 h-16 bg-gray-200 rounded-lg"></div>
+                  <div
+                    key={i}
+                    className="w-16 h-16 bg-gray-200 rounded-lg"
+                  ></div>
                 ))}
               </div>
             </div>
-            
+
             {/* Content skeleton */}
             <div className="bg-white p-4 mt-2">
               <div className="h-8 bg-gray-200 rounded w-20 mb-2"></div>
               <div className="h-6 bg-gray-200 rounded mb-2"></div>
               <div className="h-4 bg-gray-200 rounded w-3/4"></div>
             </div>
-            
+
             {/* Specs skeleton */}
             <div className="bg-white p-4 mt-2">
               <div className="h-6 bg-gray-200 rounded w-24 mb-4"></div>
@@ -114,6 +144,9 @@ export default function ProductDetailPage() {
         <ProductHeader
           title="商品详情"
           onBackClick={handleBack}
+          showFavorite={true}
+          isFavorited={!!isFavorited}
+          onFavoriteClick={handleFavoriteToggle}
           // onShareClick={handleShareClick}
           // onCartClick={handleCart}
           className="fixed top-0 left-0 right-0 z-40"

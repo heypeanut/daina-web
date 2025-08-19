@@ -46,17 +46,23 @@ export interface Booth {
 
 export interface FavoriteProduct {
   id: string;
-  userId: string;
+  userId: number;
+  targetType: "product";
   productId: string;
-  product: Product;
+  name: string;
+  price: number;
+  coverImg: string;
   createdAt: string;
 }
 
 export interface FavoriteBooth {
   id: string;
-  userId: string;
+  userId: number;
+  targetType: "booth";
   boothId: string;
-  booth: Booth;
+  boothName: string;
+  market: string;
+  coverImg: string;
   createdAt: string;
 }
 
@@ -121,7 +127,7 @@ export async function toggleFavorite(
   if (action === "add") {
     await tenantApi.post("/user/favorites", data);
   } else {
-    await tenantApi.delete("/user/favorites", { data });
+    await tenantApi.delete("/user/favorites", data);
   }
 }
 
@@ -211,7 +217,7 @@ export async function checkFavoriteStatus(
 
   try {
     const response = await tenantApi.get("/user/favorites/check", { params });
-    return response.data?.isFavorited || false;
+    return response.data?.isFavorite || false;
   } catch {
     return false;
   }
