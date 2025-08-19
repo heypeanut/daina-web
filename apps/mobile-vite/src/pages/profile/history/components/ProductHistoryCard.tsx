@@ -6,7 +6,7 @@ import type { Footprint } from "@/lib/api/user-behavior";
 interface ProductHistoryCardProps {
   footprint: Footprint;
   onCardClick: (footprint: Footprint) => void;
-  onRemove: (footprintId: string) => void;
+  onRemove: (historyId: string) => void;
   isRemoving: boolean;
   formatDate: (dateString: string) => string;
 }
@@ -26,8 +26,8 @@ export function ProductHistoryCard({
   const handleRemoveClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    console.log("点击删除按钮，商品ID:", footprint.id);
-    onRemove(footprint.id);
+    console.log("点击删除按钮，historyId:", footprint.historyId);
+    onRemove(footprint.historyId);
   };
 
   return (

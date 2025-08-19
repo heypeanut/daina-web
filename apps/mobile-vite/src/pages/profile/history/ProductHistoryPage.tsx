@@ -14,10 +14,10 @@ export default function ProductHistoryPage() {
   const queryClient = useQueryClient();
   const [removing, setRemoving] = useState<string | null>(null);
   const [clearing, setClearing] = useState(false);
-  
+
   // 固定为商品类型
   const filter = "product";
-  
+
   // 使用无限滚动 hook
   const {
     data,
@@ -29,50 +29,51 @@ export default function ProductHistoryPage() {
   } = useInfiniteHistory(filter, 20);
 
   // 合并所有页面的数据
-  const footprints = data?.pages?.flatMap(page => page.rows) || [];
-  
+  const footprints = data?.pages?.flatMap((page) => page.rows) || [];
+
   // 无限滚动触发器
-  const { triggerRef, shouldShowTrigger } = useInfiniteScroll(
-    fetchNextPage,
-    {
-      hasMore: hasNextPage,
-      isLoading: isFetchingNextPage,
-    }
-  );
+  const { triggerRef, shouldShowTrigger } = useInfiniteScroll(fetchNextPage, {
+    hasMore: hasNextPage,
+    isLoading: isFetchingNextPage,
+  });
 
   const handleBack = useCallback(() => {
     navigate(-1);
   }, [navigate]);
 
-  const handleItemClick = useCallback((footprint: Footprint) => {
-    // 尝试多种可能的ID字段
-    const possibleId = footprint.targetId || 
-                      (footprint as any).productId || 
-                      (footprint as any).objectId ||
-                      (footprint as any).product?.id ||
-                      (footprint as any).boothProduct?.id;
-    
-    if (!possibleId) {
-      alert('商品信息异常，无法跳转');
-      return;
-    }
-    
-    // 商品历史页面直接跳转到商品详情
-    navigate(`/product/${possibleId}`);
-  }, [navigate]);
+  const handleItemClick = useCallback(
+    (footprint: Footprint) => {
+      // 尝试多种可能的ID字段
+      const possibleId =
+        footprint.targetId ||
+        (footprint as any).productId ||
+        (footprint as any).objectId ||
+        (footprint as any).product?.id ||
+        (footprint as any).boothProduct?.id;
 
-  const handleRemoveFootprint = async (footprintId: string) => {
-    setRemoving(footprintId);
-    
+      if (!possibleId) {
+        alert("商品信息异常，无法跳转");
+        return;
+      }
+
+      // 商品历史页面直接跳转到商品详情
+      navigate(`/product/${possibleId}`);
+    },
+    [navigate]
+  );
+
+  const handleRemoveFootprint = async (historyId: string) => {
+    setRemoving(historyId);
+
     try {
-      await removeFootprint(footprintId);
-      
+      await removeFootprint(historyId);
+
       // 刷新数据以获取最新内容
       await queryClient.invalidateQueries({
-        queryKey: ['footprints', 'infinite', filter]
+        queryKey: ["footprints", "infinite", filter],
       });
-      
-      console.log(`已删除商品浏览记录: ${footprintId}`);
+
+      console.log(`已删除商品浏览记录: ${historyId}`);
     } catch (error) {
       console.error("删除失败:", error);
       alert("删除失败，请重试");
@@ -85,18 +86,18 @@ export default function ProductHistoryPage() {
     if (!confirm("确定要清空所有商品浏览记录吗？此操作不可恢复。")) {
       return;
     }
-    
+
     setClearing(true);
-    
+
     try {
       await clearFootprints(filter);
-      
+
       // 刷新数据以获取最新内容
       await queryClient.invalidateQueries({
-        queryKey: ['footprints', 'infinite', filter]
+        queryKey: ["footprints", "infinite", filter],
       });
-      
-      console.log('已清空商品浏览记录');
+
+      console.log("已清空商品浏览记录");
     } catch (error) {
       console.error("清空失败:", error);
       alert("清空失败，请重试");
@@ -111,7 +112,7 @@ export default function ProductHistoryPage() {
     const diffTime = now.getTime() - date.getTime();
     const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    
+
     if (diffHours < 1) return "刚刚";
     if (diffHours < 24) return `${diffHours}小时前`;
     if (diffDays === 1) return "昨天";
@@ -156,14 +157,12 @@ export default function ProductHistoryPage() {
           /* 空状态 */
           <div className="flex flex-col items-center justify-center py-20">
             <Eye className="w-16 h-16 text-gray-300 mb-4" />
-            <p className="text-gray-500 text-center mb-2">
-              暂无商品浏览记录
-            </p>
+            <p className="text-gray-500 text-center mb-2">暂无商品浏览记录</p>
             <p className="text-gray-400 text-sm text-center">
               去逛逛感兴趣的商品吧
             </p>
             <button
-              onClick={() => navigate('/market')}
+              onClick={() => navigate("/market")}
               className="mt-4 px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
             >
               去逛逛
@@ -184,7 +183,7 @@ export default function ProductHistoryPage() {
                 />
               ))}
             </div>
-            
+
             {/* 无限滚动触发器 */}
             {shouldShowTrigger && (
               <div ref={triggerRef} className="flex justify-center py-4">
@@ -202,7 +201,7 @@ export default function ProductHistoryPage() {
             )}
           </div>
         )}
-        
+
         {/* 错误状态 */}
         {error && (
           <div className="flex flex-col items-center justify-center py-20">

@@ -1,6 +1,6 @@
 // 新版用户行为API - 收藏、历史记录等
-import { tenantApi, PaginatedResponse } from './config';
-import { isLoggedIn } from '@/lib/auth';
+import { tenantApi, PaginatedResponse } from "./config";
+import { isLoggedIn } from "@/lib/auth";
 
 // 接口类型定义
 export interface Product {
@@ -62,6 +62,7 @@ export interface FavoriteBooth {
 
 export interface Footprint {
   id: string;
+  historyId: string; // 历史记录的ID，用于删除操作
   userId: string;
   type: "product" | "booth";
   targetId: string;
@@ -76,16 +77,17 @@ export interface Footprint {
  * 添加/取消收藏（商品或档口）
  */
 export async function toggleFavorite(
-  type: 'product' | 'booth', 
-  targetId: string, 
-  action: 'add' | 'remove'
+  type: "product" | "booth",
+  targetId: string,
+  action: "add" | "remove"
 ): Promise<void> {
-  const data = type === 'product' ? { productId: targetId } : { boothId: targetId };
-  
-  if (action === 'add') {
-    await tenantApi.post('/user/favorites', data);
+  const data =
+    type === "product" ? { productId: targetId } : { boothId: targetId };
+
+  if (action === "add") {
+    await tenantApi.post("/user/favorites", data);
   } else {
-    await tenantApi.delete('/user/favorites', data);
+    await tenantApi.delete("/user/favorites", data);
   }
 }
 
@@ -93,40 +95,42 @@ export async function toggleFavorite(
  * 收藏商品
  */
 export async function addProductToFavorites(productId: string): Promise<void> {
-  await toggleFavorite('product', productId, 'add');
+  await toggleFavorite("product", productId, "add");
 }
 
 /**
  * 取消收藏商品
  */
-export async function removeProductFromFavorites(productId: string): Promise<void> {
-  await toggleFavorite('product', productId, 'remove');
+export async function removeProductFromFavorites(
+  productId: string
+): Promise<void> {
+  await toggleFavorite("product", productId, "remove");
 }
 
 /**
  * 关注档口
  */
 export async function followBooth(boothId: string): Promise<void> {
-  await toggleFavorite('booth', boothId, 'add');
+  await toggleFavorite("booth", boothId, "add");
 }
 
 /**
  * 取消关注档口
  */
 export async function unfollowBooth(boothId: string): Promise<void> {
-  await toggleFavorite('booth', boothId, 'remove');
+  await toggleFavorite("booth", boothId, "remove");
 }
 
 /**
  * 获取收藏列表
  */
 export async function getFavorites(
-  type: 'product' | 'booth',
+  type: "product" | "booth",
   page: number = 1,
   pageSize: number = 20
 ): Promise<PaginatedResponse<FavoriteProduct | FavoriteBooth>> {
-  const response = await tenantApi.get('/user/favorites', {
-    params: { type, page, pageSize }
+  const response = await tenantApi.get("/user/favorites", {
+    params: { type, page, pageSize },
   });
   return response.data;
 }
@@ -138,7 +142,9 @@ export async function getFavoriteProducts(
   page: number = 1,
   pageSize: number = 20
 ): Promise<PaginatedResponse<FavoriteProduct>> {
-  return getFavorites('product', page, pageSize) as Promise<PaginatedResponse<FavoriteProduct>>;
+  return getFavorites("product", page, pageSize) as Promise<
+    PaginatedResponse<FavoriteProduct>
+  >;
 }
 
 /**
@@ -148,22 +154,23 @@ export async function getFavoriteBooths(
   page: number = 1,
   pageSize: number = 20
 ): Promise<PaginatedResponse<FavoriteBooth>> {
-  return getFavorites('booth', page, pageSize) as Promise<PaginatedResponse<FavoriteBooth>>;
+  return getFavorites("booth", page, pageSize) as Promise<
+    PaginatedResponse<FavoriteBooth>
+  >;
 }
 
 /**
  * 检查是否已收藏/关注
  */
 export async function checkFavoriteStatus(
-  type: 'product' | 'booth',
+  type: "product" | "booth",
   targetId: string
 ): Promise<boolean> {
-  const params = type === 'product' 
-    ? { productId: targetId } 
-    : { boothId: targetId };
-    
+  const params =
+    type === "product" ? { productId: targetId } : { boothId: targetId };
+
   try {
-    const response = await tenantApi.get('/user/favorites/check', { params });
+    const response = await tenantApi.get("/user/favorites/check", { params });
     return response.data?.isFavorited || false;
   } catch {
     return false;
@@ -174,14 +181,14 @@ export async function checkFavoriteStatus(
  * 检查商品是否已收藏
  */
 export async function isProductFavorited(productId: string): Promise<boolean> {
-  return checkFavoriteStatus('product', productId);
+  return checkFavoriteStatus("product", productId);
 }
 
 /**
  * 检查档口是否已关注
  */
 export async function isBoothFollowed(boothId: string): Promise<boolean> {
-  return checkFavoriteStatus('booth', boothId);
+  return checkFavoriteStatus("booth", boothId);
 }
 
 // ==================== 浏览历史API ====================
@@ -199,7 +206,7 @@ export async function addFootprint(
   }
 
   try {
-    await tenantApi.post('/user/history', { type, targetId });
+    await tenantApi.post("/user/history", { type, targetId });
   } catch (error) {
     console.warn("Failed to add footprint:", error);
   }
@@ -224,34 +231,39 @@ export async function getFootprints(
     };
   }
 
-  const params: { page: number; pageSize: number; type?: string } = { page, pageSize };
+  const params: { page: number; pageSize: number; type?: string } = {
+    page,
+    pageSize,
+  };
   if (type) params.type = type;
-  
-  const response = await tenantApi.get('/user/history', { params });
+
+  const response = await tenantApi.get("/user/history", { params });
   return response.data;
 }
 
 /**
  * 清除浏览记录
  */
-export async function clearFootprints(type?: "product" | "booth"): Promise<void> {
+export async function clearFootprints(
+  type?: "product" | "booth"
+): Promise<void> {
   // 如果未登录，直接返回
   if (!isLoggedIn()) {
     return;
   }
 
   const params = type ? { type } : undefined;
-  await tenantApi.delete('/user/history', undefined, { params });
+  await tenantApi.delete("/user/history", undefined, { params });
 }
 
 /**
  * 删除单个浏览记录
  */
-export async function removeFootprint(footprintId: string): Promise<void> {
+export async function removeFootprint(historyId: string): Promise<void> {
   // 如果未登录，直接返回
   if (!isLoggedIn()) {
     return;
   }
 
-  await tenantApi.delete(`/user/history/${footprintId}`);
+  await tenantApi.delete(`/user/history/${historyId}`);
 }

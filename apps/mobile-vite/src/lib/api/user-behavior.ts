@@ -85,6 +85,7 @@ export interface HistoryProduct {
 
 export interface Footprint {
   id: string;
+  historyId: string; // 历史记录的ID，用于删除操作
   userId?: string;
   type: "product" | "booth";
   targetId: string;
@@ -344,11 +345,11 @@ export async function clearFootprints(
 /**
  * 删除单个浏览记录
  */
-export async function removeFootprint(footprintId: string): Promise<void> {
+export async function removeFootprint(historyId: string): Promise<void> {
   // 如果未登录，直接返回
   if (!isLoggedIn()) {
     return;
   }
 
-  await tenantApi.delete(`/user/history/${footprintId}`);
+  await tenantApi.delete(`/user/history/${historyId}`);
 }

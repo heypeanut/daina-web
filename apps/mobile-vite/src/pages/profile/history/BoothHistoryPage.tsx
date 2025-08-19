@@ -71,18 +71,18 @@ export default function BoothHistoryPage() {
     [navigate]
   );
 
-  const handleRemoveFootprint = async (footprintId: string) => {
-    setRemoving(footprintId);
+  const handleRemoveFootprint = async (historyId: string) => {
+    setRemoving(historyId);
 
     try {
-      await removeFootprint(footprintId);
+      await removeFootprint(historyId);
 
       // 刷新数据以获取最新内容
       await queryClient.invalidateQueries({
         queryKey: ["footprints", "infinite", filter],
       });
 
-      console.log(`已删除档口浏览记录: ${footprintId}`);
+      console.log(`已删除档口浏览记录: ${historyId}`);
     } catch (error) {
       console.error("删除失败:", error);
       alert("删除失败，请重试");
