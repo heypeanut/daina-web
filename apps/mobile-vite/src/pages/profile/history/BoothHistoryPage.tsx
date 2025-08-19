@@ -9,15 +9,23 @@ import { BoothHistoryCard } from "./components/BoothHistoryCard";
 
 import type { Footprint } from "@/lib/api/user-behavior";
 
+// 扩展足迹类型以包含可能的ID字段
+interface ExtendedFootprint extends Footprint {
+  boothId?: string;
+  objectId?: string;
+  booth?: { id: string };
+  targetBooth?: { id: string };
+}
+
 export default function BoothHistoryPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [removing, setRemoving] = useState<string | null>(null);
   const [clearing, setClearing] = useState(false);
-  
+
   // 固定为档口类型
   const filter = "booth";
-  
+
   // 使用无限滚动 hook
   const {
     data,
@@ -29,49 +37,51 @@ export default function BoothHistoryPage() {
   } = useInfiniteHistory(filter, 20);
 
   // 合并所有页面的数据
-  const footprints = data?.pages?.flatMap(page => page.rows) || [];
-  
+  const footprints = data?.pages?.flatMap((page) => page.rows) || [];
+
   // 无限滚动触发器
-  const { triggerRef, shouldShowTrigger } = useInfiniteScroll(
-    fetchNextPage,
-    {
-      hasMore: hasNextPage,
-      isLoading: isFetchingNextPage,
-    }
-  );
+  const { triggerRef, shouldShowTrigger } = useInfiniteScroll(fetchNextPage, {
+    hasMore: hasNextPage,
+    isLoading: isFetchingNextPage,
+  });
 
   const handleBack = useCallback(() => {
     navigate(-1);
   }, [navigate]);
 
-  const handleItemClick = useCallback((footprint: Footprint) => {
-    // 尝试多种可能的ID字段
-    const possibleId = footprint.targetId || 
-                      (footprint as any).boothId || 
-                      (footprint as any).objectId ||
-                      (footprint as any).booth?.id ||
-                      (footprint as any).targetBooth?.id;
-    
-    if (!possibleId) {
-      alert('档口信息异常，无法跳转');
-      return;
-    }
-    
-    // 档口历史页面直接跳转到档口详情
-    navigate(`/booth/${possibleId}`);
-  }, [navigate]);
+  const handleItemClick = useCallback(
+    (footprint: Footprint) => {
+      // 使用扩展类型并访问可能的ID字段
+      const extendedFootprint = footprint as ExtendedFootprint;
+      const possibleId =
+        extendedFootprint.targetId ||
+        extendedFootprint.boothId ||
+        extendedFootprint.objectId ||
+        extendedFootprint.booth?.id ||
+        extendedFootprint.targetBooth?.id;
+
+      if (!possibleId) {
+        alert("档口信息异常，无法跳转");
+        return;
+      }
+
+      // 档口历史页面直接跳转到档口详情
+      navigate(`/booth/${possibleId}`);
+    },
+    [navigate]
+  );
 
   const handleRemoveFootprint = async (footprintId: string) => {
     setRemoving(footprintId);
-    
+
     try {
       await removeFootprint(footprintId);
-      
+
       // 刷新数据以获取最新内容
       await queryClient.invalidateQueries({
-        queryKey: ['footprints', 'infinite', filter]
+        queryKey: ["footprints", "infinite", filter],
       });
-      
+
       console.log(`已删除档口浏览记录: ${footprintId}`);
     } catch (error) {
       console.error("删除失败:", error);
@@ -85,18 +95,18 @@ export default function BoothHistoryPage() {
     if (!confirm("确定要清空所有档口浏览记录吗？此操作不可恢复。")) {
       return;
     }
-    
+
     setClearing(true);
-    
+
     try {
       await clearFootprints(filter);
-      
+
       // 刷新数据以获取最新内容
       await queryClient.invalidateQueries({
-        queryKey: ['footprints', 'infinite', filter]
+        queryKey: ["footprints", "infinite", filter],
       });
-      
-      console.log('已清空档口浏览记录');
+
+      console.log("已清空档口浏览记录");
     } catch (error) {
       console.error("清空失败:", error);
       alert("清空失败，请重试");
@@ -111,7 +121,7 @@ export default function BoothHistoryPage() {
     const diffTime = now.getTime() - date.getTime();
     const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    
+
     if (diffHours < 1) return "刚刚";
     if (diffHours < 24) return `${diffHours}小时前`;
     if (diffDays === 1) return "昨天";
@@ -156,14 +166,12 @@ export default function BoothHistoryPage() {
           /* 空状态 */
           <div className="flex flex-col items-center justify-center py-20">
             <Eye className="w-16 h-16 text-gray-300 mb-4" />
-            <p className="text-gray-500 text-center mb-2">
-              暂无档口浏览记录
-            </p>
+            <p className="text-gray-500 text-center mb-2">暂无档口浏览记录</p>
             <p className="text-gray-400 text-sm text-center">
               去逛逛感兴趣的档口吧
             </p>
             <button
-              onClick={() => navigate('/market')}
+              onClick={() => navigate("/market")}
               className="mt-4 px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
             >
               去逛逛
@@ -184,7 +192,7 @@ export default function BoothHistoryPage() {
                 />
               ))}
             </div>
-            
+
             {/* 无限滚动触发器 */}
             {shouldShowTrigger && (
               <div ref={triggerRef} className="flex justify-center py-4">
@@ -202,7 +210,7 @@ export default function BoothHistoryPage() {
             )}
           </div>
         )}
-        
+
         {/* 错误状态 */}
         {error && (
           <div className="flex flex-col items-center justify-center py-20">

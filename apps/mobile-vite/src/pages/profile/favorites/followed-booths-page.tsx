@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { 
-  ArrowLeft, 
-  Store, 
-  MapPin, 
-  Star, 
-  Users, 
+import {
+  ArrowLeft,
+  Store,
+  MapPin,
+  Star,
+  Users,
   Trash2,
   ShoppingBag,
-  Eye
+  Eye,
 } from "lucide-react";
 import { ImageLazyLoader } from "@/components/common";
 import { useGetFollowedBooths } from "../hooks";
@@ -41,16 +41,14 @@ export default function FollowedBoothsPage() {
     navigate(`/booth/${boothId}`);
   };
 
-  const handleUnfollow = async (boothId: string) => {
-  
-  };
+  const handleUnfollow = async (boothId: string) => {};
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
     const diffTime = now.getTime() - date.getTime();
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays === 0) return "今天";
     if (diffDays === 1) return "昨天";
     if (diffDays < 7) return `${diffDays}天前`;
@@ -93,7 +91,7 @@ export default function FollowedBoothsPage() {
               去发现优质档口，点击关注吧
             </p>
             <button
-              onClick={() => navigate('/market')}
+              onClick={() => navigate("/market")}
               className="mt-4 px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
             >
               去发现
@@ -112,7 +110,7 @@ export default function FollowedBoothsPage() {
                     <div className="flex gap-3">
                       {/* 档口头像 */}
                       <div
-                        className="relative w-16 h-16 flex-shrink-0 cursor-pointer"
+                        className="relative w-16 h-16 flex-shrink-0 cursor-pointer overflow-hidden rounded-lg"
                         onClick={() => handleBoothClick(booth.id)}
                       >
                         <ImageLazyLoader
@@ -120,12 +118,12 @@ export default function FollowedBoothsPage() {
                           alt={booth.boothName}
                           width={64}
                           height={64}
-                          className="w-full h-full object-cover rounded-lg"
+                          className="w-full h-full object-cover"
                         />
                       </div>
 
                       {/* 档口信息 */}
-                      <div 
+                      <div
                         className="flex-1 min-w-0 cursor-pointer"
                         onClick={() => handleBoothClick(booth.id)}
                       >
@@ -133,7 +131,7 @@ export default function FollowedBoothsPage() {
                           <h3 className="text-lg font-semibold text-gray-900 truncate flex-1">
                             {booth.boothName}
                           </h3>
-                          
+
                           {/* 取消关注按钮 */}
                           <button
                             onClick={(e) => {

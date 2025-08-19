@@ -6,8 +6,10 @@ const API_BASE_URLS = {
   SYSTEM: "/api/system", // 管理后台（如需要）
 };
 
-const BASE_URL =
-  import.meta.env.API_BASE_URL || "http://localhost:3000";
+// 使用相对路径，确保所有请求都通过Vite代理
+const BASE_URL = "";
+
+console.log("[API] 使用相对路径请求API");
 
 // 获取认证token
 function getAuthToken(): string | null {
@@ -20,14 +22,18 @@ class TenantApiClient {
   private baseURL: string;
 
   constructor() {
-    this.baseURL = BASE_URL + API_BASE_URLS.TENANT;
+    // 仅添加API前缀，不使用完整URL，确保使用相对路径
+    this.baseURL = API_BASE_URLS.TENANT;
   }
 
   private async request<T = any>(
     endpoint: string,
     options: RequestInit = {}
   ): Promise<{ data: T }> {
-    const url = `${this.baseURL}${endpoint}`;
+    const url = endpoint.startsWith("/")
+      ? `${this.baseURL}${endpoint}`
+      : `${this.baseURL}/${endpoint}`;
+    console.log(`[TenantAPI] 请求: ${options.method || "GET"} ${url}`);
 
     // 准备请求头
     const headers: Record<string, string> = {
@@ -57,7 +63,9 @@ class TenantApiClient {
           window.dispatchEvent(new Event("loginStatusChange"));
           // 跳转到登录页，保存当前页面作为返回地址
           const currentPath = window.location.pathname + window.location.search;
-          const loginUrl = `/login?returnUrl=${encodeURIComponent(currentPath)}`;
+          const loginUrl = `/login?returnUrl=${encodeURIComponent(
+            currentPath
+          )}`;
           window.location.href = loginUrl;
           throw new Error("登录已过期，请重新登录");
         }
@@ -139,7 +147,10 @@ class TenantApiClient {
     formData: FormData,
     options?: RequestInit
   ): Promise<{ data: T }> {
-    const url = `${this.baseURL}${endpoint}`;
+    const url = endpoint.startsWith("/")
+      ? `${this.baseURL}${endpoint}`
+      : `${this.baseURL}/${endpoint}`;
+    console.log(`[TenantAPI] FormData上传: POST ${url}`);
 
     // 准备请求头，不设置Content-Type让浏览器自动设置FormData边界
     const headers: Record<string, string> = {
@@ -168,7 +179,9 @@ class TenantApiClient {
           window.dispatchEvent(new Event("loginStatusChange"));
           // 跳转到登录页，保存当前页面作为返回地址
           const currentPath = window.location.pathname + window.location.search;
-          const loginUrl = `/login?returnUrl=${encodeURIComponent(currentPath)}`;
+          const loginUrl = `/login?returnUrl=${encodeURIComponent(
+            currentPath
+          )}`;
           window.location.href = loginUrl;
           throw new Error("登录已过期，请重新登录");
         }

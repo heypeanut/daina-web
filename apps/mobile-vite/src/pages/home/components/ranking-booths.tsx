@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
+import { useNavigate } from "react-router-dom";
 import { useBoothRanking } from "../hooks";
-// import type { Booth } from "@/types/api";
+import type { Booth } from "@/types/booth";
 
 interface RankingBoothsProps {
   title: string;
@@ -100,6 +101,7 @@ export function RankingBooths({
   // const { recordBehavior } = useBehaviorTracking();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [scrollSnaps, setScrollSnaps] = useState<number[]>([]);
+  const navigate = useNavigate();
 
   // 将数据按每5个为一组分组
   const groupedItems = React.useMemo(() => {
@@ -143,18 +145,12 @@ export function RankingBooths({
     };
   }, [emblaApi, onSelect]);
 
-  // const handleBoothClick = useCallback(
-  //   (booth: Booth, groupIndex: number, itemIndex: number) => {
-  //     const overallIndex = groupIndex * 5 + itemIndex;
-  //     recordBehavior("click", "booth", booth.id, {
-  //       source: "homepage",
-  //       section: "ranking",
-  //       position: overallIndex,
-  //       algorithm: "ranking",
-  //     });
-  //   },
-  //   [recordBehavior]
-  // );
+  const handleBoothClick = useCallback(
+    (booth: Booth) => {
+      navigate(`/booth/${booth.id}`);
+    },
+    [navigate]
+  );
 
   const scrollTo = useCallback(
     (index: number) => {
@@ -221,9 +217,7 @@ export function RankingBooths({
                       return (
                         <div key={booth.id} className="flex-1">
                           <div
-                            // onClick={() => {
-                              // handleBoothClick(booth, groupIndex, itemIndex)
-                            // }
+                            onClick={() => handleBoothClick(booth)}
                             className="cursor-pointer transition-all active:scale-95"
                           >
                             <div className="mb-1">

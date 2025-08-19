@@ -19,14 +19,14 @@ export function BoothHistoryCard({
   formatDate,
 }: BoothHistoryCardProps) {
   const handleCardClick = () => {
-    console.log('点击档口卡片:', footprint.id);
+    console.log("点击档口卡片:", footprint.id);
     onCardClick(footprint);
   };
 
   const handleRemoveClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    console.log('点击删除按钮，档口ID:', footprint.id);
+    console.log("点击删除按钮，档口ID:", footprint.id);
     onRemove(footprint.id);
   };
 
@@ -41,7 +41,7 @@ export function BoothHistoryCard({
           <ImageLazyLoader
             src={footprint.coverImg || "/placeholder-booth.jpg"}
             alt={footprint.boothName || "档口"}
-            className="w-full h-full object-cover"
+            className="w-20 h-20 object-cover"
             fallbackSrc="/placeholder.png"
           />
         </div>
@@ -68,7 +68,8 @@ export function BoothHistoryCard({
               )}
 
               <div className="text-xs text-gray-400">
-                浏览时间：{formatDate(footprint.visitedAt || footprint.createdAt)}
+                浏览时间：
+                {formatDate(footprint.visitedAt || footprint.createdAt)}
               </div>
             </div>
 

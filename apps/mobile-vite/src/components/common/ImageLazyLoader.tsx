@@ -69,10 +69,7 @@ export function ImageLazyLoader({
       <Image
         src={imgSrc}
         alt={alt}
-        {...(fill 
-          ? { fill: true } 
-          : { width, height }
-        )}
+        {...(fill ? { fill: true } : { width, height })}
         className={`${className} ${
           isLoading ? "opacity-0 absolute inset-0" : "opacity-100"
         } transition-opacity duration-150`}
@@ -80,7 +77,7 @@ export function ImageLazyLoader({
         onError={handleError}
         priority={false}
         loading="lazy"
-        style={fill ? undefined : { width: 'auto', height: 'auto' }}
+        style={fill ? undefined : { width: "auto", height: "auto" }}
       />
     </div>
   );

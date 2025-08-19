@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { useGetNewBooth } from "../hooks";
 import type { Booth } from "@/types/api";
 
@@ -17,13 +18,16 @@ export function NewBooths({
 }: NewBoothsProps) {
   const { data = [], isLoading, error } = useGetNewBooth(type, limit);
   // 只取前limit个项目，不使用无限滚动
-  const displayItems = Array.isArray(data) ? data.slice(0, limit) : data?.rows?.slice(0, limit) || [];
+  const displayItems = Array.isArray(data)
+    ? data.slice(0, limit)
+    : data?.rows?.slice(0, limit) || [];
+  const navigate = useNavigate();
 
   const handleBoothClick = useCallback(
-    () => {
-     
+    (booth: Booth) => {
+      navigate(`/booth/${booth.id}`);
     },
-    []
+    [navigate]
   );
 
   if (error) {
@@ -112,22 +116,20 @@ export function NewBooths({
               </div>
 
               {/* 右侧商品滚动列表 */}
-              <div 
+              <div
                 className="flex-1 overflow-x-auto overflow-y-hidden scrollbar-hide"
-                style={{ 
-                  minWidth: 0, 
+                style={{
+                  minWidth: 0,
                   maxWidth: "calc(100vw - 120px)",
-                  WebkitOverflowScrolling: 'touch',
-                  scrollBehavior: 'smooth'
+                  WebkitOverflowScrolling: "touch",
+                  scrollBehavior: "smooth",
                 }}
               >
-                <div
-                  className="flex space-x-2 pb-1 w-max"
-                >
+                <div className="flex space-x-2 pb-1 w-max">
                   {displayItems?.map((booth: Booth) => (
                     <div
                       key={booth.id}
-                      onClick={() => handleBoothClick()}
+                      onClick={() => handleBoothClick(booth)}
                       className="flex-shrink-0 cursor-pointer transition-all hover:scale-105 active:scale-95"
                     >
                       {/* 商品卡片 */}

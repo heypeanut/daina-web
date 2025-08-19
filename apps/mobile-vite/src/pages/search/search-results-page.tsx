@@ -51,23 +51,25 @@ export default function SearchResultsPage() {
         try {
           const imageResults = sessionStorage.getItem("imageSearchResults");
           const searchImageData = sessionStorage.getItem("searchImage");
-          
+
           if (imageResults && searchImageData) {
             const results = JSON.parse(imageResults);
             setSearchImage(searchImageData);
-            
+
             if (searchType === "image-product") {
               // 转换API返回的数据格式为Product格式
-              const products = (results.rows || []).map((item: any) => ({
-                id: item.product.id,
-                name: item.product.name,
-                price: item.product.price,
-                images: item.product.images || [{ url: item.url }],
-                category: item.product.category,
-                views: item.product.views,
-                createdAt: item.product.createdAt,
-                similarity: item.similarity // 添加相似度信息
-              }));
+              const products = (results.rows || []).map(
+                (item: { product: Product }) => ({
+                  id: item.product.id,
+                  name: item.product.name,
+                  price: item.product.price,
+                  images: item.product.images,
+                  category: item.product.category,
+                  views: item.product.views,
+                  createdAt: item.product.createdAt,
+                  // similarity: item.similarity, // 添加相似度信息
+                })
+              );
               setImageProducts(products);
               setImageProductTotal(results.total || 0);
               setCurrentPage(1); // 重置页码
@@ -89,17 +91,18 @@ export default function SearchResultsPage() {
   // 加载更多图片搜索结果
   const handleLoadMoreImageResults = async () => {
     if (isLoadingMore || !searchImage) return;
-    
+
     const nextPage = currentPage + 1;
-    const hasMoreData = currentSearchMode === "product" 
-      ? imageProducts.length < imageProductTotal
-      : imageBooths.length < imageBoothTotal;
-      
+    const hasMoreData =
+      currentSearchMode === "product"
+        ? imageProducts.length < imageProductTotal
+        : imageBooths.length < imageBoothTotal;
+
     if (!hasMoreData) return;
 
     try {
       setIsLoadingMore(true);
-      
+
       if (currentSearchMode === "product") {
         const result = await searchProductsByImageBase64(searchImage, {
           pageNum: nextPage,
@@ -116,15 +119,14 @@ export default function SearchResultsPage() {
             category: item.product.category,
             views: item.product.views,
             createdAt: item.product.createdAt,
-            similarity: item.similarity
+            similarity: item.similarity,
           }));
-          
-          setImageProducts(prev => [...prev, ...newProducts]);
+
+          setImageProducts((prev) => [...prev, ...newProducts]);
           setCurrentPage(nextPage);
         }
       }
       // TODO: 添加booth的分页加载逻辑
-      
     } catch (error) {
       console.error("加载更多图片搜索结果失败:", error);
       setError("加载更多结果失败");
@@ -134,11 +136,11 @@ export default function SearchResultsPage() {
   };
 
   // 无限滚动hook - 只在图片搜索时使用
-  const hasMoreImageData = isImageSearch && (
-    currentSearchMode === "product" 
+  const hasMoreImageData =
+    isImageSearch &&
+    (currentSearchMode === "product"
       ? imageProducts.length < imageProductTotal
-      : imageBooths.length < imageBoothTotal
-  );
+      : imageBooths.length < imageBoothTotal);
 
   const { triggerRef, shouldShowTrigger } = useInfiniteScroll(
     handleLoadMoreImageResults,
@@ -146,7 +148,7 @@ export default function SearchResultsPage() {
       hasMore: hasMoreImageData,
       isLoading: isLoadingMore,
       threshold: 0.1,
-      rootMargin: '100px',
+      rootMargin: "100px",
     }
   );
 
@@ -228,7 +230,7 @@ export default function SearchResultsPage() {
             <>
               <div className="grid grid-cols-2 gap-4">
                 {imageProducts.map((product) => (
-                  <ProductCard 
+                  <ProductCard
                     key={product.id}
                     product={product}
                     viewMode="grid"
@@ -236,14 +238,16 @@ export default function SearchResultsPage() {
                   />
                 ))}
               </div>
-              
+
               {/* 无限滚动触发器 */}
               {shouldShowTrigger && (
                 <div ref={triggerRef} className="mt-6 py-4 flex justify-center">
                   {isLoadingMore && (
                     <div className="flex items-center space-x-2">
                       <div className="animate-spin w-5 h-5 border-2 border-orange-500 border-t-transparent rounded-full" />
-                      <span className="text-sm text-gray-600">加载更多商品...</span>
+                      <span className="text-sm text-gray-600">
+                        加载更多商品...
+                      </span>
                     </div>
                   )}
                 </div>
@@ -253,14 +257,18 @@ export default function SearchResultsPage() {
             <>
               <div className="space-y-4">
                 {imageBooths.map((booth, index) => (
-                  <div 
-                    key={booth.id || index} 
+                  <div
+                    key={booth.id || index}
                     onClick={() => booth.id && handleBoothClick(booth.id)}
                     className="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer border border-gray-100 hover:border-orange-200 active:scale-[0.98]"
                   >
-                    <h3 className="font-medium text-gray-900 mb-2">{booth.name}</h3>
+                    <h3 className="font-medium text-gray-900 mb-2">
+                      {booth.boothName}
+                    </h3>
                     {booth.description && (
-                      <p className="text-sm text-gray-600 line-clamp-2">{booth.description}</p>
+                      <p className="text-sm text-gray-600 line-clamp-2">
+                        {booth.description}
+                      </p>
                     )}
                     <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
                       <span>点击查看详情</span>
@@ -269,14 +277,16 @@ export default function SearchResultsPage() {
                   </div>
                 ))}
               </div>
-              
+
               {/* 无限滚动触发器 */}
               {shouldShowTrigger && (
                 <div ref={triggerRef} className="mt-6 py-4 flex justify-center">
                   {isLoadingMore && (
                     <div className="flex items-center space-x-2">
                       <div className="animate-spin w-5 h-5 border-2 border-orange-500 border-t-transparent rounded-full" />
-                      <span className="text-sm text-gray-600">加载更多档口...</span>
+                      <span className="text-sm text-gray-600">
+                        加载更多档口...
+                      </span>
                     </div>
                   )}
                 </div>
@@ -297,10 +307,10 @@ export default function SearchResultsPage() {
 
   return (
     <MobileLayout showTabBar={false}>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 ">
         {/* 搜索头部 */}
-        <div className="bg-white border-b border-gray-100">
-          <div className="flex items-center justify-between p-4">
+        <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
+          <div className="flex items-center justify-between p-4 sticky top-0">
             <button
               onClick={handleBack}
               className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100"
@@ -317,9 +327,9 @@ export default function SearchResultsPage() {
                 </p>
               )}
             </div>
-            <button className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100">
+            {/* <button className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100">
               <Search className="w-5 h-5 text-gray-600" />
-            </button>
+            </button> */}
           </div>
 
           {/* 图片搜索预览 */}

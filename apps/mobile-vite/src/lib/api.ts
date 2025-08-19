@@ -9,16 +9,15 @@ import type {
 } from "@/types/api";
 import type { Booth } from "@/types/booth";
 
-// API 服务端地址，仅使用环境变量或默认值，不依赖 window
-const BASE_URL =
-  import.meta.env.API_BASE_URL || "http://localhost:3000";
+// 使用相对路径的API基础URL，这样所有API请求都会经过Vite的代理
+const BASE_URL = ""; // 空字符串表示相对于当前域名的根路径
 
-console.log("API Base URL:", BASE_URL);
+console.log("API请求将使用相对路径，通过Vite代理路由");
 
 interface ApiResponse<T = unknown> {
   code: number;
-  msg?: string;        // 后端实际使用的字段
-  message?: string;    // 保持兼容性
+  msg?: string; // 后端实际使用的字段
+  message?: string; // 保持兼容性
   data: T;
   timestamp?: string;
   fromCache?: boolean;
@@ -60,10 +59,17 @@ class ApiClient {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
-    const url = `${this.baseURL}${endpoint}`;
+    // 构建完整URL - 使用相对路径
+    const url = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
     const headers = options.headers || this.defaultHeaders;
 
-    console.log("API Request:", url);
+    console.log(`[API] 请求: ${options.method || "GET"} ${url}`);
+    console.log(`[API] 请求头: ${JSON.stringify(headers)}`);
+    if (options.body) {
+      console.log(
+        `[API] 请求体预览: ${options.body.toString().substring(0, 100)}...`
+      );
+    }
 
     try {
       const response = await fetch(url, {
@@ -74,7 +80,7 @@ class ApiClient {
         // mode: 'cors', // 明确指定CORS模式
       });
 
-      console.log("API Response status:", response.status, response.statusText);
+      console.log(`[API] 响应状态: ${response.status} ${response.statusText}`);
 
       // 处理401未授权错误
       if (response.status === 401) {
@@ -86,29 +92,49 @@ class ApiClient {
           window.dispatchEvent(new Event("loginStatusChange"));
           // 跳转到登录页，保存当前页面作为返回地址
           const currentPath = window.location.pathname + window.location.search;
-          const loginUrl = `/login?returnUrl=${encodeURIComponent(currentPath)}`;
+          const loginUrl = `/login?returnUrl=${encodeURIComponent(
+            currentPath
+          )}`;
           window.location.href = loginUrl;
         }
         throw new Error("登录已过期，请重新登录");
       }
 
       const data = await response.json();
-      console.log("API Response data:", data);
+      console.log(
+        `[API] 响应数据(${endpoint}):`,
+        typeof data === "object"
+          ? `code=${data.code}, msg=${
+              data.msg || data.message || "无"
+            }, 数据长度=${Array.isArray(data.data) ? data.data.length : "对象"}`
+          : "非对象数据"
+      );
 
       // 统一处理业务逻辑错误码
       if (data.code && data.code !== 200) {
+        console.error(
+          `[API] 业务错误: code=${data.code}, msg=${
+            data.msg || data.message || "未知错误"
+          }`
+        );
         throw new Error(data.msg || data.message || "操作失败");
       }
 
       // 处理其他HTTP错误
       if (!response.ok) {
-        throw new Error(data.msg || data.message || `请求失败 (${response.status})`);
+        console.error(
+          `[API] HTTP错误: status=${response.status}, msg=${
+            data.msg || data.message || "未知错误"
+          }`
+        );
+        throw new Error(
+          data.msg || data.message || `请求失败 (${response.status})`
+        );
       }
 
       return data;
     } catch (error) {
-      console.error("API request failed:", {
-        url,
+      console.error(`[API] 请求失败(${url}):`, {
         error: error instanceof Error ? error.message : error,
         stack: error instanceof Error ? error.stack : undefined,
       });
@@ -138,7 +164,9 @@ class ApiClient {
   }
 
   public async getBanners(limit: number = 5): Promise<ApiResponse<Banner[]>> {
-    return this.request<Banner[]>(`/api/tenant/homepage/banners?limit=${limit}`);
+    return this.request<Banner[]>(
+      `/api/tenant/homepage/banners?limit=${limit}`
+    );
   }
 
   public async getBoothRecommendations(params: {
@@ -322,9 +350,7 @@ class ApiClient {
     if (params.limit) searchParams.append("limit", params.limit.toString());
     if (params.userId) searchParams.append("userId", params.userId.toString());
 
-    return this.request(
-      `/api/tenant/homepage/booth-ranking?${searchParams}`
-    );
+    return this.request(`/api/tenant/homepage/booth-ranking?${searchParams}`);
   }
 
   // 图片搜索接口
@@ -347,11 +373,19 @@ class ApiClient {
       }
     }
 
-    const response = await fetch(`${this.baseURL}/api/tenant/search/image/booth`, {
+    // 使用相对路径
+    const url = "/api/tenant/search/image/booth";
+    console.log(`[API图片搜索] 请求: POST ${url}`);
+
+    const response = await fetch(url, {
       method: "POST",
       headers,
       body: formData,
     });
+
+    console.log(
+      `[API图片搜索] 响应状态: ${response.status} ${response.statusText}`
+    );
 
     // 处理401未授权错误
     if (response.status === 401) {
@@ -397,11 +431,19 @@ class ApiClient {
       }
     }
 
-    const response = await fetch(`${this.baseURL}/api/tenant/search/image/product`, {
+    // 使用相对路径
+    const url = "/api/tenant/search/image/product";
+    console.log(`[API图片搜索] 请求: POST ${url}`);
+
+    const response = await fetch(url, {
       method: "POST",
       headers,
       body: formData,
     });
+
+    console.log(
+      `[API图片搜索] 响应状态: ${response.status} ${response.statusText}`
+    );
 
     // 处理401未授权错误
     if (response.status === 401) {

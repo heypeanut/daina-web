@@ -198,14 +198,19 @@ export function useInfiniteImageProductSearch(
     const searchImage = sessionStorage.getItem("searchImage");
     if (!searchImage) return;
     
+    // 获取保存的boothId（如果有的话）
+    const searchBoothId = sessionStorage.getItem("searchBoothId");
+    
     setIsFetchingNextPage(true);
     try {
       const file = await dataURLToFile(searchImage, "search.jpg");
-      const resp = await searchProductsByImage(file, {
+      const searchOptions = {
         limit: PAGE_SIZE,
         pageNum: nextPage,
         minSimilarity: 0.75,
-      });
+        ...(searchBoothId && { boothId: searchBoothId }),
+      };
+      const resp = await searchProductsByImage(file, searchOptions);
       const source = (resp as any).rows || (resp as any).results || []; // 兼容两种字段名
       const newProducts = source.map((item: any) => ({
         id: item.id,

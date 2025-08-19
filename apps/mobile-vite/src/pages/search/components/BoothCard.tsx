@@ -16,7 +16,7 @@ export default function BoothCard({
   booth,
   onClick,
   viewMode,
-  showSimilarity,
+  // showSimilarity,
   onFavoriteClick,
   isFavorited = false,
 }: BoothCardProps) {
@@ -76,13 +76,13 @@ export default function BoothCard({
                 </div>
 
                 {/* 相似度显示 */}
-                {showSimilarity && booth.similarity && (
+                {/* {showSimilarity && booth.similarity && (
                   <div className="mt-2">
                     <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
                       {Math.round(booth.similarity * 100)}% 相似
                     </span>
                   </div>
-                )}
+                )} */}
               </div>
 
               {/* 收藏按钮 */}
@@ -94,7 +94,9 @@ export default function BoothCard({
                   <Heart
                     size={18}
                     className={
-                      isFavorited ? "text-red-500 fill-current" : "text-gray-400"
+                      isFavorited
+                        ? "text-red-500 fill-current"
+                        : "text-gray-400"
                     }
                   />
                 </button>
@@ -122,11 +124,11 @@ export default function BoothCard({
         />
 
         {/* 相似度显示 */}
-        {showSimilarity && booth.similarity && (
+        {/* {showSimilarity && booth.similarity && (
           <div className="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded">
             {Math.round(booth.similarity * 100)}%
           </div>
-        )}
+        )} */}
 
         {/* 收藏按钮 */}
         {onFavoriteClick && (

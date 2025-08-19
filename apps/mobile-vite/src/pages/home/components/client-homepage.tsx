@@ -33,13 +33,13 @@ export function ClientHomepage() {
         <ClientSearchBar />
 
         {/* 主要内容区域 - 为固定搜索栏留出空间 */}
-        <div className="pt-14 relative z-10">
+        <div className="pt-14 pb-4 relative z-10">
           <HybridBanner onBannerClick={handleBannerClick} />
         </div>
       </div>
 
       {/* 白色背景的内容区域 */}
-      <div className="bg-white pt-4">
+      <div className="bg-white pt-2">
         {/* 档口排行榜 - 横向滑动显示 */}
         <RankingBooths title="优质商家" limit={25} />
 

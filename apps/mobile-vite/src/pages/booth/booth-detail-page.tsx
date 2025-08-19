@@ -10,7 +10,11 @@ import {
   AgentContactSheet,
 } from "./components";
 import { useGetDetail } from "./hooks";
-import { useLoginStatus, useBoothFollowStatus, useToggleBoothFollow } from "@/pages/profile/hooks/use-api";
+import {
+  useLoginStatus,
+  useBoothFollowStatus,
+  useToggleBoothFollow,
+} from "@/pages/profile/hooks/use-api";
 import type { Product } from "@/types/api";
 
 export default function BoothDetailPage() {
@@ -29,13 +33,13 @@ export default function BoothDetailPage() {
 
   // 登录状态和收藏功能
   const { isLoggedIn } = useLoginStatus();
-  const { data: isFavorited, isLoading: isFavoriteLoading } = useBoothFollowStatus(boothId || "", isLoggedIn);
+  const { data: isFavorited } = useBoothFollowStatus(boothId || "", isLoggedIn);
   const toggleFavoriteMutation = useToggleBoothFollow();
 
   const handleFavoriteToggle = () => {
     if (!isLoggedIn || !boothId) return;
-    
-    const action = isFavorited ? 'remove' : 'add';
+
+    const action = isFavorited ? "remove" : "add";
     toggleFavoriteMutation.mutate({ boothId, action });
   };
 
@@ -136,11 +140,12 @@ export default function BoothDetailPage() {
       <div className="min-h-screen bg-gray-50">
         <UnifiedSearchBar
           variant="booth-detail"
-          showBack={true}
+          showBack
+          showCamera={true}
           onBackClick={handleBack}
           placeholder={`搜索 ${booth?.boothName} 的商品...`}
           onSearchClick={handleSearchClick}
-          showShare={true}
+          boothId={boothId}
           className="fixed top-0 left-0 right-0 z-50"
         />
 

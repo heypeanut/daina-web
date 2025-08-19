@@ -1,6 +1,6 @@
 // 新版用户行为API - 收藏、历史记录等
-import { tenantApi, type PaginatedResponse } from './config';
-import { isLoggedIn } from '@/lib/auth';
+import { tenantApi, type PaginatedResponse } from "./config";
+import { isLoggedIn } from "@/lib/auth";
 
 // 接口类型定义
 export interface Product {
@@ -108,19 +108,19 @@ export interface Footprint {
  * 添加/取消收藏（商品或档口）
  */
 export async function toggleFavorite(
-  type: 'product' | 'booth', 
-  targetId: string, 
-  action: 'add' | 'remove'
+  type: "product" | "booth",
+  targetId: string,
+  action: "add" | "remove"
 ): Promise<void> {
   const data = {
-    type: type === 'product' ? 'product' : 'booth',
-    itemId: targetId // 使用实际的商品ID或档口ID
+    type: type === "product" ? "product" : "booth",
+    itemId: targetId, // 使用实际的商品ID或档口ID
   };
-  
-  if (action === 'add') {
-    await tenantApi.post('/user/favorites', data);
+
+  if (action === "add") {
+    await tenantApi.post("/user/favorites", data);
   } else {
-    await tenantApi.delete('/user/favorites', { data });
+    await tenantApi.delete("/user/favorites", { data });
   }
 }
 
@@ -128,44 +128,46 @@ export async function toggleFavorite(
  * 收藏商品
  */
 export async function addProductToFavorites(productId: string): Promise<void> {
-  await toggleFavorite('product', productId, 'add');
+  await toggleFavorite("product", productId, "add");
 }
 
 /**
  * 取消收藏商品
  */
-export async function removeProductFromFavorites(productId: string): Promise<void> {
-  await toggleFavorite('product', productId, 'remove');
+export async function removeProductFromFavorites(
+  productId: string
+): Promise<void> {
+  await toggleFavorite("product", productId, "remove");
 }
 
 /**
  * 关注档口
  */
 export async function followBooth(boothId: string): Promise<void> {
-  await toggleFavorite('booth', boothId, 'add');
+  await toggleFavorite("booth", boothId, "add");
 }
 
 /**
  * 取消关注档口
  */
 export async function unfollowBooth(boothId: string): Promise<void> {
-  await toggleFavorite('booth', boothId, 'remove');
+  await toggleFavorite("booth", boothId, "remove");
 }
 
 /**
  * 获取收藏列表
  */
 export async function getFavorites(
-  type: 'product' | 'booth',
+  type: "product" | "booth",
   page: number = 1,
   pageSize: number = 20
 ): Promise<PaginatedResponse<FavoriteProduct | FavoriteBooth>> {
-  const response = await tenantApi.get('/user/favorites', {
-    params: { 
-      type, 
-      page: page.toString(), 
-      pageSize: pageSize.toString() 
-    }
+  const response = await tenantApi.get("/user/favorites", {
+    params: {
+      type,
+      page: page.toString(),
+      pageSize: pageSize.toString(),
+    },
   });
   return response.data;
 }
@@ -177,7 +179,9 @@ export async function getFavoriteProducts(
   page: number = 1,
   pageSize: number = 20
 ): Promise<PaginatedResponse<FavoriteProduct>> {
-  return getFavorites('product', page, pageSize) as Promise<PaginatedResponse<FavoriteProduct>>;
+  return getFavorites("product", page, pageSize) as Promise<
+    PaginatedResponse<FavoriteProduct>
+  >;
 }
 
 /**
@@ -187,23 +191,25 @@ export async function getFavoriteBooths(
   page: number = 1,
   pageSize: number = 20
 ): Promise<PaginatedResponse<FavoriteBooth>> {
-  return getFavorites('booth', page, pageSize) as Promise<PaginatedResponse<FavoriteBooth>>;
+  return getFavorites("booth", page, pageSize) as Promise<
+    PaginatedResponse<FavoriteBooth>
+  >;
 }
 
 /**
  * 检查是否已收藏/关注
  */
 export async function checkFavoriteStatus(
-  type: 'product' | 'booth',
+  type: "product" | "booth",
   targetId: string
 ): Promise<boolean> {
   const params = {
-    type: type === 'product' ? 'product' : 'booth',
-    itemId: targetId // 使用实际的商品ID或档口ID
+    type: type === "product" ? "product" : "booth",
+    itemId: targetId, // 使用实际的商品ID或档口ID
   };
-    
+
   try {
-    const response = await tenantApi.get('/user/favorites/check', { params });
+    const response = await tenantApi.get("/user/favorites/check", { params });
     return response.data?.isFavorited || false;
   } catch {
     return false;
@@ -214,14 +220,14 @@ export async function checkFavoriteStatus(
  * 检查商品是否已收藏
  */
 export async function isProductFavorited(productId: string): Promise<boolean> {
-  return checkFavoriteStatus('product', productId);
+  return checkFavoriteStatus("product", productId);
 }
 
 /**
  * 检查档口是否已关注
  */
 export async function isBoothFollowed(boothId: string): Promise<boolean> {
-  return checkFavoriteStatus('booth', boothId);
+  return checkFavoriteStatus("booth", boothId);
 }
 
 // ==================== 浏览历史API ====================
@@ -239,7 +245,7 @@ export async function addFootprint(
   }
 
   try {
-    await tenantApi.post('/user/history', { type, targetId });
+    await tenantApi.post("/user/history", { type, targetId });
   } catch (error) {
     console.warn("Failed to add footprint:", error);
   }
@@ -265,55 +271,56 @@ export async function getFootprints(
     };
   }
 
-  const params: { page: string; pageSize: string; type?: string } = { 
-    page: page.toString(), 
-    pageSize: pageSize.toString() 
+  const params: { page: string; pageSize: string; type?: string } = {
+    page: page.toString(),
+    pageSize: pageSize.toString(),
   };
   if (type) params.type = type;
-  
-  const response = await tenantApi.get('/user/history', { params });
 
-  console.log('=== getFootprints API原始响应 ===');
-  console.log('API路径: /user/history');
-  console.log('请求参数:', params);
-  console.log('原始数据:', response.data);
-  console.log('数据结构:', response.data.rows ? '包含rows数组' : '不包含rows');
+  const response = await tenantApi.get("/user/history", { params });
+
+  console.log("=== getFootprints API原始响应 ===");
+  console.log("API路径: /user/history");
+  console.log("请求参数:", params);
+  console.log("原始数据:", response.data);
+  console.log("数据结构:", response.data.rows ? "包含rows数组" : "不包含rows");
   if (response.data.rows && response.data.rows[0]) {
-    console.log('第一条原始记录:', response.data.rows[0]);
-    console.log('第一条记录字段:', Object.keys(response.data.rows[0]));
+    console.log("第一条原始记录:", response.data.rows[0]);
+    console.log("第一条记录字段:", Object.keys(response.data.rows[0]));
   }
 
   // 数据转换逻辑（根据实际API结构调整）
   const transformedData = {
     ...response.data,
-    rows: response.data.rows.map((item: any) => {
+    rows: response.data.rows.map((item) => {
       const transformedItem = {
         ...item,
         // 尝试将不同的ID字段映射到targetId
-        targetId: item.targetId || 
-                  item.productId || 
-                  item.boothId || 
-                  item.objectId ||
-                  item.product?.id ||
-                  item.booth?.id ||
-                  item.id  // 最后尝试用记录自身的id
+        targetId:
+          (item as any).targetId ||
+          (item as any).productId ||
+          (item as any).boothId ||
+          (item as any).objectId ||
+          (item as any).product?.id ||
+          (item as any).booth?.id ||
+          (item as any).id, // 最后尝试用记录自身的id
       };
-      
+
       // 调试转换结果
-      if (item.targetId !== transformedItem.targetId) {
-        console.log('字段映射:', {
-          original: item.targetId,
+      if ((item as any).targetId !== transformedItem.targetId) {
+        console.log("字段映射:", {
+          original: (item as any).targetId,
           mapped: transformedItem.targetId,
-          source: 'productId/boothId/objectId/product.id/booth.id/id'
+          source: "productId/boothId/objectId/product.id/booth.id/id",
         });
       }
-      
+
       return transformedItem;
-    })
+    }),
   };
 
-  console.log('转换后数据:', transformedData);
-  console.log('转换后第一条记录:', transformedData.rows[0]);
+  console.log("转换后数据:", transformedData);
+  console.log("转换后第一条记录:", transformedData.rows[0]);
 
   return transformedData;
 }
@@ -321,14 +328,17 @@ export async function getFootprints(
 /**
  * 清除浏览记录
  */
-export async function clearFootprints(type?: "product" | "booth"): Promise<void> {
+export async function clearFootprints(
+  type?: "product" | "booth"
+): Promise<void> {
   // 如果未登录，直接返回
   if (!isLoggedIn()) {
     return;
   }
 
-  const params = type ? { type } : undefined;
-  await tenantApi.delete('/user/history', undefined, { params });
+  // 使用DELETE方法，将type参数放在请求体中
+  const data = type ? { type } : {};
+  await tenantApi.delete("/user/history", data);
 }
 
 /**

@@ -1,11 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { ShoppingBag, Loader2, ChevronRight } from "lucide-react";
 import { isLoggedIn, redirectToLogin } from "@/lib/auth";
-import { 
-  useBoothStatus, 
-  getBoothButtonText, 
-  getBoothButtonDescription, 
-  getBoothNavigationPath 
+import {
+  useBoothStatus,
+  getBoothButtonText,
+  getBoothButtonDescription,
+  getBoothNavigationPath,
 } from "../hooks/use-booth-status";
 
 export function ServiceSection() {
@@ -23,7 +23,7 @@ export function ServiceSection() {
 
     // 根据档口状态智能跳转
     const navigationPath = getBoothNavigationPath(boothStatus);
-    
+
     // 如果是跳转到档口管理页面，传递来源信息
     if (navigationPath === "/booth/management") {
       navigate(navigationPath, { state: { from: "/profile" } });
@@ -100,14 +100,14 @@ export function ServiceSection() {
           </div>
         </div>
 
-        <div className="mt-3 text-center">
+        {/* <div className="mt-3 text-center">
           <button
             onClick={() => navigate('/cooperation')}
             className="text-sm text-orange-500 hover:text-orange-600 transition-colors"
           >
             了解更多合作方式 →
           </button>
-        </div>
+        </div> */}
       </div>
     </div>
   );

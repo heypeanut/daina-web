@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { MobileLayout } from "@/components/layout";
-import { Camera, X } from "lucide-react";
+import { X } from "lucide-react";
 import { UnifiedSearchBar } from "@/components/common";
 
 export default function SearchPage() {
@@ -244,30 +244,6 @@ export default function SearchPage() {
               </div>
             </div>
           )}
-
-          {/* 拍照搜索入口 */}
-          <div className="p-4 bg-white">
-            <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-2xl p-6 text-center">
-              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm">
-                <Camera size={24} className="text-orange-500" />
-              </div>
-              <h3 className="text-base font-medium text-gray-900 mb-2">
-                拍照搜索
-              </h3>
-              <p className="text-sm text-gray-600 mb-4">
-                上传商品图片，快速找到
-                {boothIdParam || activeTab === "product"
-                  ? "相似商品"
-                  : "相似档口"}
-              </p>
-              <button
-                onClick={handleImageSearch}
-                className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-full font-medium transition-all shadow-sm hover:shadow-md active:scale-95"
-              >
-                开始拍照
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     </MobileLayout>

@@ -13,11 +13,17 @@ export default function ProductSearchResults() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   const keyword = useMemo(() => searchParams.get("q") || "", [searchParams]);
-  const boothId = useMemo(() => searchParams.get("boothId") || "", [searchParams]);
-  const queryParams = useMemo(() => ({ 
-    keyword,
-    ...(boothId && { boothId })
-  }), [keyword, boothId]);
+  const boothId = useMemo(
+    () => searchParams.get("boothId") || "",
+    [searchParams]
+  );
+  const queryParams = useMemo(
+    () => ({
+      keyword,
+      ...(boothId && { boothId }),
+    }),
+    [keyword, boothId]
+  );
 
   const productQuery = useInfiniteProductSearch(queryParams, {
     enabled: !!keyword,
@@ -69,8 +75,11 @@ export default function ProductSearchResults() {
         <span className="text-sm text-gray-600">
           {productQuery.data?.pages[0]?.total ? (
             <>
-              共找到 <span className="text-orange-500 font-medium">{productQuery.data.pages[0].total}</span> 个商品，
-              已加载 {allProducts.length} 个
+              共找到{" "}
+              <span className="text-orange-500 font-medium">
+                {productQuery.data.pages[0].total}
+              </span>{" "}
+              个商品， 已加载 {allProducts.length} 个
             </>
           ) : (
             `已加载 ${allProducts.length} 个商品`

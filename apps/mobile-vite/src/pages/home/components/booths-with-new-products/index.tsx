@@ -1,10 +1,10 @@
 import { useCallback } from "react";
 import Masonry from "react-masonry-css";
-import {
-  useInfiniteLatestBoothsWithNewProducts,
-} from "../../hooks";
+import { useNavigate } from "react-router-dom";
+import { useInfiniteLatestBoothsWithNewProducts } from "../../hooks";
 import { BoothCard } from "./booth-card";
 import { useInfiniteScroll } from "@/hooks/useIntersectionObserver";
+import type { Booth } from "@/types/api";
 
 interface BoothsWithNewProductsProps {
   title: string;
@@ -15,7 +15,7 @@ export function BoothsWithNewProducts({
   title,
   pageSize = 12,
 }: BoothsWithNewProductsProps) {
-  const { 
+  const {
     allData: allBooths,
     isLoadingInitial,
     isLoadingMore,
@@ -23,41 +23,33 @@ export function BoothsWithNewProducts({
     loadMore,
     error,
   } = useInfiniteLatestBoothsWithNewProducts(pageSize);
-  
+  const navigate = useNavigate();
+
   // 无限滚动处理
-  const { triggerRef, shouldShowTrigger } = useInfiniteScroll(
-    loadMore,
-    {
-      hasMore,
-      isLoading: isLoadingMore,
-    }
-  );
+  const { triggerRef, shouldShowTrigger } = useInfiniteScroll(loadMore, {
+    hasMore,
+    isLoading: isLoadingMore,
+  });
 
   // 瀑布流列数配置 - 移动端固定2列
   const breakpointColumnsObj = {
     default: 2,
     768: 2,
     640: 2,
-    480: 2
+    480: 2,
   };
 
   const handleBoothClick = useCallback(
-    () => {
-     
+    (booth: Booth) => {
+      navigate(`/booth/${booth.id}`);
     },
-    []
+    [navigate]
   );
 
-  const handleFavoriteClick = useCallback(
-    () => {
-      
-      // TODO: 实现收藏功能
-      console.log("收藏档口:");
-    },
-    []
-  );
-
-
+  const handleFavoriteClick = useCallback(() => {
+    // TODO: 实现收藏功能
+    console.log("收藏档口:");
+  }, []);
 
   if (error) {
     return (
@@ -112,23 +104,18 @@ export function BoothsWithNewProducts({
           columnClassName="pl-3 bg-clip-padding"
         >
           {allBooths.map((booth) => (
-            <BoothCard 
-              key={booth.id} 
-              booth={booth} 
-              handleBoothClick={handleBoothClick} 
-              handleFavoriteClick={handleFavoriteClick} 
+            <BoothCard
+              key={booth.id}
+              booth={booth}
+              handleBoothClick={handleBoothClick}
+              handleFavoriteClick={handleFavoriteClick}
             />
           ))}
         </Masonry>
       </div>
 
       {/* 无限滚动触发器 */}
-      {shouldShowTrigger && (
-        <div 
-          ref={triggerRef}
-          className="py-2"
-        />
-      )}
+      {shouldShowTrigger && <div ref={triggerRef} className="py-2" />}
 
       {/* 加载状态提示 */}
       {isLoadingMore && (

@@ -5,7 +5,6 @@ import { Camera, ArrowLeft, Upload, ImageIcon, X } from "lucide-react";
 import { toast } from "sonner";
 import { searchProductsByImageBase64 } from "@/lib/api/upload-search";
 
-
 export default function ImageSearchPage() {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -38,37 +37,66 @@ export default function ImageSearchPage() {
     }
   };
 
-  const handleUploadClick = () => {
+  const handleUploadClick = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
     fileInputRef.current?.click();
   };
 
-  const handleCameraClick = () => {
+  const handleCameraClick = (e?: React.MouseEvent) => {
+    // 如果有事件传入，阻止默认行为
+    if (e) {
+      e.preventDefault();
+    }
+
     // 创建一个隐藏的文件input专门用于相机
     const cameraInput = document.createElement("input");
     cameraInput.type = "file";
     cameraInput.accept = "image/*";
-    cameraInput.capture = "environment"; // 调用后置摄像头
+    // 不使用capture属性，让用户可以选择拍照或从图库选择
     cameraInput.style.display = "none";
 
     cameraInput.onchange = (e) => {
+      e.preventDefault(); // 阻止默认行为
+
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
         // 直接处理文件，不需要模拟事件
         if (file.size > 10 * 1024 * 1024) {
           toast.error("图片文件不能超过10MB");
+          document.body.removeChild(cameraInput);
           return;
         }
 
         if (!file.type.startsWith("image/")) {
           toast.error("请选择图片文件");
+          document.body.removeChild(cameraInput);
           return;
         }
 
         setSelectedFile(file);
         const reader = new FileReader();
         reader.onload = (e) => {
+          e.preventDefault(); // 阻止可能的默认行为
+
           setSelectedImage(e.target?.result as string);
+          // 拍照自动搜索 - 增加延时确保状态更新完成
+          setTimeout(() => {
+            try {
+              handleDirectSearch(file, e.target?.result as string);
+            } catch (err) {
+              console.error("处理图片搜索出错:", err);
+              toast.error("图片处理失败");
+            }
+          }, 500);
         };
+
+        reader.onerror = (err) => {
+          console.error("读取文件失败:", err);
+          toast.error("无法读取图片文件");
+        };
+
         reader.readAsDataURL(file);
       }
       // 清理临时元素
@@ -76,42 +104,58 @@ export default function ImageSearchPage() {
     };
 
     document.body.appendChild(cameraInput);
-    cameraInput.click();
+    // 使用setTimeout避免浏览器安全策略可能阻止的问题
+    setTimeout(() => {
+      try {
+        cameraInput.click();
+      } catch (err) {
+        console.error("无法打开文件选择器:", err);
+        toast.error("无法打开相机");
+      }
+    }, 100);
+  };
+
+  // 添加直接搜索方法，同时支持File和Base64
+  const handleDirectSearch = async (file: File, imageBase64: string) => {
+    try {
+      setIsSearching(true);
+      setError(null);
+      toast.loading("搜索中...", { id: "image-search" });
+
+      // 使用完整的Base64格式（包含data:image/...;base64,前缀）
+      const result = await searchProductsByImageBase64(imageBase64, {
+        limit: 20,
+        minSimilarity: 0.75,
+      });
+
+      toast.dismiss("image-search");
+
+      // tenantApi已经处理了响应，直接返回的就是data部分：{rows: [...], total: n}
+      if (result && result.rows && result.rows.length > 0) {
+        // 将搜索结果保存到sessionStorage，传递给结果页面
+        sessionStorage.setItem("imageSearchResults", JSON.stringify(result));
+        sessionStorage.setItem("searchImage", imageBase64);
+
+        // 使用window.location直接跳转，避免react-router导航可能被拦截的问题
+        window.location.href = "/search/results?type=image-product";
+      } else {
+        // 无搜索结果
+        toast.error("未找到相似的结果，请尝试其他图片");
+      }
+    } catch (error) {
+      toast.dismiss("image-search");
+      console.error("搜索失败:", error);
+      const errorMessage = error instanceof Error ? error.message : "搜索失败";
+      setError(errorMessage);
+      toast.error("搜索失败，请重试");
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   const handleSearch = async () => {
     if (selectedFile && selectedImage) {
-      try {
-        setIsSearching(true);
-        setError(null);
-        
-        // 使用完整的Base64格式（包含data:image/...;base64,前缀）
-        
-        const result = await searchProductsByImageBase64(selectedImage, {
-          limit: 20,
-          minSimilarity: 0.75,
-        });
-
-        // tenantApi已经处理了响应，直接返回的就是data部分：{rows: [...], total: n}
-        if (result && result.rows && result.rows.length > 0) {
-          // 将搜索结果保存到sessionStorage，传递给结果页面
-          sessionStorage.setItem("imageSearchResults", JSON.stringify(result));
-          sessionStorage.setItem("searchImage", selectedImage);
-
-          navigate(`/search/results?type=image-product`);
-        } else {
-          // 无搜索结果
-          toast.error("未找到相似的结果，请尝试其他图片");
-        }
-      } catch (error) {
-        console.error("搜索失败:", error);
-        const errorMessage =
-          error instanceof Error ? error.message : "搜索失败";
-        setError(errorMessage);
-        toast.error("搜索失败，请重试");
-      } finally {
-        setIsSearching(false);
-      }
+      handleDirectSearch(selectedFile, selectedImage);
     }
   };
 
