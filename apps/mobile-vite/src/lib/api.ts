@@ -12,8 +12,6 @@ import type { Booth } from "@/types/booth";
 // 使用相对路径的API基础URL，这样所有API请求都会经过Vite的代理
 const BASE_URL = ""; // 空字符串表示相对于当前域名的根路径
 
-console.log("API请求将使用相对路径，通过Vite代理路由");
-
 interface ApiResponse<T = unknown> {
   code: number;
   msg?: string; // 后端实际使用的字段
@@ -63,14 +61,6 @@ class ApiClient {
     const url = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
     const headers = options.headers || this.defaultHeaders;
 
-    console.log(`[API] 请求: ${options.method || "GET"} ${url}`);
-    console.log(`[API] 请求头: ${JSON.stringify(headers)}`);
-    if (options.body) {
-      console.log(
-        `[API] 请求体预览: ${options.body.toString().substring(0, 100)}...`
-      );
-    }
-
     try {
       const response = await fetch(url, {
         ...options,
@@ -79,8 +69,6 @@ class ApiClient {
         },
         // mode: 'cors', // 明确指定CORS模式
       });
-
-      console.log(`[API] 响应状态: ${response.status} ${response.statusText}`);
 
       // 处理401未授权错误
       if (response.status === 401) {
@@ -101,15 +89,6 @@ class ApiClient {
       }
 
       const data = await response.json();
-      console.log(
-        `[API] 响应数据(${endpoint}):`,
-        typeof data === "object"
-          ? `code=${data.code}, msg=${
-              data.msg || data.message || "无"
-            }, 数据长度=${Array.isArray(data.data) ? data.data.length : "对象"}`
-          : "非对象数据"
-      );
-
       // 统一处理业务逻辑错误码
       if (data.code && data.code !== 200) {
         console.error(
@@ -375,17 +354,11 @@ class ApiClient {
 
     // 使用相对路径
     const url = "/api/tenant/search/image/booth";
-    console.log(`[API图片搜索] 请求: POST ${url}`);
-
     const response = await fetch(url, {
       method: "POST",
       headers,
       body: formData,
     });
-
-    console.log(
-      `[API图片搜索] 响应状态: ${response.status} ${response.statusText}`
-    );
 
     // 处理401未授权错误
     if (response.status === 401) {
@@ -433,17 +406,12 @@ class ApiClient {
 
     // 使用相对路径
     const url = "/api/tenant/search/image/product";
-    console.log(`[API图片搜索] 请求: POST ${url}`);
 
     const response = await fetch(url, {
       method: "POST",
       headers,
       body: formData,
     });
-
-    console.log(
-      `[API图片搜索] 响应状态: ${response.status} ${response.statusText}`
-    );
 
     // 处理401未授权错误
     if (response.status === 401) {

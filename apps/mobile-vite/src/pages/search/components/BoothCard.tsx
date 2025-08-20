@@ -37,7 +37,7 @@ export default function BoothCard({
             <ImageLazyLoader
               src={booth.imageUrl || booth.coverImg || ""}
               alt={booth.boothName}
-              className="w-full h-full object-cover"
+              className="w-20 h-20 object-cover"
               fallbackSrc="/placeholder.png"
             />
           </div>

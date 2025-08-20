@@ -1,14 +1,17 @@
+import { ChevronRight } from "lucide-react";
 import { ImageLazyLoader } from "@/components/common";
 import type { ProductBooth } from "@/types/booth";
 interface BoothInfoCardProps {
   booth: ProductBooth;
   onFollowClick?: (boothId: string) => void;
+  onBoothClick?: (boothId: string) => void;
   className?: string;
 }
 
 export function BoothInfoCard({
   booth,
-  onFollowClick,
+  // onFollowClick,
+  onBoothClick,
   className = "",
 }: BoothInfoCardProps) {
   return (
@@ -16,8 +19,8 @@ export function BoothInfoCard({
       <h3 className="text-lg font-semibold text-gray-900 mb-2">档口信息</h3>
 
       <div
-        className="flex items-center gap-3 p-3 rounded-lg"
-        // onClick={() => onBoothClick?.(booth.id)}
+        className="flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+        onClick={() => onBoothClick?.(booth.id)}
       >
         {/* 档口头像 */}
         <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-200 flex-shrink-0">
@@ -42,18 +45,10 @@ export function BoothInfoCard({
           </div>
         </div>
 
-        {/* 关注按钮和箭头 */}
-        {/* <div className="flex items-center gap-2">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onFollowClick?.(booth.id);
-            }}
-            className="px-3 py-1 text-sm bg-orange-500 text-white rounded-full hover:bg-orange-600 transition-colors"
-          >
-            关注
-          </button>
-        </div> */}
+        {/* 箭头图标 */}
+        <div className="flex-shrink-0">
+          <ChevronRight className="w-5 h-5 text-gray-400" />
+        </div>
       </div>
     </div>
   );

@@ -9,8 +9,6 @@ const API_BASE_URLS = {
 // 使用相对路径，确保所有请求都通过Vite代理
 const BASE_URL = "";
 
-console.log("[API] 使用相对路径请求API");
-
 // 获取认证token
 function getAuthToken(): string | null {
   if (typeof window === "undefined") return null;
@@ -33,7 +31,6 @@ class TenantApiClient {
     const url = endpoint.startsWith("/")
       ? `${this.baseURL}${endpoint}`
       : `${this.baseURL}/${endpoint}`;
-    console.log(`[TenantAPI] 请求: ${options.method || "GET"} ${url}`);
 
     // 准备请求头
     const headers: Record<string, string> = {

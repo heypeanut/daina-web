@@ -61,6 +61,10 @@ export default function ProductDetailPage() {
     console.log("关注档口:", boothId);
   };
 
+  const handleBoothClick = (boothId: string) => {
+    navigate(`/booth/${boothId}`);
+  };
+
   // 错误状态
   if (isError || error) {
     return (
@@ -191,6 +195,7 @@ export default function ProductDetailPage() {
             <BoothInfoCard
               booth={product.booth}
               onFollowClick={handleFollowClick}
+              onBoothClick={handleBoothClick}
             />
           </div>
         </div>
