@@ -7,6 +7,7 @@ import BoothSearchResults from "@/pages/search/components/BoothSearchResults";
 import ProductCard from "@/pages/search/components/ProductCard";
 import { searchProductsByImageBase64 } from "@/lib/api/upload-search";
 import { useInfiniteScroll } from "@/hooks/useIntersectionObserver";
+import { IMAGE_SEARCH_MIN_SIMILARITY } from "@/lib/constants/search";
 
 import type { Product, Booth } from "@/types/api";
 
@@ -107,7 +108,7 @@ export default function SearchResultsPage() {
         const result = await searchProductsByImageBase64(searchImage, {
           pageNum: nextPage,
           limit: 20,
-          minSimilarity: 0.75,
+          minSimilarity: IMAGE_SEARCH_MIN_SIMILARITY,
         });
 
         if (result && result.rows && result.rows.length > 0) {

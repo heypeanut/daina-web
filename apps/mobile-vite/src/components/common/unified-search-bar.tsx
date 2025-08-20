@@ -1,11 +1,8 @@
 import React, { useState } from "react";
 import { Search, Filter, Camera, X, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import {
-  searchProductsByImageBase64,
-  type ImageSearchOptions,
-} from "@/lib/api/upload-search";
 import { toast } from "sonner";
+import { useImageSearch } from "@/hooks/useImageSearch";
 
 export interface UnifiedSearchBarProps {
   // 基础配置
@@ -84,6 +81,7 @@ export function UnifiedSearchBar({
 }: UnifiedSearchBarProps) {
   const navigate = useNavigate();
   const [internalFocused, setInternalFocused] = useState(false);
+  const { handleImageSearch } = useImageSearch({ variant, boothId });
 
   // 使用外部或内部的焦点状态
   const isFocused =
@@ -161,73 +159,8 @@ export function UnifiedSearchBar({
               return;
             }
 
-            // 显示加载提示
-            toast.loading("正在搜索中...", { id: "image-search" });
-
-            // 转换为base64并调用搜索API
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-              if (e) e.preventDefault(); // 阻止可能的默认行为
-
-              try {
-                const base64Image = reader.result as string;
-                console.log(
-                  "[UnifiedSearchBar] 图片加载成功，长度:",
-                  base64Image.length
-                );
-
-                const searchOptions: ImageSearchOptions = {
-                  limit: 20,
-                  minSimilarity: 0.75,
-                };
-
-                // 如果是档口详情页，限制搜索范围
-                if (variant === "booth-detail" && boothId) {
-                  searchOptions.boothId = boothId;
-                }
-
-                const result = await searchProductsByImageBase64(
-                  base64Image,
-                  searchOptions
-                );
-
-                toast.dismiss("image-search");
-
-                // tenantApi已经处理了响应，直接返回的就是data部分：{rows: [...], total: n}
-                if (result && result.rows && result.rows.length > 0) {
-                  // 将搜索结果保存到sessionStorage，传递给结果页面
-                  sessionStorage.setItem(
-                    "imageSearchResults",
-                    JSON.stringify(result)
-                  );
-                  sessionStorage.setItem("searchImage", base64Image);
-
-                  // 如果有boothId，也保存到sessionStorage
-                  if (variant === "booth-detail" && boothId) {
-                    sessionStorage.setItem("searchBoothId", boothId);
-                  } else {
-                    sessionStorage.removeItem("searchBoothId");
-                  }
-
-                  // 使用window.location直接跳转，避免react-router导航可能被拦截
-                  window.location.href = "/search/results?type=image-product";
-                } else {
-                  toast.error("未找到相似的结果，请尝试其他图片");
-                }
-              } catch (error) {
-                toast.dismiss("image-search");
-                console.error("[UnifiedSearchBar] 图片搜索失败:", error);
-                toast.error("搜索失败，请重试");
-              }
-            };
-
-            reader.onerror = (error) => {
-              toast.dismiss("image-search");
-              console.error("[UnifiedSearchBar] 图片读取失败:", error);
-              toast.error("图片处理失败，请重试");
-            };
-
-            reader.readAsDataURL(file);
+            // 使用Hook处理图片搜索
+            await handleImageSearch(file);
           } catch (error) {
             toast.dismiss("image-search");
             console.error("[UnifiedSearchBar] 图片处理失败:", error);

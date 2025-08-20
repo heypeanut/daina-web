@@ -18,6 +18,7 @@ import {
   searchBoothsByImage,
   searchProductsByImage,
 } from "@/lib/api/upload-search";
+import { IMAGE_SEARCH_MIN_SIMILARITY } from "@/lib/constants/search";
 
 // 模拟无限查询的返回类型
 interface InfiniteQueryPage<T> {
@@ -156,12 +157,12 @@ export function useInfiniteImageProductSearch(
     const endIndex = startIndex + PAGE_SIZE;
 
     const total = serverTotal ?? allProducts.length;
-    
+
     // 如果已经超过总数，没有更多数据了
     if (startIndex >= total) {
       return;
     }
-    
+
     // 如果本地已有全部数据，从本地分页
     if (startIndex < allProducts.length) {
       setIsFetchingNextPage(true);
@@ -192,22 +193,22 @@ export function useInfiniteImageProductSearch(
       setIsFetchingNextPage(false);
       return;
     }
-    
+
     // 如果本地数据不足且还有更多数据，尝试从服务器获取
     // 注意：图片搜索API通常一次返回所有结果，这个分支可能不会执行
     const searchImage = sessionStorage.getItem("searchImage");
     if (!searchImage) return;
-    
+
     // 获取保存的boothId（如果有的话）
     const searchBoothId = sessionStorage.getItem("searchBoothId");
-    
+
     setIsFetchingNextPage(true);
     try {
       const file = await dataURLToFile(searchImage, "search.jpg");
       const searchOptions = {
         limit: PAGE_SIZE,
         pageNum: nextPage,
-        minSimilarity: 0.75,
+        minSimilarity: IMAGE_SEARCH_MIN_SIMILARITY,
         ...(searchBoothId && { boothId: searchBoothId }),
       };
       const resp = await searchProductsByImage(file, searchOptions);
@@ -229,9 +230,12 @@ export function useInfiniteImageProductSearch(
       setAllProducts((prev) => [...prev, ...newProducts]);
 
       const pageSize = data.pages?.[0]?.pageSize ?? PAGE_SIZE;
-      const total2 = data.pages?.[0]?.total ?? serverTotal ?? allProducts.length + newProducts.length;
+      const total2 =
+        data.pages?.[0]?.total ??
+        serverTotal ??
+        allProducts.length + newProducts.length;
       const totalPages = Math.ceil(total2 / pageSize);
-      
+
       setData((prevData) => ({
         pages: [
           ...(prevData?.pages || []),
@@ -322,7 +326,7 @@ export function useInfiniteImageBoothSearch(
           // 统一名称字段（后端已返回 boothName，此处仅兜底）
           boothName: item.boothName || item.name,
           // 初始时不翻译，等字典加载完成后再翻译
-          marketLabel: item.marketLabel || '',
+          marketLabel: item.marketLabel || "",
         })
       );
 
@@ -383,12 +387,12 @@ export function useInfiniteImageBoothSearch(
     const endIndex = startIndex + PAGE_SIZE;
 
     const total = serverTotal ?? allBooths.length;
-    
+
     // 如果已经超过总数，没有更多数据了
     if (startIndex >= total) {
       return;
     }
-    
+
     // 如果本地已有全部数据，从本地分页
     if (startIndex < allBooths.length) {
       setIsFetchingNextPage(true);
@@ -419,39 +423,46 @@ export function useInfiniteImageBoothSearch(
       setIsFetchingNextPage(false);
       return;
     }
-    
+
     // 如果本地数据不足且还有更多数据，尝试从服务器获取
     // 注意：图片搜索API通常一次返回所有结果，这个分支可能不会执行
     const searchImage = sessionStorage.getItem("searchImage");
     if (!searchImage) return;
-    
+
     setIsFetchingNextPage(true);
     try {
       const file = await dataURLToFile(searchImage, "search.jpg");
       const resp = await searchBoothsByImage(file, {
         limit: PAGE_SIZE,
         pageNum: nextPage,
-        minSimilarity: 0.75,
+        minSimilarity: IMAGE_SEARCH_MIN_SIMILARITY,
       });
       const source = (resp as any).rows || (resp as any).results || []; // 兼容两种字段名
       const newRows: Booth[] = source.map((item: any) => ({
         ...item,
         boothName: item.boothName || item.name,
-        marketLabel: item.marketLabel || '',
+        marketLabel: item.marketLabel || "",
       }));
-      
+
       // 直接翻译新数据
-      const translatedNewRows = marketDictMap ? newRows.map((booth) => ({
-        ...booth,
-        marketLabel: translateDictValue(booth.market as string, marketDictMap) || booth.marketLabel,
-      })) : newRows;
-      
+      const translatedNewRows = marketDictMap
+        ? newRows.map((booth) => ({
+            ...booth,
+            marketLabel:
+              translateDictValue(booth.market as string, marketDictMap) ||
+              booth.marketLabel,
+          }))
+        : newRows;
+
       setAllBooths((prev) => [...prev, ...newRows]);
 
       const pageSize = data.pages?.[0]?.pageSize ?? PAGE_SIZE;
-      const total2 = data.pages?.[0]?.total ?? serverTotal ?? allBooths.length + newRows.length;
+      const total2 =
+        data.pages?.[0]?.total ??
+        serverTotal ??
+        allBooths.length + newRows.length;
       const totalPages = Math.ceil(total2 / pageSize);
-      
+
       setData((prevData) => ({
         pages: [
           ...(prevData?.pages || []),
@@ -472,7 +483,14 @@ export function useInfiniteImageBoothSearch(
     } finally {
       setIsFetchingNextPage(false);
     }
-  }, [data, isFetchingNextPage, allBooths, currentPage, serverTotal, marketDictMap]);
+  }, [
+    data,
+    isFetchingNextPage,
+    allBooths,
+    currentPage,
+    serverTotal,
+    marketDictMap,
+  ]);
 
   // 计算是否还有下一页
   const hasNextPage = useMemo(() => {
@@ -499,26 +517,28 @@ export function useInfiniteImageBoothSearch(
     if (!data || !data.pages.length) {
       return data;
     }
-    
+
     // 如果没有字典或第一页不是页面1，直接返回原始数据
     if (!marketDictMap || !data.pages[0] || data.pages[0].pageNum !== 1) {
       return data;
     }
-    
+
     // 只翻译第一页的数据
     const firstPage = data.pages[0];
     const translatedFirstPageRows = firstPage.rows.map((booth: any) => ({
       ...booth,
-      marketLabel: translateDictValue(booth.market as string, marketDictMap) || booth.marketLabel,
+      marketLabel:
+        translateDictValue(booth.market as string, marketDictMap) ||
+        booth.marketLabel,
     }));
-    
+
     const updatedPages = data.pages.map((page, index) => {
       if (index === 0) {
         return { ...page, rows: translatedFirstPageRows };
       }
       return page; // 其他页面已经在fetchNextPage中翻译过了
     });
-    
+
     return { ...data, pages: updatedPages };
   }, [data, marketDictMap]);
 

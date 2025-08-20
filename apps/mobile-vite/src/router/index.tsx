@@ -1,48 +1,79 @@
-import { createBrowserRouter } from 'react-router-dom';
-import { lazy, Suspense } from 'react';
-import { LoadingSpinner } from '@/components/common';
+import { createBrowserRouter } from "react-router-dom";
+import { lazy, Suspense } from "react";
+import { LoadingSpinner } from "@/components/common";
 
 // 懒加载页面组件
-const HomePage = lazy(() => import('@/pages/home/home-page'));
-const MarketPage = lazy(() => import('@/pages/market/market-page'));
-const CooperationPage = lazy(() => import('@/pages/cooperation/cooperation-page'));
-const ProfilePage = lazy(() => import('@/pages/profile/profile-page'));
-const BoothDetailPage = lazy(() => import('@/pages/booth/booth-detail-page'));
-const ProductDetailPage = lazy(() => import('@/pages/product/product-detail-page'));
-const LoginPage = lazy(() => import('@/pages/auth/login-page'));
-const RegisterPage = lazy(() => import('@/pages/auth/register-page'));
+const HomePage = lazy(() => import("@/pages/home/home-page"));
+const MarketPage = lazy(() => import("@/pages/market/market-page"));
+const CooperationPage = lazy(
+  () => import("@/pages/cooperation/cooperation-page")
+);
+const ProfilePage = lazy(() => import("@/pages/profile/profile-page"));
+const BoothDetailPage = lazy(() => import("@/pages/booth/booth-detail-page"));
+const ProductDetailPage = lazy(
+  () => import("@/pages/product/product-detail-page")
+);
+const LoginPage = lazy(() => import("@/pages/auth/login-page"));
+const RegisterPage = lazy(() => import("@/pages/auth/register-page"));
 
 // Profile子页面
-const FavoritesPage = lazy(() => import('@/pages/profile/favorites/favorites-page'));
-const FollowedBoothsPage = lazy(() => import('@/pages/profile/favorites/followed-booths-page'));
-const ProductHistoryPage = lazy(() => import('@/pages/profile/history/ProductHistoryPage'));
-const BoothHistoryPage = lazy(() => import('@/pages/profile/history/BoothHistoryPage'));
-const SettingsPage = lazy(() => import('@/pages/profile/settings/settings-page'));
+const FavoritesPage = lazy(
+  () => import("@/pages/profile/favorites/favorites-page")
+);
+const FollowedBoothsPage = lazy(
+  () => import("@/pages/profile/favorites/followed-booths-page")
+);
+const ProductHistoryPage = lazy(
+  () => import("@/pages/profile/history/ProductHistoryPage")
+);
+const BoothHistoryPage = lazy(
+  () => import("@/pages/profile/history/BoothHistoryPage")
+);
+const SettingsPage = lazy(
+  () => import("@/pages/profile/settings/settings-page")
+);
 
 // 档口管理页面
-const BoothApplyPage = lazy(() => import('@/pages/booth-management/apply/booth-apply-page'));
-const BoothManagementPage = lazy(() => import('@/pages/booth-management/management/booth-management-page'));
-const ProductsManagementPage = lazy(() => import('@/pages/booth-management/products/products-management-page'));
-const AddProductPage = lazy(() => import('@/pages/booth-management/products/add-product-page'));
-const BoothEditPage = lazy(() => import('@/pages/booth-management/edit/booth-edit-page'));
-const SearchPage = lazy(() => import('@/pages/search/search-page'));
-const ImageSearchPage = lazy(() => import('@/pages/search/image-search-page'));
-const SearchResultsPage = lazy(() => import('@/pages/search/search-results-page'));
-const BoothSelectPage = lazy(() => import('@/pages/booth-management/select/booth-select-page'));
-const EditProductPage = lazy(() => import('@/pages/booth-management/products/edit-product-page'));
-const PrivacyPolicyPage = lazy(() => import('@/pages/legal/privacy-policy-page'));
-const UserAgreementPage = lazy(() => import('@/pages/legal/user-agreement-page'));
+const BoothApplyPage = lazy(
+  () => import("@/pages/booth-management/apply/booth-apply-page")
+);
+const BoothManagementPage = lazy(
+  () => import("@/pages/booth-management/management/booth-management-page")
+);
+const ProductsManagementPage = lazy(
+  () => import("@/pages/booth-management/products/products-management-page")
+);
+const AddProductPage = lazy(
+  () => import("@/pages/booth-management/products/add-product-page")
+);
+const BoothEditPage = lazy(
+  () => import("@/pages/booth-management/edit/booth-edit-page")
+);
+const SearchPage = lazy(() => import("@/pages/search/search-page"));
+const SearchResultsPage = lazy(
+  () => import("@/pages/search/search-results-page")
+);
+const BoothSelectPage = lazy(
+  () => import("@/pages/booth-management/select/booth-select-page")
+);
+const EditProductPage = lazy(
+  () => import("@/pages/booth-management/products/edit-product-page")
+);
+const PrivacyPolicyPage = lazy(
+  () => import("@/pages/legal/privacy-policy-page")
+);
+const UserAgreementPage = lazy(
+  () => import("@/pages/legal/user-agreement-page")
+);
 
 // 加载组件包装器
 const SuspenseWrapper = ({ children }: { children: React.ReactNode }) => (
-  <Suspense fallback={<LoadingSpinner />}>
-    {children}
-  </Suspense>
+  <Suspense fallback={<LoadingSpinner />}>{children}</Suspense>
 );
 
 export const router = createBrowserRouter([
   {
-    path: '/',
+    path: "/",
     element: (
       <SuspenseWrapper>
         <HomePage />
@@ -50,7 +81,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/market',
+    path: "/market",
     element: (
       <SuspenseWrapper>
         <MarketPage />
@@ -58,7 +89,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/cooperation',
+    path: "/cooperation",
     element: (
       <SuspenseWrapper>
         <CooperationPage />
@@ -66,7 +97,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/profile',
+    path: "/profile",
     element: (
       <SuspenseWrapper>
         <ProfilePage />
@@ -74,7 +105,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/login',
+    path: "/login",
     element: (
       <SuspenseWrapper>
         <LoginPage />
@@ -82,7 +113,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/register',
+    path: "/register",
     element: (
       <SuspenseWrapper>
         <RegisterPage />
@@ -90,7 +121,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/search',
+    path: "/search",
     element: (
       <SuspenseWrapper>
         <SearchPage />
@@ -98,7 +129,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/search/results',
+    path: "/search/results",
     element: (
       <SuspenseWrapper>
         <SearchResultsPage />
@@ -106,15 +137,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/search/image',
-    element: (
-      <SuspenseWrapper>
-        <ImageSearchPage />
-      </SuspenseWrapper>
-    ),
-  },
-  {
-    path: '/booth/:id',
+    path: "/booth/:id",
     element: (
       <SuspenseWrapper>
         <BoothDetailPage />
@@ -122,7 +145,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/product/:id',
+    path: "/product/:id",
     element: (
       <SuspenseWrapper>
         <ProductDetailPage />
@@ -130,7 +153,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/booth/apply',
+    path: "/booth/apply",
     element: (
       <SuspenseWrapper>
         <BoothApplyPage />
@@ -138,7 +161,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/booth/edit',
+    path: "/booth/edit",
     element: (
       <SuspenseWrapper>
         <BoothEditPage />
@@ -146,7 +169,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/booth/management',
+    path: "/booth/management",
     element: (
       <SuspenseWrapper>
         <BoothManagementPage />
@@ -154,7 +177,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/booth/select',
+    path: "/booth/select",
     element: (
       <SuspenseWrapper>
         <BoothSelectPage />
@@ -162,7 +185,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/booth/products',
+    path: "/booth/products",
     element: (
       <SuspenseWrapper>
         <ProductsManagementPage />
@@ -170,7 +193,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/booth/products/add',
+    path: "/booth/products/add",
     element: (
       <SuspenseWrapper>
         <AddProductPage />
@@ -178,7 +201,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/booth/products/edit',
+    path: "/booth/products/edit",
     element: (
       <SuspenseWrapper>
         <EditProductPage />
@@ -186,7 +209,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/profile/favorites',
+    path: "/profile/favorites",
     element: (
       <SuspenseWrapper>
         <FavoritesPage />
@@ -194,7 +217,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/profile/favorites/products',
+    path: "/profile/favorites/products",
     element: (
       <SuspenseWrapper>
         <FavoritesPage />
@@ -202,7 +225,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/profile/favorites/booths',
+    path: "/profile/favorites/booths",
     element: (
       <SuspenseWrapper>
         <FollowedBoothsPage />
@@ -210,7 +233,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/profile/product-history',
+    path: "/profile/product-history",
     element: (
       <SuspenseWrapper>
         <ProductHistoryPage />
@@ -218,7 +241,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/profile/booth-history',
+    path: "/profile/booth-history",
     element: (
       <SuspenseWrapper>
         <BoothHistoryPage />
@@ -226,7 +249,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/profile/settings',
+    path: "/profile/settings",
     element: (
       <SuspenseWrapper>
         <SettingsPage />
@@ -234,7 +257,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/privacy-policy',
+    path: "/privacy-policy",
     element: (
       <SuspenseWrapper>
         <PrivacyPolicyPage />
@@ -242,7 +265,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/user-agreement',
+    path: "/user-agreement",
     element: (
       <SuspenseWrapper>
         <UserAgreementPage />
