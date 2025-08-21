@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
+import React from "react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 
 export default function PrivacyPolicyPage() {
   const router = useRouter();
@@ -32,16 +32,21 @@ export default function PrivacyPolicyPage() {
         <div className="bg-white rounded-lg p-6 space-y-6">
           {/* 政策标题 */}
           <div className="text-center">
-            <h2 className="text-xl font-bold text-gray-900 mb-2">代拿网隐私政策</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">
+              代拿网隐私政策
+            </h2>
             <p className="text-sm text-gray-600">最后更新时间：2024年12月</p>
           </div>
 
           {/* 政策条款 */}
           <div className="space-y-6 text-sm text-gray-700 leading-relaxed">
             <section>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">第一条 隐私政策的适用范围</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                第一条 隐私政策的适用范围
+              </h3>
               <p className="mb-2">
-                1.1 本隐私政策适用于代拿网（以下简称"我们"或"本平台"）提供的所有服务。
+                1.1
+                本隐私政策适用于代拿网（以下简称"我们"或"本平台"）提供的所有服务。
               </p>
               <p className="mb-2">
                 1.2 本政策描述了我们如何收集、使用、储存和分享您的个人信息。
@@ -52,7 +57,9 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">第二条 我们收集的信息</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                第二条 我们收集的信息
+              </h3>
               <p className="mb-3 font-medium">2.1 您主动提供的信息：</p>
               <ul className="list-disc list-inside space-y-1 mb-3 ml-4">
                 <li>注册信息：手机号码、密码、昵称等</li>
@@ -60,7 +67,7 @@ export default function PrivacyPolicyPage() {
                 <li>交易信息：订单详情、支付信息、收货地址等</li>
                 <li>反馈信息：客服咨询、意见反馈、评价内容等</li>
               </ul>
-              
+
               <p className="mb-3 font-medium">2.2 自动收集的信息：</p>
               <ul className="list-disc list-inside space-y-1 mb-3 ml-4">
                 <li>设备信息：设备型号、操作系统、唯一设备标识等</li>
@@ -71,7 +78,9 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">第三条 信息使用目的</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                第三条 信息使用目的
+              </h3>
               <p className="mb-3">我们收集和使用您的个人信息用于以下目的：</p>
               <ul className="list-disc list-inside space-y-1 ml-4">
                 <li>提供和维护我们的服务</li>
@@ -86,7 +95,9 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">第四条 信息共享和披露</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                第四条 信息共享和披露
+              </h3>
               <p className="mb-3">在以下情况下，我们可能会共享您的个人信息：</p>
               <ul className="list-disc list-inside space-y-1 mb-3 ml-4">
                 <li>获得您的明确同意</li>
@@ -101,23 +112,30 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">第五条 信息存储和安全</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                第五条 信息存储和安全
+              </h3>
               <p className="mb-2">
-                5.1 我们采用行业标准的安全措施保护您的个人信息，包括数据加密、访问控制、安全审计等。
+                5.1
+                我们采用行业标准的安全措施保护您的个人信息，包括数据加密、访问控制、安全审计等。
               </p>
               <p className="mb-2">
                 5.2 您的个人信息将存储在中国境内的安全服务器上。
               </p>
               <p className="mb-2">
-                5.3 我们会根据法律要求和业务需要确定信息保存期限，超期后会安全删除。
+                5.3
+                我们会根据法律要求和业务需要确定信息保存期限，超期后会安全删除。
               </p>
               <p>
-                5.4 尽管我们采取了安全措施，但互联网传输无法保证绝对安全，请您妥善保管账户信息。
+                5.4
+                尽管我们采取了安全措施，但互联网传输无法保证绝对安全，请您妥善保管账户信息。
               </p>
             </section>
 
             <section>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">第六条 您的权利</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                第六条 您的权利
+              </h3>
               <p className="mb-3">根据相关法律法规，您享有以下权利：</p>
               <ul className="list-disc list-inside space-y-1 ml-4">
                 <li>知情权：了解我们处理您个人信息的情况</li>
@@ -131,53 +149,54 @@ export default function PrivacyPolicyPage() {
             </section>
 
             <section>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">第七条 Cookie和类似技术</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                第七条 Cookie和类似技术
+              </h3>
               <p className="mb-2">
                 7.1 我们使用Cookie和类似技术来改善用户体验，记住您的偏好设置。
               </p>
               <p className="mb-2">
                 7.2 您可以通过浏览器设置管理Cookie，但这可能影响某些功能的使用。
               </p>
-              <p>
-                7.3 我们也可能使用第三方分析工具来了解服务使用情况。
-              </p>
+              <p>7.3 我们也可能使用第三方分析工具来了解服务使用情况。</p>
             </section>
 
             <section>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">第八条 未成年人保护</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                第八条 未成年人保护
+              </h3>
+              <p className="mb-2">8.1 我们非常重视未成年人的个人信息保护。</p>
               <p className="mb-2">
-                8.1 我们非常重视未成年人的个人信息保护。
+                8.2
+                如果您是18岁以下的未成年人，请在监护人陪同下阅读本政策并使用我们的服务。
               </p>
-              <p className="mb-2">
-                8.2 如果您是18岁以下的未成年人，请在监护人陪同下阅读本政策并使用我们的服务。
-              </p>
-              <p>
-                8.3 我们不会主动收集未成年人的个人信息，如发现会及时删除。
-              </p>
+              <p>8.3 我们不会主动收集未成年人的个人信息，如发现会及时删除。</p>
             </section>
 
             <section>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">第九条 政策更新</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                第九条 政策更新
+              </h3>
               <p className="mb-2">
                 9.1 我们可能会不时更新本隐私政策，更新后会在平台上发布。
               </p>
-              <p className="mb-2">
-                9.2 重大变更会通过显著方式通知您。
-              </p>
-              <p>
-                9.3 继续使用我们的服务即表示您同意更新后的政策。
-              </p>
+              <p className="mb-2">9.2 重大变更会通过显著方式通知您。</p>
+              <p>9.3 继续使用我们的服务即表示您同意更新后的政策。</p>
             </section>
 
             <section>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">第十条 联系我们</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                第十条 联系我们
+              </h3>
               <p className="mb-2">
                 如果您对本隐私政策有任何疑问或建议，请通过以下方式联系我们：
               </p>
-              <p className="mb-1">客服电话：400-123-4567</p>
-              <p className="mb-1">客服邮箱：privacy@dainawang.com</p>
-              <p className="mb-1">联系地址：中国广东省广州市天河区代拿网科技有限公司</p>
-              <p>工作时间：周一至周日 9:00-18:00</p>
+              <p className="mb-1">客服电话：13148865179</p>
+              {/* <p className="mb-1">客服邮箱：privacy@dainawang.com</p> */}
+              <p className="mb-1">
+                联系地址：深圳市福田区华强北街道福强社区三号路86号京华11栋1层8号深圳市贤合贸易有限公司
+              </p>
+              <p>工作时间：周一至周日 9:00-22:00</p>
             </section>
           </div>
 

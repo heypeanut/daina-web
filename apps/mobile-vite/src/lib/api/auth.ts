@@ -48,9 +48,9 @@ export async function login(credentials: LoginRequest): Promise<string> {
  * 短信验证码登录
  */
 export async function smsLogin(credentials: SmsLoginRequest): Promise<string> {
-  const response = await tenantApi.post("/auth/login", {
-    ...credentials,
-    loginType: "sms",
+  const response = await tenantApi.post("/auth/login/sms", {
+    phone: credentials.phone,
+    code: credentials.code,
   });
   return response.data;
 }
@@ -83,7 +83,7 @@ export async function sendVerificationCode(phone: string): Promise<void> {
 export async function register(
   userData: RegisterRequest
 ): Promise<RegisterResponse> {
-  const response = await tenantApi.post("/auth/register", userData);
+  const response = await tenantApi.post("/auth/register/phone", userData);
   return response.data;
 }
 

@@ -1,14 +1,11 @@
 import { useState, useCallback } from "react";
-import { login, sendSms, type LoginRequest } from "@/lib/api/auth";
-interface RegisterResponse {
-  token: string;
-  user: {
-    id: string;
-    phone: string;
-    nickname?: string;
-    avatar?: string;
-  };
-}
+import {
+  login,
+  sendSms,
+  smsLogin,
+  register,
+  type LoginRequest,
+} from "@/lib/api/auth";
 
 interface RegisterParams {
   phone: string;
@@ -21,33 +18,6 @@ interface RegisterParams {
 async function authLogin(params: LoginRequest): Promise<string> {
   const token = await login(params);
   return token;
-}
-
-async function smsLogin(params: {
-  phone: string;
-  code: string;
-}): Promise<string> {
-  return smsLogin({ phone: params.phone, code: params.code });
-}
-
-async function register(params: RegisterParams): Promise<RegisterResponse> {
-  // 模拟API延迟
-  await new Promise((resolve) => setTimeout(resolve, 1500));
-
-  // 模拟注册验证
-  if (params.smsCode !== "123456") {
-    throw new Error("验证码错误");
-  }
-
-  return {
-    token: "mock_auth_token_12345",
-    user: {
-      id: "user_" + Date.now(),
-      phone: params.phone,
-      nickname: params.nickname || "新用户",
-      avatar: undefined,
-    },
-  };
 }
 
 // 认证Hook
