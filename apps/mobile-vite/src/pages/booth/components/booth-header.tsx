@@ -1,5 +1,5 @@
 import { Heart, MapPin } from "lucide-react";
-import { ImageLazyLoader } from "@/components/common";
+import { ImageLazyLoader, MarketLabel } from "@/components/common";
 import type { Booth } from "@/types/api";
 
 interface BoothHeaderProps {
@@ -93,9 +93,11 @@ export function BoothHeader({
                     size={14}
                     className="mr-1.5 text-gray-500 flex-shrink-0"
                   />
-                  <span className="font-semibold text-gray-800">
-                    {booth.market}
-                  </span>
+                  <MarketLabel
+                    market={booth.market}
+                    className="font-semibold text-gray-800"
+                    fallback="华强北"
+                  />
                 </div>
 
                 {/* 第二行：地址信息（与图标对齐） */}

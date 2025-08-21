@@ -15,7 +15,6 @@ export interface Booth {
   productsCount?: number;
   rank?: number;
   market?: string;
-  marketLabel?: string;
   phone?: string;
   wx?: string;
   qq?: string;
@@ -171,7 +170,7 @@ export interface MyBoothItem {
   qqQrcode: "string";
   _count: {
     products: number;
-  }
+  };
 }
 
 export interface MyBoothResponse {
@@ -275,9 +274,9 @@ export interface BoothEditInfo {
 // ==================== 产品管理相关类型 ====================
 
 export interface ProductManagementFilter {
-  status: 'all' | '0' | '1';
-  sortBy: 'created_time' | 'price' | 'views';
-  sortOrder: 'asc' | 'desc';
+  status: "all" | "0" | "1";
+  sortBy: "created_time" | "price" | "views";
+  sortOrder: "asc" | "desc";
 }
 
 export interface ProductActionResponse {
@@ -313,14 +312,14 @@ export interface ProductCreateForm {
   stock?: number;
   status?: string; // 商品状态
   // 规格参数（可选）
-  style?: string;           // 风格
-  phoneModel?: string;      // 适用机型  
-  productType?: string;     // 产品类型
-  trend?: string;          // 流行元素
-  imageType?: string;      // 图片类型
-  copyright?: string;      // 版权
-  biodegradable?: string;  // 生物降解
-  ecoMaterial?: string;    // 环保材料
+  style?: string; // 风格
+  phoneModel?: string; // 适用机型
+  productType?: string; // 产品类型
+  trend?: string; // 流行元素
+  imageType?: string; // 图片类型
+  copyright?: string; // 版权
+  biodegradable?: string; // 生物降解
+  ecoMaterial?: string; // 环保材料
 }
 
 export interface ProductCreateRequest {
@@ -334,14 +333,14 @@ export interface ProductCreateRequest {
   status?: string;
   boothId: string;
   // 规格参数（可选）
-  style?: string;           // 风格
-  phoneModel?: string;      // 适用机型  
-  productType?: string;     // 产品类型
-  trend?: string;          // 流行元素
-  imageType?: string;      // 图片类型
-  copyright?: string;      // 版权
-  biodegradable?: string;  // 生物降解
-  ecoMaterial?: string;    // 环保材料
+  style?: string; // 风格
+  phoneModel?: string; // 适用机型
+  productType?: string; // 产品类型
+  trend?: string; // 流行元素
+  imageType?: string; // 图片类型
+  copyright?: string; // 版权
+  biodegradable?: string; // 生物降解
+  ecoMaterial?: string; // 环保材料
 }
 
 export interface ProductCreateResponse {
@@ -368,7 +367,7 @@ export interface ProductBooth {
   id: string;
   boothName: string;
   mainBusiness: string;
-  marketLabel: string;
+  market: string;
   followers: number;
   view: number;
   phone?: string;

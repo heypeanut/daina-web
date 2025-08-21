@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Store, MapPin, Trash2 } from "lucide-react";
-import { ImageLazyLoader } from "@/components/common";
+import { ImageLazyLoader, MarketLabel } from "@/components/common";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getFavoriteBooths, unfollowBooth } from "@/lib/api/user-behavior";
 import type { FavoriteBooth } from "@/lib/api/user-behavior";
@@ -173,7 +173,11 @@ export default function FollowedBoothsPage() {
                         {/* 位置信息 */}
                         <div className="flex items-center text-sm text-gray-500 mb-2">
                           <MapPin size={12} className="mr-1 flex-shrink-0" />
-                          <span className="truncate">{booth.market}</span>
+                          <MarketLabel
+                            market={booth.market}
+                            className="truncate"
+                            fallback="华强北"
+                          />
                         </div>
 
                         {/* 关注时间 */}

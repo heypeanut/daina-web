@@ -1,4 +1,4 @@
-import { ImageLazyLoader } from "@/components/common";
+import { ImageLazyLoader, MarketLabel } from "@/components/common";
 import type { Booth } from "@/types/api";
 import { MapPin } from "lucide-react";
 
@@ -57,9 +57,11 @@ BoothCardProps) {
 
         <div className="flex items-center text-xs text-gray-500">
           <MapPin size={12} className="mr-1.5 text-gray-400" />
-          <span className="truncate font-medium">
-            {booth.market || "批发市场"}
-          </span>
+          <MarketLabel
+            market={booth.market}
+            className="truncate font-medium"
+            fallback="华强北"
+          />
         </div>
       </div>
     </div>

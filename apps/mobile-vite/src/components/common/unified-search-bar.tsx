@@ -208,7 +208,9 @@ export function UnifiedSearchBar({
             onClick={handleSearchAreaClick}
           >
             <Search size={18} className="text-gray-400 mr-2" />
-            <span className="text-gray-500 flex-1 text-sm">{placeholder}</span>
+            <span className="text-gray-500 flex-1 text-sm truncate">
+              {placeholder}
+            </span>
           </div>
 
           {/* 相机按钮 */}
@@ -247,7 +249,9 @@ export function UnifiedSearchBar({
             onClick={handleSearchAreaClick}
           >
             <Search size={18} className="text-gray-400 mr-2" />
-            <span className="text-gray-500 flex-1 text-sm">{placeholder}</span>
+            <span className="text-gray-500 flex-1 text-sm truncate">
+              {placeholder}
+            </span>
           </div>
 
           {/* 相机按钮 */}
@@ -287,7 +291,9 @@ export function UnifiedSearchBar({
             onClick={onSearchClick}
           >
             <Search size={18} className="text-gray-400 mr-2" />
-            <span className="text-gray-500 flex-1 text-sm">{placeholder}</span>
+            <span className="text-gray-500 flex-1 text-sm truncate">
+              {placeholder}
+            </span>
           </div>
 
           {/* 分享按钮 */}
@@ -328,7 +334,9 @@ export function UnifiedSearchBar({
             onClick={handleSearchAreaClick}
           >
             <Search size={18} className="text-gray-400 mr-2" />
-            <span className="text-gray-500 flex-1 text-sm">{placeholder}</span>
+            <span className="text-gray-500 flex-1 text-sm truncate">
+              {placeholder}
+            </span>
           </div>
 
           {/* 筛选按钮 */}

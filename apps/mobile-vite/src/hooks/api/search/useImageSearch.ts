@@ -9,9 +9,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { useDictMap } from "@/hooks/api/useDictionary";
-import { DictType } from "@/types/dictionary";
-import { translateDictValue } from "@/utils/dictionary";
+
 import type { Product } from "@/types/api";
 import type { Booth } from "@/types/booth";
 import {
@@ -256,7 +254,7 @@ export function useInfiniteImageProductSearch(
     } finally {
       setIsFetchingNextPage(false);
     }
-  }, [data, isFetchingNextPage, allProducts, currentPage]);
+  }, [data, isFetchingNextPage, allProducts, currentPage, serverTotal]);
 
   // 计算是否还有下一页
   const hasNextPage = useMemo(() => {
@@ -302,7 +300,7 @@ export function useInfiniteImageBoothSearch(
   const [isFetchingNextPage, setIsFetchingNextPage] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [allBooths, setAllBooths] = useState<Booth[]>([]);
-  const marketDictMap = useDictMap(DictType.MARKET);
+
   const [serverTotal, setServerTotal] = useState<number | undefined>(undefined);
 
   // 从sessionStorage加载图片搜索结果
@@ -325,8 +323,6 @@ export function useInfiniteImageBoothSearch(
           ...item,
           // 统一名称字段（后端已返回 boothName，此处仅兜底）
           boothName: item.boothName || item.name,
-          // 初始时不翻译，等字典加载完成后再翻译
-          marketLabel: item.marketLabel || "",
         })
       );
 
@@ -441,18 +437,7 @@ export function useInfiniteImageBoothSearch(
       const newRows: Booth[] = source.map((item: any) => ({
         ...item,
         boothName: item.boothName || item.name,
-        marketLabel: item.marketLabel || "",
       }));
-
-      // 直接翻译新数据
-      const translatedNewRows = marketDictMap
-        ? newRows.map((booth) => ({
-            ...booth,
-            marketLabel:
-              translateDictValue(booth.market as string, marketDictMap) ||
-              booth.marketLabel,
-          }))
-        : newRows;
 
       setAllBooths((prev) => [...prev, ...newRows]);
 
@@ -467,7 +452,7 @@ export function useInfiniteImageBoothSearch(
         pages: [
           ...(prevData?.pages || []),
           {
-            rows: translatedNewRows, // 使用翻译后的数据
+            rows: newRows,
             total: total2,
             pageSize,
             pageNum: nextPage,
@@ -483,14 +468,7 @@ export function useInfiniteImageBoothSearch(
     } finally {
       setIsFetchingNextPage(false);
     }
-  }, [
-    data,
-    isFetchingNextPage,
-    allBooths,
-    currentPage,
-    serverTotal,
-    marketDictMap,
-  ]);
+  }, [data, isFetchingNextPage, allBooths, currentPage, serverTotal]);
 
   // 计算是否还有下一页
   const hasNextPage = useMemo(() => {
@@ -513,37 +491,8 @@ export function useInfiniteImageBoothSearch(
   }, [enabled, loadImageSearchResults]);
 
   // 对初始数据进行翻译（仅第一页，其他页在fetchNextPage中已翻译）
-  const dataWithInitialTranslation = useMemo(() => {
-    if (!data || !data.pages.length) {
-      return data;
-    }
-
-    // 如果没有字典或第一页不是页面1，直接返回原始数据
-    if (!marketDictMap || !data.pages[0] || data.pages[0].pageNum !== 1) {
-      return data;
-    }
-
-    // 只翻译第一页的数据
-    const firstPage = data.pages[0];
-    const translatedFirstPageRows = firstPage.rows.map((booth: any) => ({
-      ...booth,
-      marketLabel:
-        translateDictValue(booth.market as string, marketDictMap) ||
-        booth.marketLabel,
-    }));
-
-    const updatedPages = data.pages.map((page, index) => {
-      if (index === 0) {
-        return { ...page, rows: translatedFirstPageRows };
-      }
-      return page; // 其他页面已经在fetchNextPage中翻译过了
-    });
-
-    return { ...data, pages: updatedPages };
-  }, [data, marketDictMap]);
-
   return {
-    data: dataWithInitialTranslation,
+    data,
     isLoading,
     error,
     hasNextPage,

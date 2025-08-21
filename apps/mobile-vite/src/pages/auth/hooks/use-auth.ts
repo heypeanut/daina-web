@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import { login, type LoginRequest } from '@/lib/api/auth';
+import { useState, useCallback } from "react";
+import { login, sendSms, type LoginRequest } from "@/lib/api/auth";
 interface RegisterResponse {
   token: string;
   user: {
@@ -16,41 +16,37 @@ interface RegisterParams {
   nickname?: string;
 }
 
-// Mock API函数
-async function sendSms(phone: string): Promise<void> {
-  // 模拟API延迟
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  // 模拟验证码发送成功
-  console.log(`验证码已发送到 ${phone}`);
-}
+// 移除模拟函数，使用真实的API
 
 async function authLogin(params: LoginRequest): Promise<string> {
   const token = await login(params);
   return token;
 }
 
-async function smsLogin(params: { phone: string; code: string }): Promise<string> {
+async function smsLogin(params: {
+  phone: string;
+  code: string;
+}): Promise<string> {
   return smsLogin({ phone: params.phone, code: params.code });
 }
 
 async function register(params: RegisterParams): Promise<RegisterResponse> {
   // 模拟API延迟
-  await new Promise(resolve => setTimeout(resolve, 1500));
-  
+  await new Promise((resolve) => setTimeout(resolve, 1500));
+
   // 模拟注册验证
-  if (params.smsCode !== '123456') {
-    throw new Error('验证码错误');
+  if (params.smsCode !== "123456") {
+    throw new Error("验证码错误");
   }
-  
+
   return {
-    token: 'mock_auth_token_12345',
+    token: "mock_auth_token_12345",
     user: {
-      id: 'user_' + Date.now(),
+      id: "user_" + Date.now(),
       phone: params.phone,
-      nickname: params.nickname || '新用户',
-      avatar: undefined
-    }
+      nickname: params.nickname || "新用户",
+      avatar: undefined,
+    },
   };
 }
 
@@ -92,31 +88,34 @@ export function useAuth() {
   }, []);
 
   // 密码登录
-  const handlePasswordLogin = useCallback(async (phone: string, password: string) => {
-    if (!phone || !password) {
-      throw new Error("请填写手机号和密码");
-    }
+  const handlePasswordLogin = useCallback(
+    async (phone: string, password: string) => {
+      if (!phone || !password) {
+        throw new Error("请填写手机号和密码");
+      }
 
-    if (!/^1[3-9]\d{9}$/.test(phone)) {
-      throw new Error("请输入正确的手机号");
-    }
+      if (!/^1[3-9]\d{9}$/.test(phone)) {
+        throw new Error("请输入正确的手机号");
+      }
 
-    setLoading(true);
+      setLoading(true);
 
-    try {
-      const token = await authLogin({ phone, password });
+      try {
+        const token = await authLogin({ phone, password });
 
-      // 存储认证信息
-      localStorage.setItem("auth_token", token);
+        // 存储认证信息
+        localStorage.setItem("auth_token", token);
 
-      // 触发登录状态变化事件
-      window.dispatchEvent(new Event("loginStatusChange"));
+        // 触发登录状态变化事件
+        window.dispatchEvent(new Event("loginStatusChange"));
 
-      return token;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+        return token;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
   // 验证码登录
   const handleSmsLogin = useCallback(async (phone: string, code: string) => {
@@ -180,6 +179,6 @@ export function useAuth() {
     handleSendCode,
     handlePasswordLogin,
     handleSmsLogin,
-    handleRegister
+    handleRegister,
   };
 }

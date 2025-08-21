@@ -1,6 +1,6 @@
 import React from "react";
 import { Heart, MapPin, Star } from "lucide-react";
-import { ImageLazyLoader } from "@/components/common";
+import { ImageLazyLoader, MarketLabel } from "@/components/common";
 import type { Booth } from "@/types/api";
 
 interface MobileBoothCardProps {
@@ -147,12 +147,14 @@ export function MobileBoothCard({
             </div>
           )}
 
-          {booth.market && (
-            <div className="flex items-center flex-1 min-w-0 ml-2">
-              <MapPin size={11} className="mr-1 flex-shrink-0" />
-              <span className="truncate text-xs">{booth.market}</span>
-            </div>
-          )}
+          <div className="flex items-center flex-1 min-w-0 ml-2">
+            <MapPin size={11} className="mr-1 flex-shrink-0" />
+            <MarketLabel
+              market={booth.market}
+              className="truncate text-xs"
+              fallback="华强北"
+            />
+          </div>
         </div>
 
         {/* 描述信息 */}

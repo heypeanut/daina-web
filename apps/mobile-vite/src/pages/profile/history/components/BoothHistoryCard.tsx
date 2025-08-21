@@ -1,6 +1,6 @@
 import React from "react";
 import { MapPin, Trash2 } from "lucide-react";
-import { ImageLazyLoader } from "@/components/common";
+import { ImageLazyLoader, MarketLabel } from "@/components/common";
 import type { Footprint } from "@/lib/api/user-behavior";
 
 interface BoothHistoryCardProps {
@@ -60,12 +60,14 @@ export function BoothHistoryCard({
                 </div>
               )}
 
-              {footprint.market && (
-                <div className="flex items-center text-sm text-gray-500 mb-2">
-                  <MapPin size={12} className="mr-1" />
-                  <span className="truncate">{footprint.market}</span>
-                </div>
-              )}
+              <div className="flex items-center text-sm text-gray-500 mb-2">
+                <MapPin size={12} className="mr-1" />
+                <MarketLabel
+                  market={footprint.market}
+                  className="truncate"
+                  fallback=""
+                />
+              </div>
 
               <div className="text-xs text-gray-400">
                 浏览时间：

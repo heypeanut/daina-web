@@ -10,9 +10,11 @@ export interface DictResponse {
   data: DictItem[];
 }
 
-export enum DictType {
-  MARKET = 'market',
-  PRODUCT_STATUS = 'product_status',
-}
+export const DictType = {
+  MARKET: "market",
+  PRODUCT_STATUS: "product_status",
+} as const;
+
+export type DictType = (typeof DictType)[keyof typeof DictType];
 
 export type DictMap = Record<string, string>;

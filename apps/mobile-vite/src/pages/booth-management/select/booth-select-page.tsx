@@ -11,6 +11,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { MarketLabel } from "@/components/common";
 
 // 类型定义
 type FilterType = "all" | "active" | "pending" | "rejected";
@@ -45,8 +46,8 @@ interface UserBoothStatus {
 // Mock API函数
 const getUserBoothStatus = async (): Promise<UserBoothStatus> => {
   // 模拟API延迟
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
   return {
     totalBooths: 3,
     activeBoothsCount: 1,
@@ -84,7 +85,7 @@ const getUserBoothStatus = async (): Promise<UserBoothStatus> => {
         lastSubmitTime: "2023-01-10T11:00:00Z",
         auditTime: "2023-01-12T16:00:00Z",
       },
-    ]
+    ],
   };
 };
 
@@ -113,17 +114,22 @@ export default function BoothSelectPage() {
   };
 
   // 筛选档口
-  const filteredBooths = boothStatus?.booths?.filter((booth) => {
-    if (activeFilter === "all") return true;
-    return booth.status === activeFilter;
-  }) || [];
+  const filteredBooths =
+    boothStatus?.booths?.filter((booth) => {
+      if (activeFilter === "all") return true;
+      return booth.status === activeFilter;
+    }) || [];
 
   // 筛选器配置
   const filterTabs: FilterTab[] = [
     { key: "all", label: "全部", count: boothStatus?.totalBooths },
     { key: "active", label: "已通过", count: boothStatus?.activeBoothsCount },
     { key: "pending", label: "审核中", count: boothStatus?.pendingBoothsCount },
-    { key: "rejected", label: "被拒绝", count: boothStatus?.rejectedBoothsCount },
+    {
+      key: "rejected",
+      label: "被拒绝",
+      count: boothStatus?.rejectedBoothsCount,
+    },
   ];
 
   const handleBack = () => {
@@ -219,7 +225,9 @@ export default function BoothSelectPage() {
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <ShoppingBag className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">暂无档口</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              暂无档口
+            </h3>
             <p className="text-gray-600 mb-6">您还没有申请任何档口</p>
             <button
               onClick={handleApplyNew}
@@ -327,7 +335,13 @@ interface BoothCardProps {
   getStatusColor: (status: string) => string;
 }
 
-function BoothCard({ booth, onManage, onViewDetail, getStatusIcon, getStatusColor }: BoothCardProps) {
+function BoothCard({
+  booth,
+  onManage,
+  onViewDetail,
+  getStatusIcon,
+  getStatusColor,
+}: BoothCardProps) {
   const canManage = booth.status === "active";
 
   return (
@@ -339,11 +353,17 @@ function BoothCard({ booth, onManage, onViewDetail, getStatusIcon, getStatusColo
             <h3 className="text-lg font-semibold text-gray-900 mb-1">
               {booth.boothName}
             </h3>
-            {booth.market && (
-              <p className="text-sm text-gray-600 mb-2">{booth.market}</p>
-            )}
+            <MarketLabel
+              market={booth.market}
+              className="text-sm text-gray-600 mb-2 block"
+              fallback=""
+            />
           </div>
-          <div className={`px-3 py-1 rounded-full text-sm border ${getStatusColor(booth.status)}`}>
+          <div
+            className={`px-3 py-1 rounded-full text-sm border ${getStatusColor(
+              booth.status
+            )}`}
+          >
             <div className="flex items-center space-x-1">
               {getStatusIcon(booth.status)}
               <span>{booth.statusText}</span>
@@ -364,10 +384,15 @@ function BoothCard({ booth, onManage, onViewDetail, getStatusIcon, getStatusColo
         {/* 时间信息 */}
         <div className="text-xs text-gray-500 mb-4 space-y-1">
           {booth.lastSubmitTime && (
-            <p>申请时间：{new Date(booth.lastSubmitTime).toLocaleDateString("zh-CN")}</p>
+            <p>
+              申请时间：
+              {new Date(booth.lastSubmitTime).toLocaleDateString("zh-CN")}
+            </p>
           )}
           {booth.auditTime && (
-            <p>审核时间：{new Date(booth.auditTime).toLocaleDateString("zh-CN")}</p>
+            <p>
+              审核时间：{new Date(booth.auditTime).toLocaleDateString("zh-CN")}
+            </p>
           )}
         </div>
 

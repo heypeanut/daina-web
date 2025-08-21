@@ -29,7 +29,7 @@ export function BoothInfoCard({
             alt={booth.boothName}
             width={96}
             height={96}
-            className="w-full h-full object-cover"
+            className="w-16 h-16 object-cover"
           />
         </div>
 

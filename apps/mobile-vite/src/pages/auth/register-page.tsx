@@ -12,13 +12,8 @@ export default function RegisterPage() {
   });
   const [agreeToTerms, setAgreeToTerms] = useState(false);
 
-  const {
-    loading,
-    sendingCode,
-    countdown,
-    handleSendCode,
-    handleRegister
-  } = useAuth();
+  const { loading, sendingCode, countdown, handleSendCode, handleRegister } =
+    useAuth();
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({
@@ -120,7 +115,9 @@ export default function RegisterPage() {
                   type="text"
                   placeholder="请输入验证码"
                   value={formData.verificationCode}
-                  onChange={(e) => handleInputChange("verificationCode", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("verificationCode", e.target.value)
+                  }
                   className="block w-full pl-10 pr-3 py-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-colors"
                   maxLength={6}
                 />
@@ -165,7 +162,10 @@ export default function RegisterPage() {
               onChange={(e) => setAgreeToTerms(e.target.checked)}
               className="mt-1 w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500"
             />
-            <label htmlFor="agreeToTerms" className="text-sm text-gray-600 leading-relaxed">
+            <label
+              htmlFor="agreeToTerms"
+              className="text-sm text-gray-600 leading-relaxed"
+            >
               我已阅读并同意{" "}
               <button
                 onClick={() => navigate("/user-agreement")}
@@ -204,15 +204,6 @@ export default function RegisterPage() {
               立即登录
             </button>
           </div>
-        </div>
-
-        {/* 开发提示 */}
-        <div className="mt-8 p-4 bg-blue-50 rounded-lg">
-          <p className="text-sm text-blue-800 text-center">
-            <strong>开发提示：</strong>
-            <br />
-            验证码：123456
-          </p>
         </div>
       </div>
     </div>

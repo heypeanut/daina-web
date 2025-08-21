@@ -67,7 +67,7 @@ export async function getUserInfo(): Promise<UserInfo> {
  * 发送短信验证码
  */
 export async function sendSms(phone: string): Promise<void> {
-  await tenantApi.post("/auth/sms", { phone });
+  await tenantApi.post("/auth/send-sms", { phone });
 }
 
 /**

@@ -1,27 +1,27 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Search, Filter, Camera, X, ArrowLeft, Share2 } from 'lucide-react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import React, { useState } from "react";
+import { Search, Filter, Camera, X, ArrowLeft, Share2 } from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 export interface UnifiedSearchBarProps {
   // 基础配置
-  variant?: 'home' | 'market' | 'search' | 'booth' | 'booth-detail';
+  variant?: "home" | "market" | "search" | "booth" | "booth-detail";
   className?: string;
-  
+
   // Logo配置
   showLogo?: boolean;
   logoSrc?: string;
   logoSize?: number;
-  
+
   // 搜索功能
   placeholder?: string;
   value?: string;
   onChange?: (value: string) => void;
   onSearch?: (keyword: string) => void;
   onSearchClick?: () => void; // 点击跳转（首页模式）
-  
+
   // 右侧按钮
   showFilter?: boolean;
   showCamera?: boolean;
@@ -29,38 +29,38 @@ export interface UnifiedSearchBarProps {
   onFilterClick?: () => void;
   onCameraClick?: () => void;
   onShareClick?: () => void;
-  
+
   // 档口页专用
   showBack?: boolean;
   onBackClick?: () => void;
   title?: string;
-  
+
   // 搜索状态
   isFocused?: boolean;
   onFocus?: () => void;
   onBlur?: () => void;
-  
+
   // 清除功能
   showClearButton?: boolean;
   onClear?: () => void;
 }
 
 export function UnifiedSearchBar({
-  variant = 'home',
-  className = '',
-  
+  variant = "home",
+  className = "",
+
   // Logo配置
   showLogo = true,
-  logoSrc = '/logo.png',
+  logoSrc = "/logo.png",
   logoSize = 28,
-  
+
   // 搜索功能
-  placeholder = '搜索商品关键字或货号',
-  value = '',
+  placeholder = "搜索商品关键字或货号",
+  value = "",
   onChange,
   onSearch,
   onSearchClick,
-  
+
   // 右侧按钮
   showFilter = false,
   showCamera = false,
@@ -68,84 +68,87 @@ export function UnifiedSearchBar({
   onFilterClick,
   onCameraClick,
   onShareClick,
-  
+
   // 档口页专用
   showBack = false,
   onBackClick,
   title,
-  
+
   // 搜索状态
   isFocused: externalFocused,
   onFocus: externalOnFocus,
   onBlur: externalOnBlur,
-  
+
   // 清除功能
   showClearButton = true,
   onClear,
 }: UnifiedSearchBarProps) {
   const router = useRouter();
   const [internalFocused, setInternalFocused] = useState(false);
-  
+
   // 使用外部或内部的焦点状态
-  const isFocused = externalFocused !== undefined ? externalFocused : internalFocused;
-  
+  const isFocused =
+    externalFocused !== undefined ? externalFocused : internalFocused;
+
   // 搜索框样式 - 提前定义，避免在booth-detail variant中使用时出现初始化错误
   const searchBoxClass = `flex items-center bg-white/95 backdrop-blur-sm rounded-full px-4 py-2.5 transition-all duration-300 shadow-sm ${
-    isFocused ? 'bg-white ring-1 ring-white/50 shadow-lg' : 'hover:bg-white'
+    isFocused ? "bg-white ring-1 ring-white/50 shadow-lg" : "hover:bg-white"
   }`;
-  
+
   const handleFocus = () => {
     setInternalFocused(true);
     externalOnFocus?.();
   };
-  
+
   const handleBlur = () => {
     setInternalFocused(false);
     externalOnBlur?.();
   };
-  
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (onSearch && value) {
       onSearch(value.trim());
     }
   };
-  
+
   const handleSearchAreaClick = () => {
     if (onSearchClick) {
       onSearchClick();
-    } else if (variant === 'home') {
+    } else if (variant === "home") {
       // 首页默认跳转到搜索页面
-      router.push('/search');
-    } else if (variant === 'market') {
+      router.push("/search");
+    } else if (variant === "market") {
       // 市场页面跳转到档口搜索
-      router.push('/search?type=booth');
+      router.push("/search?type=booth");
     }
   };
-  
+
   const handleClear = () => {
     if (onClear) {
       onClear();
     } else if (onChange) {
-      onChange('');
+      onChange("");
     }
   };
-  
+
   const handleDefaultCameraClick = () => {
     if (onCameraClick) {
       onCameraClick();
     } else {
-      router.push('/search/image');
+      router.push("/search/image");
     }
   };
-  
+
   // 根据变体决定是否可编辑 - 只有search variant才是真正可交互的
-  const isInteractive = variant === 'search';
-  
+  const isInteractive = variant === "search";
+
   // 档口详情页面特殊处理
-  if (variant === 'booth-detail') {
+  if (variant === "booth-detail") {
     return (
-      <div className={`bg-gradient-to-r from-orange-500 to-red-500 safe-area-inset-top ${className}`}>
+      <div
+        className={`bg-gradient-to-r from-orange-500 to-red-500 safe-area-inset-top ${className}`}
+      >
         <div className="flex items-center space-x-3 px-4 py-3">
           {/* 返回按钮 */}
           {showBack && (
@@ -156,7 +159,7 @@ export function UnifiedSearchBar({
               <ArrowLeft size={20} className="text-white" />
             </button>
           )}
-          
+
           {/* 搜索框 */}
           <div
             onClick={handleSearchAreaClick}
@@ -167,7 +170,7 @@ export function UnifiedSearchBar({
               {placeholder}
             </span>
           </div>
-          
+
           {/* 分享按钮 */}
           {showShare && (
             <button
@@ -181,9 +184,9 @@ export function UnifiedSearchBar({
       </div>
     );
   }
-  
+
   // 档口页面特殊处理（保留原有booth variant用于兼容）
-  if (variant === 'booth') {
+  if (variant === "booth") {
     return (
       <div className={`bg-white border-b border-gray-100 ${className}`}>
         <div className="flex items-center justify-between px-4 py-3">
@@ -196,12 +199,12 @@ export function UnifiedSearchBar({
               <ArrowLeft size={20} />
             </button>
           )}
-          
+
           {/* 标题 */}
           <h1 className="text-lg font-medium text-gray-900 truncate px-4 flex-1 text-center">
-            {title || '档口详情'}
+            {title || "档口详情"}
           </h1>
-          
+
           {/* 分享按钮 */}
           {showShare && (
             <button
@@ -215,10 +218,10 @@ export function UnifiedSearchBar({
       </div>
     );
   }
-  
+
   // 统一的容器样式
   const containerClass = `bg-gradient-to-r from-orange-500 to-red-500 safe-area-inset-top ${className}`;
-  
+
   return (
     <div className={containerClass}>
       <div className="flex items-center space-x-3 px-4 py-3">
@@ -230,26 +233,28 @@ export function UnifiedSearchBar({
           >
             <ArrowLeft size={20} className="text-white" />
           </button>
-        ) : showLogo && (
-          <Image 
-            src={logoSrc} 
-            alt="logo" 
-            width={logoSize} 
-            height={logoSize} 
-            className="rounded-full bg-white flex-shrink-0" 
-          />
+        ) : (
+          showLogo && (
+            <Image
+              src={logoSrc}
+              alt="logo"
+              width={logoSize}
+              height={logoSize}
+              className="rounded-full bg-white flex-shrink-0"
+            />
+          )
         )}
-        
+
         {/* 搜索框 */}
         {isInteractive ? (
           // 可交互的搜索框（搜索页）
           <form onSubmit={handleSubmit} className="flex-1">
             <div className={searchBoxClass}>
-              <Search 
-                size={16} 
+              <Search
+                size={16}
                 className={`mr-3 transition-colors duration-200 ${
-                  isFocused ? 'text-orange-500' : 'text-gray-400'
-                }`} 
+                  isFocused ? "text-orange-500" : "text-gray-400"
+                }`}
               />
               <input
                 type="text"
@@ -283,7 +288,7 @@ export function UnifiedSearchBar({
             </span>
           </div>
         )}
-        
+
         {/* 右侧按钮 */}
         <div className="flex items-center space-x-2">
           {/* 筛选按钮 */}
@@ -295,7 +300,7 @@ export function UnifiedSearchBar({
               <Filter size={16} className="text-white" />
             </button>
           )}
-          
+
           {/* 拍照搜索按钮 */}
           {showCamera && (
             <button
@@ -305,7 +310,7 @@ export function UnifiedSearchBar({
               <Camera size={16} className="text-white" />
             </button>
           )}
-          
+
           {/* 分享按钮 */}
           {showShare && (
             <button
